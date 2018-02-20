@@ -1,5 +1,6 @@
-#include <GLFW/glfw3.h>
 #include <glad/glad.h>
+
+#include <GLFW/glfw3.h>
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -39,7 +40,7 @@ int main() {
 
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
-
+    render(0);
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
