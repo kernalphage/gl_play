@@ -4,7 +4,7 @@ project(gl_play)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-g -Wl,--no-as-needed -ldl -lGL" )
-set(SOURCE_FILES main.cpp "ref/glad/src/glad.c")
+set(SOURCE_FILES main.cpp Material.h ref/glad/src/glad.c)
 
 
 add_executable(gl_play ${SOURCE_FILES})
@@ -23,3 +23,10 @@ ELSE()
     target_link_libraries(gl_play glfw ${GLFW_LIBRARIES})
     target_link_libraries(gl_play ${LIBRARIES})
 ENDIF()
+
+# yet another way to get shaders
+
+set(SHADERS basic.vert basic.frag)
+foreach(shader ${SHADERS})
+	configure_file( ${shader} ${shader} COPYONLY)
+endforeach()
