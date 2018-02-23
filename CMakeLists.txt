@@ -3,12 +3,13 @@ project(gl_play)
 
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-g -Wl,--no-as-needed -ldl -lGL" )
+set(CMAKE_CXX_FLAGS "-g" )
 set(SOURCE_FILES main.cpp Material.h ref/glad/src/glad.c)
 
 
 add_executable(gl_play ${SOURCE_FILES})
 include_directories("ref/glad/include")
+set(LIBRARIES "dl")
 
 if(WIN32)
     set(GLFW_PATH $ENV{GLFW_SDK})
