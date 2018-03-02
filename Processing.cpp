@@ -3,14 +3,21 @@
 //
 
 #include "Processing.h"
-
-void Processing::polygon(std::vector<vec2> v) {
+#include <iostream>
+using namespace std;
+void Processing::polygon(std::vector<vec2> v, bool loop) {
   int prev= indexVert(v[0]);
-
+  int first = prev;
   for(int i=1; i < v.size(); i++){
-    if(i!= 1) m_indices.push_back(prev);
+    if(i!= 1){
+     m_indices.push_back(prev);
+    }  
     int cur = indexVert(v[i]);
     prev = cur;
+  }
+  if(loop){
+    m_indices.push_back(prev);
+    m_indices.push_back(first);
   }
 }
 
@@ -36,12 +43,12 @@ int Processing::indexVert(vec2 p) {
 void Processing::clear() {
   m_verts.clear();
   m_indices.clear();
-
 }
 
 void Processing::flush() {
-  if((unsigned int)m_verts.size() > m_vbo_size){
-    allocate_buffers((unsigned int)m_verts.size());
+  if((unsigned int)m_verts.size() > m_vbo_size || (unsigned int)m_indices.size() > m_ebo_size){
+    cout<<"Blew the buffer size " << endl;
+    allocate_buffers((unsigned int)m_verts.size(), (unsigned int)m_indices.size());
   }
 
   // TODO: only update data since last flush
@@ -57,10 +64,12 @@ Processing::~Processing() {
 }
 
 Processing::Processing() {
-  allocate_buffers(2048);
+  allocate_buffers(2048, 2048);
 }
 
-void Processing::allocate_buffers(unsigned int min_size) {
+void Processing::allocate_buffers(unsigned int vbo_size, unsigned int ebo_size ) {
+  m_vbo_size = std::max(vbo_size, (unsigned int) m_verts.size());
+  m_ebo_size = std::max(ebo_size, (unsigned int) m_indices.size());
 
   glGenVertexArrays(1, &m_VAO);
   glGenBuffers(1, &m_VBO);
@@ -69,18 +78,14 @@ void Processing::allocate_buffers(unsigned int min_size) {
   glBindVertexArray(m_VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * std::max(min_size, (unsigned int) m_verts.size()), nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vbo_size, nullptr, GL_DYNAMIC_DRAW);
 
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * std::max(min_size, (unsigned int) m_indices.size()), nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * m_ebo_size, nullptr, GL_DYNAMIC_DRAW);
 
   //TODO: Meshes/vert shaders should own their own attributes and bindings.
   // position attribute
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
-  // color attribute
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
 }
 

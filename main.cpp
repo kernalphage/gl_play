@@ -12,19 +12,6 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-const char *vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "}\0";
-const char *fragmentShaderSource = "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
-
 void processInput(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
@@ -67,20 +54,29 @@ int main() {
 
     Processing ctx{};
 
-    vector<vec2> pts(10);
-    std::generate_n(pts.begin(), pts.end(), [](){ return vec2{rand(), rand()};});
-    ctx.polygon(pts );
-    ctx.flush();
+
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     // glBindVertexArray(0);
-
+float t = 0;
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
 	  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	  glClear(GL_COLOR_BUFFER_BIT);
   
-  	basic.use();
+    t+=.01;
+    ctx.clear();
+    vector<vec2> pts(10);
+    float di = 2*6.28 / 10;
+    int i=0;
+    for(auto& p : pts){
+      p = vec2{sin(i*di+t)*.8f, cos(i*di+t)*.8f};
+      i++;
+    }
+    ctx.polygon(pts,true );
+
+    basic.use();
+    ctx.flush();
     ctx.render();
 
     glfwSwapBuffers(window);

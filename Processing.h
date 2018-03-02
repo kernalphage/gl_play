@@ -13,13 +13,13 @@ class Processing{
 		void clear();
 		void push();
 		void pop();
-		void polygon(std::vector<vec2> v);
+		void polygon(std::vector<vec2> v, bool loop = true);
 		void line(vec2 p1, vec2 p2);
 
 		void render();
     
 	private:
-  void allocate_buffers(unsigned int min_size);
+  void allocate_buffers(unsigned int vbo_size, unsigned int ebo_size);
 
  	  mat4 view;
     std::vector<vec2> m_verts;
@@ -28,7 +28,7 @@ class Processing{
 
   unsigned int m_VBO, m_VAO;
   unsigned int m_EBO;
-  unsigned int m_vbo_size, m_vao_size;
+  unsigned int m_vbo_size, m_ebo_size;
 
 };
 
