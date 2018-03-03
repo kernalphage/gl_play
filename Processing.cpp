@@ -19,6 +19,7 @@ void Processing::polygon(std::vector<vec2> v, bool loop) {
     m_indices.push_back(prev);
     m_indices.push_back(first);
   }
+
 }
 
 void Processing::line(vec2 p1, vec2 p2) {
@@ -46,43 +47,52 @@ void Processing::clear() {
 }
 
 void Processing::flush() {
-  if((unsigned int)m_verts.size() > m_vbo_size || (unsigned int)m_indices.size() > m_ebo_size){
+
+  if((unsigned int)m_verts.size() > m_VBO.size || (unsigned int)m_indices.size() > m_VBO.size){
     cout<<"Blew the buffer size " << endl;
-    allocate_buffers((unsigned int)m_verts.size(), (unsigned int)m_indices.size());
+    allocate_buffers((unsigned int)m_verts.size() * 1.5, (unsigned int)m_indices.size() * 1.5);
   }
 
+  glBindVertexArray(m_VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
   // TODO: only update data since last flush
   glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * ((unsigned int) m_verts.size()), m_verts.data() );
   glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * ((unsigned int) m_indices.size()), m_indices.data() );
-
 }
 
 Processing::~Processing() {
   glDeleteVertexArrays(1, &m_VAO);
-  glDeleteBuffers(1, &m_VBO);
-  glDeleteBuffers(1, &m_EBO);
+  glDeleteBuffers(1, &m_VBO.handle);
+  glDeleteBuffers(1, &m_EBO.handle);
 }
 
 Processing::Processing() {
-  allocate_buffers(2048, 2048);
+
+  glGenVertexArrays(1, &m_VAO);
+  glBindVertexArray(m_VAO);
+
+  allocate_buffers(100, 100);
 }
 
 void Processing::allocate_buffers(unsigned int vbo_size, unsigned int ebo_size ) {
-  m_vbo_size = std::max(vbo_size, (unsigned int) m_verts.size());
-  m_ebo_size = std::max(ebo_size, (unsigned int) m_indices.size());
 
-  glGenVertexArrays(1, &m_VAO);
-  glGenBuffers(1, &m_VBO);
-  glGenBuffers(1, &m_EBO);
+  if(m_VBO.handle){
+    glDeleteBuffers(1, &m_VBO.handle);
+    glDeleteBuffers(1, &m_EBO.handle);
+  }
+
+  m_VBO.size = std::max(vbo_size, (unsigned int) m_verts.size());
+  m_EBO.size = std::max(ebo_size, (unsigned int) m_indices.size());
 
   glBindVertexArray(m_VAO);
+  glGenBuffers(1, &m_VBO.handle);
+  glGenBuffers(1, &m_EBO.handle);
 
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_vbo_size, nullptr, GL_DYNAMIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * m_ebo_size, nullptr, GL_DYNAMIC_DRAW);
-
+  glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_VBO.size, nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * m_EBO.size, nullptr, GL_DYNAMIC_DRAW);
   //TODO: Meshes/vert shaders should own their own attributes and bindings.
   // position attribute
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);

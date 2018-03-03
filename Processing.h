@@ -4,6 +4,12 @@
 #include "Definitions.h"
 #include <vector>
 
+struct Buffer{
+  uint handle =0;
+  uint size =0;
+  uint lastUsed=0;
+};
+
 class Processing{
 	public:
     Processing();
@@ -26,10 +32,12 @@ class Processing{
     std::vector<unsigned int> m_indices;
   int indexVert(vec2 p);
 
-  unsigned int m_VBO, m_VAO;
-  unsigned int m_EBO;
-  unsigned int m_vbo_size, m_ebo_size;
 
+  Buffer m_VBO, m_EBO;
+  uint m_VAO;
+  //unsigned int m_EBO;
+  //unsigned int m_vbo_size, m_ebo_size;
+  //unsigned int m_vbo_ptr, m_ebo_ptr;
 };
 
 

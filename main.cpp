@@ -64,10 +64,10 @@ float t = 0;
 	  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	  glClear(GL_COLOR_BUFFER_BIT);
   
-    t+=.01;
+    t+=1;
     ctx.clear();
-    vector<vec2> pts(10);
-    float di = 2*6.28 / 10;
+    vector<vec2> pts(10 * t);
+    float di = 2*6.28 / 10 * t;
     int i=0;
     for(auto& p : pts){
       p = vec2{sin(i*di+t)*.8f, cos(i*di+t)*.8f};
