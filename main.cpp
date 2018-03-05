@@ -1,6 +1,7 @@
 #include "Definitions.h"
 #include "Material.h"
 #include "Processing.h"
+#include "Triangulate.hpp"
 #include <algorithm>
 
 #include <iostream>
@@ -20,6 +21,7 @@ void processInput(GLFWwindow *window) {
 void render(float t);
 
 int main() {
+
   glfwInit();
   cout<<glfwGetVersionString()<<endl;
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -59,24 +61,19 @@ int main() {
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     // glBindVertexArray(0);
 float t = 0;
+std::vector<Tri> seed = { Tri{{0,.8},{-.8,-.8}, {.8, -.8}, 0} };
+                 ctx.polygon({{0,.8},{-.8,-.8}, {.8, -.8}}, true);
+  Tri::triangulate(seed, 10, ctx);
+
+  ctx.flush();
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
 	  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	  glClear(GL_COLOR_BUFFER_BIT);
   
     t+=1;
-    ctx.clear();
-    vector<vec2> pts(10 * t);
-    float di = 2*6.28 / 10 * t;
-    int i=0;
-    for(auto& p : pts){
-      p = vec2{sin(i*di+t)*.8f, cos(i*di+t)*.8f};
-      i++;
-    }
-    ctx.polygon(pts,true );
 
     basic.use();
-    ctx.flush();
     ctx.render();
 
     glfwSwapBuffers(window);
@@ -91,4 +88,16 @@ float t = 0;
 void render(float t) {
   float vertices[] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f};
 
+}
+
+void drawCircle(int  numPts, float t, Processing& ctx ){
+/*  vector<vec2> pts(size_t(numPts));
+  float di = 2*6.28f / numPts;
+  int i=0;
+  for(auto& p : pts){
+    p = vec2{sin(i*di+t)*.8f, cos(i*di+t)*.8f};
+    i++;
   }
+  ctx.polygon(pts,true );
+*/
+}

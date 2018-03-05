@@ -4,7 +4,7 @@ project(gl_play)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-g" )
-set(SOURCE_FILES Definitions.h main.cpp Processing.h Material.h  ref/glad/src/glad.c Processing.cpp)
+set(SOURCE_FILES Definitions.h main.cpp Processing.h Material.h  ref/glad/src/glad.c Processing.cpp Triangulate.cpp Triangulate.hpp)
 
 
 add_executable(gl_play ${SOURCE_FILES})
