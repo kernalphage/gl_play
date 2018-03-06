@@ -5,7 +5,7 @@
 #include "Triangulate.hpp"
 using namespace std;
 
-std::vector<Tri> Tri::triangulate(const std::vector<Tri>& seed, float maxDepth, Processing& ctx) {
+std::vector<Tri> Tri::triangulate(const std::vector<Tri>& seed, float maxDepth, Processing* ctx) {
   vector<Tri> ret{seed};
   size_t cur = 0;
 
@@ -19,12 +19,12 @@ std::vector<Tri> Tri::triangulate(const std::vector<Tri>& seed, float maxDepth, 
     //     2
     vec2 d =  mix(curTri[side], curTri[side+1], .5f );
 
-    ctx.line(d, curTri[side+2]);
+    ctx->line(d, curTri[side+2]);
 
     float newDepth = curTri.depth + 1;
     if(newDepth < maxDepth ) {
       ret.push_back(Tri{curTri[side], curTri[side + 2],     d, newDepth});
-      ret.push_back(Tri{curTri[side + 1], curTri[side + 2], d, newDepth});
+      ret.push_back(Tri{curTri[side + 2], d, curTri[side + 1], newDepth});
     }
 
     cur++;
@@ -34,7 +34,7 @@ std::vector<Tri> Tri::triangulate(const std::vector<Tri>& seed, float maxDepth, 
 
 // Longest side on the triangle
 int Tri::longestSide(Tri tri) {
-  return random() % 3;
+  return 0;// random() % 3;
 }
 
 bool testTriangle() {

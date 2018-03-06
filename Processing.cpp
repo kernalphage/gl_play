@@ -3,6 +3,7 @@
 //
 
 #include "Processing.h"
+#include "glm/ext.hpp"
 #include <iostream>
 using namespace std;
 void Processing::polygon(std::vector<vec2> v, bool loop) {
@@ -26,6 +27,16 @@ void Processing::line(vec2 p1, vec2 p2) {
   indexVert(p1);
   indexVert(p2);
 }
+void Processing::dump(){
+  for(auto& v : m_verts){
+    cout<<to_string(v)<<", ";
+  }
+  cout << endl;
+  for(auto i : m_indices){
+    cout<<i<<", ";
+  }
+  cout<<endl;
+}
 
 void Processing::render() {
 // convert to gl buffer
@@ -44,24 +55,25 @@ int Processing::indexVert(vec2 p) {
 void Processing::clear() {
   m_verts.clear();
   m_indices.clear();
+  m_VBO.lastUsed = 0;
+  m_EBO.lastUsed = 0;
 }
 
 void Processing::flush() {
 
-  if((unsigned int)m_verts.size() > m_VBO.size || (unsigned int)m_indices.size() > m_VBO.size){
-    cout<<"Blew the buffer size " << endl;
-    allocate_buffers((unsigned int)m_verts.size() * 1.5, (unsigned int)m_indices.size() * 1.5);
+  if(m_verts.size() > m_VBO.size || m_indices.size() > m_VBO.size){
+    allocate_buffers(m_verts.size() * 2.3f, m_indices.size() * 2.3f);
+  }else {
+    glBindVertexArray(m_VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
+//  glBufferSubData(GL_ARRAY_BUFFER,        sizeof(float) * m_VBO.lastUsed, sizeof(float) * (m_verts.size()   - m_VBO.lastUsed), m_verts.data()  + m_VBO.lastUsed );
+//  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,sizeof(int)   * m_EBO.lastUsed, sizeof(int)   * (m_indices.size() - m_EBO.lastUsed), m_indices.data()+ m_EBO.lastUsed );
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec2) * (m_verts.size()), m_verts.data());
+    glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * (m_indices.size()), m_indices.data());
   }
-
-  glBindVertexArray(m_VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
-
-  glBufferSubData(GL_ARRAY_BUFFER,        sizeof(float) * m_VBO.lastUsed, sizeof(float) * (m_verts.size()   - m_VBO.lastUsed), m_verts.data()  + m_VBO.lastUsed );
-  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,sizeof(int)   * m_EBO.lastUsed, sizeof(int)   * (m_indices.size() - m_EBO.lastUsed), m_indices.data()+ m_EBO.lastUsed );
-
-  m_VBO.lastUsed = m_verts.size();   
-  m_EBO.lastUsed = m_indices.size(); 
+  m_VBO.lastUsed = (uint) m_verts.size();
+  m_EBO.lastUsed = (uint) m_indices.size();
 }
 
 Processing::~Processing() {
@@ -75,7 +87,7 @@ Processing::Processing() {
   glGenVertexArrays(1, &m_VAO);
   glBindVertexArray(m_VAO);
 
-  allocate_buffers(100, 100);
+  allocate_buffers(2, 2);
 }
 
 void Processing::allocate_buffers(unsigned int vbo_size, unsigned int ebo_size ) {
@@ -84,6 +96,7 @@ void Processing::allocate_buffers(unsigned int vbo_size, unsigned int ebo_size )
     glDeleteBuffers(1, &m_VBO.handle);
     glDeleteBuffers(1, &m_EBO.handle);
   }
+  cout<<"Allocating buffers: verts: " << m_verts.size() <<" ==> " << m_VBO.size <<" indices " << m_indices.size()<< " ==> "<<m_EBO.size <<  endl;
 
   m_VBO.size = std::max(vbo_size, (unsigned int) m_verts.size());
   m_EBO.size = std::max(ebo_size, (unsigned int) m_indices.size());
@@ -94,11 +107,11 @@ void Processing::allocate_buffers(unsigned int vbo_size, unsigned int ebo_size )
 
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
-  glBufferData(GL_ARRAY_BUFFER,         sizeof(float) * m_VBO.size, m_verts.data(), GL_DYNAMIC_DRAW);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * m_EBO.size,   m_indices.data(), GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,          sizeof(vec2) * m_VBO.size, m_verts.data(), GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER,  sizeof(int)   * m_EBO.size,  m_indices.data(), GL_DYNAMIC_DRAW);
   //TODO: Meshes/vert shaders should own their own attributes and bindings.
   // position attribute
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
   glEnableVertexAttribArray(0);
 }
 

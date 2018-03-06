@@ -23,7 +23,8 @@ class Processing{
 		void line(vec2 p1, vec2 p2);
 
 		void render();
-    
+	void dump();
+
 	private:
   void allocate_buffers(unsigned int vbo_size, unsigned int ebo_size);
 

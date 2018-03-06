@@ -19,7 +19,7 @@ struct Tri{
     return c;
   };
 
-  static std::vector<Tri> triangulate(const std::vector<Tri>& seed, float maxDepth, Processing& ctx);
+  static std::vector<Tri> triangulate(const std::vector<Tri>& seed, float maxDepth, Processing* ctx);
   static int longestSide(Tri t);
 
 

@@ -12,13 +12,37 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+Processing* ctx;
+float t = 3;
+
+void render(){
+  std::vector<Tri> seed = { Tri{{0,.8},{-.8,-.8}, {.8, -.8}, 0} };
+  ctx->polygon({{0,.8},{-.8,-.8}, {.8, -.8}}, true);
+  Tri::triangulate(seed, t, ctx);
+
+  ctx->flush();
+}
+
 
 void processInput(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 }
 
-void render(float t);
+void drawCircle(int  numPts, float t, Processing* ctx );
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+  if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE){
+    t++;
+    //ctx->clear();
+    drawCircle(t, t, ctx);
+
+    ctx->flush();
+    //render();
+  }
+}
+
 
 int main() {
 
@@ -47,34 +71,24 @@ int main() {
 
   glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
+  glfwSetKeyCallback(window, keyCallback);
 
  // build and compile our shader program
 
   	Material basic{"basic.vert", "basic.frag"};
-
-
-    Processing ctx{};
-
-
+  ctx = new Processing{};
+  render();
+  //drawCircle(t,t,ctx);
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     // glBindVertexArray(0);
-float t = 0;
-std::vector<Tri> seed = { Tri{{0,.8},{-.8,-.8}, {.8, -.8}, 0} };
-                 ctx.polygon({{0,.8},{-.8,-.8}, {.8, -.8}}, true);
-  Tri::triangulate(seed, 10, ctx);
-
-  ctx.flush();
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
 	  glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	  glClear(GL_COLOR_BUFFER_BIT);
   
-    t+=1;
-
     basic.use();
-    ctx.render();
+    ctx->render();
 
     glfwSwapBuffers(window);
     glfwPollEvents();
@@ -90,13 +104,13 @@ void render(float t) {
 
 }
 
-void drawCircle(int  numPts, float t, Processing& ctx ){
+void drawCircle(int  numPts, float t, Processing* ctx ){
  vector<vec2> pts{size_t(numPts)};
-  float di = 2*6.28f / numPts;
+  float di = 6.28f / numPts;
   int i=0;
   for(auto& p : pts){
-    p = vec2{sin(i*di+t)*.8f, cos(i*di+t)*.8f};
+    p = vec2{sin(i*di)*.8f, cos(i*di + .2 * t)*.8f};
     i++;
   }
-  ctx.polygon(pts,true );
+  ctx->polygon(pts,true);
 }
