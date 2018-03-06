@@ -91,7 +91,7 @@ void render(float t) {
 }
 
 void drawCircle(int  numPts, float t, Processing& ctx ){
-/*  vector<vec2> pts(size_t(numPts));
+ vector<vec2> pts{size_t(numPts)};
   float di = 2*6.28f / numPts;
   int i=0;
   for(auto& p : pts){
@@ -99,5 +99,4 @@ void drawCircle(int  numPts, float t, Processing& ctx ){
     i++;
   }
   ctx.polygon(pts,true );
-*/
 }

@@ -56,9 +56,12 @@ void Processing::flush() {
   glBindVertexArray(m_VAO);
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
-  // TODO: only update data since last flush
-  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(float) * ((unsigned int) m_verts.size()), m_verts.data() );
-  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * ((unsigned int) m_indices.size()), m_indices.data() );
+
+  glBufferSubData(GL_ARRAY_BUFFER,        sizeof(float) * m_VBO.lastUsed, sizeof(float) * (m_verts.size()   - m_VBO.lastUsed), m_verts.data()  + m_VBO.lastUsed );
+  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,sizeof(int)   * m_EBO.lastUsed, sizeof(int)   * (m_indices.size() - m_EBO.lastUsed), m_indices.data()+ m_EBO.lastUsed );
+
+  m_VBO.lastUsed = m_verts.size();   
+  m_EBO.lastUsed = m_indices.size(); 
 }
 
 Processing::~Processing() {
@@ -91,8 +94,8 @@ void Processing::allocate_buffers(unsigned int vbo_size, unsigned int ebo_size )
 
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(float) * m_VBO.size, nullptr, GL_DYNAMIC_DRAW);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * m_EBO.size, nullptr, GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,         sizeof(float) * m_VBO.size, m_verts.data(), GL_DYNAMIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(int) * m_EBO.size,   m_indices.data(), GL_DYNAMIC_DRAW);
   //TODO: Meshes/vert shaders should own their own attributes and bindings.
   // position attribute
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
