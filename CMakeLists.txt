@@ -9,6 +9,7 @@ set(SOURCE_FILES Definitions.h main.cpp Processing.h Material.h  ref/glad/src/gl
 
 add_executable(gl_play ${SOURCE_FILES})
 include_directories("ref/glad/include")
+include_directories("ref/imgui")
 set(LIBRARIES "dl")
 
 if(WIN32)
@@ -29,5 +30,5 @@ ENDIF()
 
 set(SHADERS basic.vert basic.frag)
 foreach(shader ${SHADERS})
-	configure_file( ${shader} ${shader} COPYONLY)
+	configure_file( "shaders/${shader}" ${shader} COPYONLY)
 endforeach()
