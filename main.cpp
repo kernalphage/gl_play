@@ -4,10 +4,10 @@
 #include "Triangulate.hpp"
 #include <algorithm>
 
-#include <iostream>
 
 #include "imgui.h"
 #include "imgui_impl/glfw_gl3.h"
+#include "Window.hpp"
 
 using namespace std;
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -48,32 +48,11 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
 int main() {
 
-  glfwInit();
-  cout<<glfwGetVersionString()<<endl;
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  Window mainWin;
+  mainWin.init();
 
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
-#endif
-
-  GLFWwindow *window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
-  if (window == NULL) {
-    std::cout << "Failed to create GLFW window" << std::endl;
-    glfwTerminate();
-    return -1;
-  }
-  glfwMakeContextCurrent(window);
-
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    std::cout << "Failed to initialize GLAD" << std::endl;
-    return -1;
-  }
-
-  glViewport(0, 0, 800, 600);
-  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-  glfwSetKeyCallback(window, keyCallback);
+  glfwSetFramebufferSizeCallback(mainWin.window, framebuffer_size_callback);
+  glfwSetKeyCallback(mainWin.window, keyCallback);
 
  // build and compile our shader program
 
@@ -91,7 +70,7 @@ int main() {
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-    ImGui_ImplGlfwGL3_Init(window, true);
+    ImGui_ImplGlfwGL3_Init(mainWin.window, true);
 
     // Setup style
     ImGui::StyleColorsDark();
@@ -100,7 +79,7 @@ int main() {
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 
-  while (!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
     ImGui_ImplGlfwGL3_NewFrame();
 
@@ -141,7 +120,7 @@ int main() {
             ImGui::ShowDemoWindow(&show_demo_window);
         }
 
-        processInput(window);
+        processInput(mainWin.window);
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
       
@@ -150,7 +129,7 @@ int main() {
 
         ImGui::Render();
         ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(mainWin.window);
         
   } // end mainloop 
     // Cleanup
