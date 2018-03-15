@@ -10,4 +10,7 @@
 
 using namespace glm;
 
+#define SPLAT2(t) t.x, t.y
+#define SPLAT3(t) t.x, t.y, t.z 
+#define SPLAT4(t) t.x, t.y, t.z, t.w
 #endif //DEFINITIONS_H
