@@ -9,10 +9,10 @@
 #include <vector>
 
 struct Tri{
-  vec2 a, b, c;
+  vec3 a, b, c;
   float depth;
 
-  vec2& operator[](size_t i){
+  vec3& operator[](size_t i){
     i = i % 3;
     if(i==0) return a;
     if(i==1) return b;

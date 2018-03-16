@@ -17,7 +17,7 @@ std::vector<Tri> Tri::triangulate(const std::vector<Tri>& seed, float maxDepth, 
     //   \ | /
     //    \|/
     //     2
-    vec2 d =  mix(curTri[side], curTri[side+1], .5f );
+    vec3 d =  mix(curTri[side], curTri[side+1], .5f );
 
     ctx->line(d, curTri[side+2]);
 
@@ -40,7 +40,7 @@ int Tri::longestSide(Tri tri) {
 bool testTriangle() {
 
   Tri tri{};
-  tri.c = vec2{2,3};
+  tri.c = vec3{2,3,0};
   tri[2].y = 4;
   assert(tri.c.y == 4);
 

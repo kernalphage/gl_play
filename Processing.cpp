@@ -6,7 +6,7 @@
 #include "glm/ext.hpp"
 #include <iostream>
 using namespace std;
-void Processing::polygon(std::vector<vec2> v, bool loop) {
+void Processing::polygon(std::vector<vec3> v, bool loop) {
   int prev= indexVert(v[0]);
   int first = prev;
   for(int i=1; i < v.size(); i++){
@@ -23,7 +23,7 @@ void Processing::polygon(std::vector<vec2> v, bool loop) {
 
 }
 
-void Processing::line(vec2 p1, vec2 p2) {
+void Processing::line(vec3 p1, vec3 p2) {
   indexVert(p1);
   indexVert(p2);
 }
@@ -45,7 +45,7 @@ void Processing::render() {
   glBindVertexArray(0);
 }
 
-int Processing::indexVert(vec2 p) {
+int Processing::indexVert(vec3 p) {
   unsigned int idx = m_verts.size();
   m_verts.push_back(p);
   m_indices.push_back(idx);
@@ -69,7 +69,7 @@ void Processing::flush() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
 //  glBufferSubData(GL_ARRAY_BUFFER,        sizeof(float) * m_VBO.lastUsed, sizeof(float) * (m_verts.size()   - m_VBO.lastUsed), m_verts.data()  + m_VBO.lastUsed );
 //  glBufferSubData(GL_ELEMENT_ARRAY_BUFFER,sizeof(int)   * m_EBO.lastUsed, sizeof(int)   * (m_indices.size() - m_EBO.lastUsed), m_indices.data()+ m_EBO.lastUsed );
-    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec2) * (m_verts.size()), m_verts.data());
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vec3) * (m_verts.size()), m_verts.data());
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(int) * (m_indices.size()), m_indices.data());
   }
   m_VBO.lastUsed = (uint) m_verts.size();
@@ -107,11 +107,11 @@ void Processing::allocate_buffers(unsigned int vbo_size, unsigned int ebo_size )
 
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
-  glBufferData(GL_ARRAY_BUFFER,          sizeof(vec2) * m_VBO.size, m_verts.data(), GL_DYNAMIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER,          sizeof(vec3) * m_VBO.size, m_verts.data(), GL_DYNAMIC_DRAW);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER,  sizeof(int)   * m_EBO.size,  m_indices.data(), GL_DYNAMIC_DRAW);
   //TODO: Meshes/vert shaders should own their own attributes and bindings.
   // position attribute
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
   glEnableVertexAttribArray(0);
 }
 

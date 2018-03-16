@@ -18,8 +18,8 @@ Processing* ctx;
 float t = 3;
 
 void render(){
-  std::vector<Tri> seed = { Tri{{0,.8},{-.8,-.8}, {.8, -.8}, 0} };
-  ctx->polygon({{0,.8},{-.8,-.8}, {.8, -.8}}, true);
+  std::vector<Tri> seed = { Tri{{0,.8,0},{-.8,-.8,0}, {.8, -.8,0}, 0} };
+  ctx->polygon({{0,.8,0},{-.8,-.8,0}, {.8, -.8,0}}, true);
   Tri::triangulate(seed, t, ctx);
 
   ctx->flush();
@@ -121,7 +121,7 @@ int main() {
         }
 
         processInput(mainWin.window);
-        
+
         glClearColor(SPLAT4(clear_color));
         glClear(GL_COLOR_BUFFER_BIT);
       
@@ -146,11 +146,11 @@ void render(float t) {
 }
 
 void drawCircle(int  numPts, float t, Processing* ctx ){
- vector<vec2> pts{size_t(numPts)};
+ vector<vec3> pts{size_t(numPts)};
   float di = 6.28f / numPts;
   int i=0;
   for(auto& p : pts){
-    p = vec2{sin(i*di)*.8f, cos(i*di + .2 * t)*.8f};
+    p = vec3{sin(i*di)*.8f, cos(i*di + .2 * t)*.8f,0};
     i++;
   }
   ctx->polygon(pts,true);
