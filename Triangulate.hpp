@@ -18,14 +18,20 @@ struct Tri{
     if(i==1) return b;
     return c;
   };
-
-  static std::vector<Tri> triangulate(const std::vector<Tri>& seed, float maxDepth, Processing* ctx);
-  static int longestSide(Tri t);
-
+	int longestSide();
 
 };
 
+struct TriBuilder{
 
+  bool imSettings();
+
+ std::vector<Tri> triangulate(const std::vector<Tri>& seed, Processing* ctx);
+ float _decayMin = 1;
+ float _decayMax = 1;
+ float _maxDepth = 3;
+ float _skew = .1f;
+};
 
 bool testTriangle();
 

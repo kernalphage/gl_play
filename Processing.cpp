@@ -96,7 +96,7 @@ void Processing::allocate_buffers(unsigned int vbo_size, unsigned int ebo_size )
     glDeleteBuffers(1, &m_VBO.handle);
     glDeleteBuffers(1, &m_EBO.handle);
   }
-  cout<<"Allocating buffers: verts: " << m_verts.size() <<" ==> " << m_VBO.size <<" indices " << m_indices.size()<< " ==> "<<m_EBO.size <<  endl;
+  cout<<"Allocating buffers: verts: " << m_VBO.size <<" ==> " << m_verts.size() <<" indices " << m_EBO.size<< " ==> "<<m_indices.size() <<  endl;
 
   m_VBO.size = std::max(vbo_size, (unsigned int) m_verts.size());
   m_EBO.size = std::max(ebo_size, (unsigned int) m_indices.size());
