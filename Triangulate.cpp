@@ -36,7 +36,7 @@ std::vector<Tri> TriBuilder::triangulate(const std::vector<Tri>& seed, Processin
 }
 
 bool TriBuilder::imSettings(){
-  bool redraw;
+  bool redraw  = false;
   redraw |= ImGui::SliderFloat("Max Depth", &_maxDepth, 0.0f, 12.0f);
   redraw |= ImGui::DragFloatRange2("Decay", &_decayMin, &_decayMax, .01f, .01f, _maxDepth); 
   redraw |= ImGui::SliderFloat("Skew", &_skew, 0.f, .5f); 

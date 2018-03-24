@@ -16,6 +16,7 @@ if(WIN32)
     set(GLFW_PATH $ENV{GLFW_SDK})
     include_directories("${GLFW_PATH}/include")
     include_directories($ENV{RANGES_INCLUDE})
+    include_directories("C:/Users/matt/git/glm")
 
     target_link_libraries(gl_play "${GLFW_PATH}/lib-vc2015/glfw3.lib")
 ELSE()
