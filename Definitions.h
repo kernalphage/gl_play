@@ -18,8 +18,7 @@ using namespace glm;
 
 struct UI_Vertex{
 	vec3 pos;
-	vec3 color;
-
+	vec3 color = { 1.0, 0.0, 255.0 };
 };
 
 #endif //DEFINITIONS_H
