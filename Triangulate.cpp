@@ -12,6 +12,7 @@ using namespace glm;
 std::vector<Tri> TriBuilder::triangulate(const std::vector<Tri>& seed, Processing* ctx) {
   vector<Tri> ret{seed};
   size_t cur = 0;
+  Random::seed(_seed);
 
   while( cur < ret.size()){
     Tri curTri = ret[cur];
@@ -45,11 +46,12 @@ std::vector<Tri> TriBuilder::triangulate(const std::vector<Tri>& seed, Processin
 
 bool TriBuilder::imSettings(){
   bool redraw  = false;
+  redraw |= ImGui::InputInt("Seed", &_seed);
   redraw |= ImGui::SliderFloat("Max Depth", &_maxDepth, 0.0f, 12.0f);
   redraw |= ImGui::DragFloatRange2("Decay", &_decayMin, &_decayMax, .01f, .01f, _maxDepth); 
   redraw |= ImGui::SliderFloat("Skew", &_skew, 0.f, .5f);
-  redraw |= ImGui::ColorEdit3("Color_A", (float*)&(_minColor));
-  redraw |= ImGui::ColorEdit3("Color_B", (float*)&(_maxColor));
+  redraw |= ImGui::ColorEdit4("Color_A", (float*)&(_minColor));
+  redraw |= ImGui::ColorEdit4("Color_B", (float*)&(_maxColor));
   return redraw;
 }
 

@@ -5,7 +5,6 @@
 #include "Processing.h"
 #include "glm/ext.hpp"
 #include <iostream>
-#include <mapbox/earcut.hpp>
 
 using namespace std;
 void Processing::tri(UI_Vertex a, UI_Vertex b, UI_Vertex c)
@@ -117,7 +116,7 @@ void Processing::allocate_buffers(unsigned int vbo_size, unsigned int ebo_size )
   //TODO: Meshes/vert shaders should own their own attributes and bindings.
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(UI_Vertex), (void*) 0 );
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(UI_Vertex), (void*)(sizeof(vec3)));
+  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(UI_Vertex), (void*)(sizeof(vec3)));
   glEnableVertexAttribArray(1);
 }
 

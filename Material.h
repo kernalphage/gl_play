@@ -12,10 +12,13 @@ class Material
 {
 public:
     unsigned int ID;
+	bool _transparent;
     // constructor generates the shader on the fly
     // ------------------------------------------------------------------------
-    Material(const char* vertexPath, const char* fragmentPath)
+    Material(const char* vertexPath, const char* fragmentPath, bool transparent)
     {
+		_transparent = transparent;
+
         // 1. retrieve the vertex/fragment source code from filePath
         std::string vertexCode;
         std::string fragmentCode;
@@ -74,6 +77,11 @@ public:
     // ------------------------------------------------------------------------
     void use() 
     { 
+		if (_transparent) {
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		}
+		
         glUseProgram(ID); 
     }
     // utility uniform functions

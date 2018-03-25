@@ -4,8 +4,9 @@ class Random{
 	static std::default_random_engine generator;
   	static std::uniform_real_distribution<float> distribution;
   public:
-  	static void seed(){
+  	static void seed(int s = 0){
   		generator = std::default_random_engine{};
+		generator.seed(s);
   		distribution = std::uniform_real_distribution<float>{0.0f, 1.0f};
   	}
   	static float f(){

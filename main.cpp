@@ -45,8 +45,8 @@ void spawnFlower(Processing *ctx) {
 	static float magnitude = 2;
 	static float samples = 64;
 	static float decay = .1f;
-	static vec3 startColor{ 1,0,0 };
-	static vec3 endColor{ 0, 1, 0 };
+	static vec4 startColor{ 1,0,0,0 };
+	static vec4 endColor{ 0, 1, 0,1 };
 
 	const float pi = 3.1415f;
 	const float tau = pi * 2;
@@ -81,11 +81,9 @@ int main() {
 
  // build and compile our shader program
 
-	Material basic{"basic.vert", "basic.frag"};
+	Material basic{"basic.vert", "basic.frag", true};
   ctx = new Processing{};
-  Random::seed();
-  ctx->clear();
-  spawnFlower(ctx);
+  genTriangle();
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     // glBindVertexArray(0);
