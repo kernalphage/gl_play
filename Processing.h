@@ -28,8 +28,10 @@ class Processing{
       viewStack.pop_back();
       cur = std::accumulate(viewStack.begin(), viewStack.end(),glm::mat4(1.0), std::multiplies<mat4>() );
     }
-		void polygon(std::vector<vec3> v, bool loop = true);
-		void line(vec3 p1, vec3 p2);
+
+		void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c);
+		void polygon(std::vector<UI_Vertex> v, bool loop = true);
+		void line(UI_Vertex p1, UI_Vertex p2);
 
 		void render();
 	void dump();
@@ -38,9 +40,9 @@ class Processing{
   void allocate_buffers(unsigned int vbo_size, unsigned int ebo_size);
 
  	  mat4 view;
-    std::vector<vec3> m_verts;
+    std::vector<UI_Vertex> m_verts;
     std::vector<unsigned int> m_indices;
-  int indexVert(vec3 p);
+  int indexVert(UI_Vertex p);
 
   mat4 cur;
   std::vector<mat4> viewStack;

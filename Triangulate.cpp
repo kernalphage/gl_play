@@ -21,14 +21,22 @@ std::vector<Tri> TriBuilder::triangulate(const std::vector<Tri>& seed, Processin
     //   \ | /
     //    \|/
     //     2
+
+	
     vec3 d =  mix(curTri[side], curTri[side+1], Random::range(.5f - _skew, .5f + _skew));
 
-    ctx->line(d, curTri[side+2]);
+    //ctx->line(d, curTri[side+2]);
     float newDepth = curTri.depth + Random::range(_decayMin, _decayMax);
     if(newDepth < _maxDepth ) {
       ret.push_back(Tri{curTri[side], curTri[side + 2],     d, newDepth});
       ret.push_back(Tri{curTri[side + 2], d, curTri[side + 1], newDepth});
     }
+	else {
+		auto sampColor = [=]() { return mix(_minColor, _maxColor, Random::f()); };
+		auto dsamp = sampColor();
+		ctx->tri( { curTri[side], sampColor() } ,{ curTri[side + 2], sampColor() } ,{ d, dsamp } );
+		ctx->tri( { curTri[side + 2], sampColor() } ,{ d,dsamp } ,{ curTri[side+1], sampColor() } );
+	}
 
     cur++;
   }
@@ -39,7 +47,9 @@ bool TriBuilder::imSettings(){
   bool redraw  = false;
   redraw |= ImGui::SliderFloat("Max Depth", &_maxDepth, 0.0f, 12.0f);
   redraw |= ImGui::DragFloatRange2("Decay", &_decayMin, &_decayMax, .01f, .01f, _maxDepth); 
-  redraw |= ImGui::SliderFloat("Skew", &_skew, 0.f, .5f); 
+  redraw |= ImGui::SliderFloat("Skew", &_skew, 0.f, .5f);
+  redraw |= ImGui::ColorEdit3("Color_A", (float*)&(_minColor));
+  redraw |= ImGui::ColorEdit3("Color_B", (float*)&(_maxColor));
   return redraw;
 }
 

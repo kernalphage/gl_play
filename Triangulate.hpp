@@ -9,8 +9,9 @@
 #include <vector>
 
 struct Tri{
-  vec3 a, b, c;
+  vec3 a, b, c;  
   float depth;
+  vec3 ca, cb, cc;
 
   vec3& operator[](size_t i){
     i = i % 3;
@@ -31,6 +32,8 @@ struct TriBuilder{
  float _decayMax = 1;
  float _maxDepth = 3;
  float _skew = .1f;
+ vec3  _minColor{ 0.0f };
+ vec3  _maxColor{ 1.0f };
 };
 
 bool testTriangle();

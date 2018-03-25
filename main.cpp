@@ -21,7 +21,7 @@ float t = 3;
 
 void genTriangle(){
   std::vector<Tri> seed = { Tri{{0,.8,0},{-.8,-.8,0}, {.8, -.8,0}, 0} };
-  ctx->polygon({{0,.8,0},{-.8,-.8,0}, {.8, -.8,0}}, true);
+  
   tri.triangulate(seed, ctx);
   ctx->flush();
 }
@@ -40,6 +40,37 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 }
 
 
+void spawnFlower(Processing *ctx) {
+	static float frequency = 5;
+	static float magnitude = 2;
+	static float samples = 64;
+	static float decay = .1f;
+	static vec3 startColor{ 1,0,0 };
+	static vec3 endColor{ 0, 1, 0 };
+
+	const float pi = 3.1415f;
+	const float tau = pi * 2;
+
+	auto noisePoint = [=](float i, float theta) {
+		return vec3{ sin(theta) * i , cos(theta) * i, 0 };
+	};
+	auto noiseColor = [=](float i, float theta) {
+		return mix(startColor, endColor, abs(sin(theta)));
+	};
+	float dTheta = 2 * pi / samples;
+	UI_Vertex center{ {0,0,0} };
+	for (float i = 1; i > .001f; i -= decay) {
+		for (float theta = 0; theta < (2 * pi); theta+=dTheta) {
+			auto a = noisePoint(i, theta); 
+			auto b = noisePoint(i, theta + dTheta);
+			ctx->tri(UI_Vertex{ a, noiseColor(i,theta) },
+				UI_Vertex{ b, noiseColor(i, theta + dTheta) },
+				center);
+		}
+	}
+	ctx->flush();
+}
+
 int main() {
 
   Window mainWin;
@@ -53,6 +84,8 @@ int main() {
 	Material basic{"basic.vert", "basic.frag"};
   ctx = new Processing{};
   Random::seed();
+  ctx->clear();
+  spawnFlower(ctx);
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
     // glBindVertexArray(0);
@@ -73,16 +106,15 @@ int main() {
 
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
-    ImGui_ImplGlfwGL3_NewFrame();
-    bool redraw = false;
+	ImGui_ImplGlfwGL3_NewFrame();
+
+	bool redraw = false;
         // 1. Show a simple window.
         // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets automatically appears in a window called "Debug".
-        {
-            redraw = tri.imSettings();
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        }
-        if(redraw){
+	ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+	ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	redraw = tri.imSettings();
+		if(redraw){
           ctx->clear();
           genTriangle();
         }
@@ -104,15 +136,4 @@ int main() {
     ImGui::DestroyContext();
   glfwTerminate();
   return 0;
-}
-
-void drawCircle(int  numPts, float t, Processing* ctx ){
- vector<vec3> pts{size_t(numPts)};
-  float di = 6.28f / numPts;
-  int i=0;
-  for(auto& p : pts){
-    p = vec3{sin(i*di)*.8f, cos(i*di + .2 * t)*.8f,0};
-    i++;
-  }
-  ctx->polygon(pts,true);
 }
