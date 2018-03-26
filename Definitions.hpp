@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_H
-#define DEFINITIONS_H
+#ifndef DEFINITIONS_HPP
+#define DEFINITIONS_HPP
 
 #include <glad/glad.h>
 #include <glad/glad.h>
@@ -21,4 +21,4 @@ struct UI_Vertex{
 	vec4 color = { 1.0f, 0.0f, 1.0f, 1.0f};
 };
 
-#endif //DEFINITIONS_H
+#endif //DEFINITIONS_HPP

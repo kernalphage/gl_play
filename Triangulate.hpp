@@ -4,8 +4,8 @@
 
 #ifndef GL_PLAY_TRIANGULATE_HPP
 #define GL_PLAY_TRIANGULATE_HPP
-#include "Definitions.h"
-#include "Processing.h"
+#include "Definitions.hpp"
+#include "Processing.hpp"
 #include <vector>
 
 struct Tri{

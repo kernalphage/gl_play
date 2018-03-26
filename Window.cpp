@@ -3,7 +3,7 @@
 //
 
 #include "Window.hpp"
-#include "Definitions.h"
+#include "Definitions.hpp"
 #include <iostream>
 using namespace std;
 

@@ -1,3 +1,5 @@
+#ifndef RANDOM_HPP
+#define RANDOM_HPP
 #include <random>
 
 class Random{
@@ -19,3 +21,5 @@ class Random{
 		return a + (b - a) * distribution(generator);
 	}
 };
+
+#endif

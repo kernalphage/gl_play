@@ -4,7 +4,7 @@ project(gl_play)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-g" )
-set(SOURCE_FILES Definitions.h main.cpp Processing.h Material.h ref/glad/src/glad.c Processing.cpp Triangulate.cpp Triangulate.hpp Window.cpp Window.hpp Random.hpp Random.cpp
+set(SOURCE_FILES Definitions.hpp main.cpp Processing.hpp Material.hpp ref/glad/src/glad.c Processing.cpp Triangulate.cpp Triangulate.hpp Window.cpp Window.hpp Random.hpp Random.cpp
 	imgui_impl/glfw_gl3.cpp  imgui_impl/glfw_gl3.h imgui_impl/imgui.cpp imgui_impl/imgui_demo.cpp imgui_impl/imgui_draw.cpp)
 set(REF_SOURCE_FILES ref/FastNoise/FastNoise.cpp ref/FastNoise/FastNoise.h)
 add_executable(gl_play ${SOURCE_FILES} ${REF_SOURCE_FILES})

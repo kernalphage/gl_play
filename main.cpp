@@ -1,6 +1,6 @@
-#include "Definitions.h"
-#include "Material.h"
-#include "Processing.h"
+#include "Definitions.hpp"
+#include "Material.hpp"
+#include "Processing.hpp"
 #include "Triangulate.hpp"
 #include <algorithm>
 
@@ -84,10 +84,6 @@ int main() {
 	Material basic{"basic.vert", "basic.frag", true};
   ctx = new Processing{};
   genTriangle();
-    // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
-    // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
-    // glBindVertexArray(0);
-
 
     // Setup ImGui binding
     ImGui::CreateContext();

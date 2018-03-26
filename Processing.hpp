@@ -1,7 +1,7 @@
-#ifndef PROCESSING_H
-#define PROCESSING_H
+#ifndef PROCESSING_HPP
+#define PROCESSING_HPP
 
-#include "Definitions.h"
+#include "Definitions.hpp"
 #include <algorithm>
 #include <functional>
 #include <vector>
@@ -52,4 +52,4 @@ class Processing{
 };
 
 
-#endif // PROCESSING_H
+#endif // PROCESSING_HPP

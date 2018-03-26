@@ -2,7 +2,7 @@
 // Created by matt on 2/24/18.
 //
 
-#include "Processing.h"
+#include "Processing.hpp"
 #include "glm/ext.hpp"
 #include <iostream>
 
