@@ -53,7 +53,7 @@ void spawnFlower(Processing *ctx) {
 
   bool redraw = false;
   redraw |= ImGui::InputInt("Seed", &flowerSeed);
-  redraw |= ImGui::SliderFloat2("Frequency", (float *)&frequency, 0.f, 10.f);
+  redraw |= ImGui::SliderFloat2("Frequency", (float *)&frequency, 0.f, 40.f);
   redraw |= ImGui::SliderFloat("Magnitude", &magnitude, 0.f, 10.f);
   redraw |= ImGui::SliderInt("Samples", &samples, 4, 256);
   redraw |= ImGui::SliderFloat("Decay", &decay, .01f, 1.f);
@@ -65,7 +65,7 @@ void spawnFlower(Processing *ctx) {
 
   auto noisePoint = [=](float i, float theta) {
     vec3 pos{sin(theta), cos(theta),0};
-    float r = i  + magnitude * noise.GetNoise(pos.x * frequency[0], pos.y * frequency[0], i * frequency[1]);
+    float r = i + magnitude * (.5 - noise.GetNoise(pos.x * frequency[0] * 10, pos.y * frequency[0] * 10, i * frequency[1]));
     return pos * r;
   };
   auto noiseColor = [=](float i, float theta) {
