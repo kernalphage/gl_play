@@ -31,6 +31,7 @@ struct TriBuilder {
   std::vector<Tri> triangulate(const std::vector<Tri> &seed, Processing *ctx);
   int _seed;
   float _decayMin = 1;
+  float _frequency = 1;
   float _decayMax = 1;
   float _maxDepth = 3;
   float _skew = .1f;

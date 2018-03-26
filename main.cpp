@@ -8,6 +8,7 @@
 #include "Window.hpp"
 #include "imgui.h"
 #include "imgui_impl/glfw_gl3.h"
+#include "ref/FastNoise/FastNoise.h"
 
 using namespace std;
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -42,23 +43,30 @@ void spawnFlower(Processing *ctx) {
   const float pi = 3.1415f;
   const float tau = pi * 2;
 
-  static float frequency = 5;
+  static vec2 frequency{5, .1f};
   static float magnitude = 2;
   static int samples = 64;
+  static int flowerSeed = 0;
   static float decay = .1f;
   static vec4 startColor{1, 0, 0, 0};
   static vec4 endColor{0, 1, 0, 1};
 
   bool redraw = false;
-  redraw |= ImGui::SliderFloat("Frequency", &frequency, 0.f, 10.f);
+  redraw |= ImGui::InputInt("Seed", &flowerSeed);
+  redraw |= ImGui::SliderFloat2("Frequency", (float *)&frequency, 0.f, 10.f);
   redraw |= ImGui::SliderFloat("Magnitude", &magnitude, 0.f, 10.f);
   redraw |= ImGui::SliderInt("Samples", &samples, 4, 256);
   redraw |= ImGui::SliderFloat("Decay", &decay, .01f, 1.f);
 
   if( ! redraw) return;
+  ctx->clear();
+  FastNoise noise;
+  noise.SetSeed(flowerSeed);
 
   auto noisePoint = [=](float i, float theta) {
-    return vec3{sin(theta) * i, cos(theta) * i, 0};
+    vec3 pos{sin(theta), cos(theta),0};
+    float r = i  + magnitude * noise.GetNoise(pos.x * frequency[0], pos.y * frequency[0], i * frequency[1]);
+    return pos * r;
   };
   auto noiseColor = [=](float i, float theta) {
     return mix(startColor, endColor, abs(sin(theta)));
@@ -89,7 +97,6 @@ int main() {
 
   Material basic{"basic.vert", "basic.frag", true};
   ctx = new Processing{};
-  spawnFlower();
 
   // Setup ImGui binding
   ImGui::CreateContext();
@@ -121,7 +128,6 @@ int main() {
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     //redraw = tri.imSettings();
     spawnFlower(ctx);
-
     processInput(mainWin.window);
 
     glClearColor(SPLAT4(clear_color));
