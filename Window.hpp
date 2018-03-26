@@ -17,5 +17,4 @@ public:
   GLFWwindow *window;
 };
 
-
-#endif //GL_PLAY_WINDOW_HPP
+#endif // GL_PLAY_WINDOW_HPP
