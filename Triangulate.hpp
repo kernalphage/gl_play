@@ -33,6 +33,7 @@ struct TriBuilder{
  float _decayMax = 1;
  float _maxDepth = 3;
  float _skew = .1f;
+ float _frequency = 1;
  vec4  _minColor{ 0.0f };
  vec4  _maxColor{ 1.0f };
 };

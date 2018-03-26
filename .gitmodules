@@ -1,3 +1,6 @@
 [submodule "ref/imgui"]
 	path = ref/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "ref/FastNoise"]
+	path = ref/FastNoise
+	url = https://github.com/Auburns/FastNoise.git
