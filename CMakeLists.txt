@@ -4,9 +4,30 @@ project(gl_play)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-g" )
-set(SOURCE_FILES Definitions.hpp main.cpp Processing.hpp Material.hpp ref/glad/src/glad.c Processing.cpp Triangulate.cpp Triangulate.hpp Window.cpp Window.hpp Random.hpp Random.cpp
-	imgui_impl/glfw_gl3.cpp  imgui_impl/glfw_gl3.h imgui_impl/imgui.cpp imgui_impl/imgui_demo.cpp imgui_impl/imgui_draw.cpp)
-set(REF_SOURCE_FILES ref/FastNoise/FastNoise.cpp ref/FastNoise/FastNoise.h)
+set(SOURCE_FILES
+    main.cpp
+    Material.hpp
+    Processing.cpp
+    Processing.hpp
+    Random.cpp
+    Random.hpp
+    Triangulate.cpp
+    Triangulate.hpp
+    Window.cpp
+    Window.hpp
+    Definitions.hpp
+    )
+set(REF_SOURCE_FILES
+    imgui_impl/glfw_gl3.cpp
+    imgui_impl/glfw_gl3.h
+    imgui_impl/imgui.cpp
+    imgui_impl/imgui_demo.cpp
+    imgui_impl/imgui_draw.cpp
+    ref/FastNoise/FastNoise.cpp
+	ref/FastNoise/FastNoise.h
+	ref/glad/src/glad.c
+	)
+
 add_executable(gl_play ${SOURCE_FILES} ${REF_SOURCE_FILES})
 include_directories("ref/glad/include")
 include_directories("imgui_impl")
@@ -29,7 +50,10 @@ ENDIF()
 
 # yet another way to get shaders
 
-set(SHADERS basic.vert basic.frag)
+set(SHADERS 
+    basic.vert
+	basic.frag
+	)
 foreach(shader ${SHADERS})
 	configure_file( "shaders/${shader}" ${shader} COPYONLY)
 endforeach()
