@@ -38,15 +38,24 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
 }
 
 void spawnFlower(Processing *ctx) {
+
+  const float pi = 3.1415f;
+  const float tau = pi * 2;
+
   static float frequency = 5;
   static float magnitude = 2;
-  static float samples = 64;
+  static int samples = 64;
   static float decay = .1f;
   static vec4 startColor{1, 0, 0, 0};
   static vec4 endColor{0, 1, 0, 1};
 
-  const float pi = 3.1415f;
-  const float tau = pi * 2;
+  bool redraw = false;
+  redraw |= ImGui::SliderFloat("Frequency", &frequency, 0.f, 10.f);
+  redraw |= ImGui::SliderFloat("Magnitude", &magnitude, 0.f, 10.f);
+  redraw |= ImGui::SliderInt("Samples", &samples, 4, 256);
+  redraw |= ImGui::SliderFloat("Decay", &decay, .01f, 1.f);
+
+  if( ! redraw) return;
 
   auto noisePoint = [=](float i, float theta) {
     return vec3{sin(theta) * i, cos(theta) * i, 0};
@@ -54,6 +63,7 @@ void spawnFlower(Processing *ctx) {
   auto noiseColor = [=](float i, float theta) {
     return mix(startColor, endColor, abs(sin(theta)));
   };
+
   float dTheta = 2 * pi / samples;
   UI_Vertex center{{0, 0, 0}};
   for (float i = 1; i > .001f; i -= decay) {
@@ -79,7 +89,7 @@ int main() {
 
   Material basic{"basic.vert", "basic.frag", true};
   ctx = new Processing{};
-  genTriangle();
+  spawnFlower();
 
   // Setup ImGui binding
   ImGui::CreateContext();
@@ -109,11 +119,9 @@ int main() {
         (float *)&clear_color); // Edit 3 floats representing a color
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    redraw = tri.imSettings();
-    if (redraw) {
-      ctx->clear();
-      genTriangle();
-    }
+    //redraw = tri.imSettings();
+    spawnFlower(ctx);
+
     processInput(mainWin.window);
 
     glClearColor(SPLAT4(clear_color));
