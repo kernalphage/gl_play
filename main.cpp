@@ -47,17 +47,18 @@ void spawnFlower(Processing *ctx) {
   static float magnitude = 2;
   static int samples = 64;
   static int flowerSeed = 0;
+  static float fullscale = 1;
   static float decay = .1f;
   static vec4 startColor{1, 0, 0, 0};
-  static vec4 endColor{0, 1, 0, 1};
+  static vec4 endColor{1, 1, 0, 1};
 
   bool redraw = false;
   redraw |= ImGui::InputInt("Seed", &flowerSeed);
-  redraw |= ImGui::SliderFloat2("Frequency", (float *)&frequency, 0.f, 40.f);
+  redraw |= ImGui::SliderFloat2("Frequency", (float *)&frequency, 1.f, 400.f);
   redraw |= ImGui::SliderFloat("Magnitude", &magnitude, 0.f, 10.f);
   redraw |= ImGui::SliderInt("Samples", &samples, 4, 256);
   redraw |= ImGui::SliderFloat("Decay", &decay, .01f, 1.f);
-
+  redraw |= ImGui::SliderFloat("Fullscale", &fullscale, .001f, 2);
   if( ! redraw) return;
   ctx->clear();
   FastNoise noise;
@@ -65,15 +66,15 @@ void spawnFlower(Processing *ctx) {
 
   auto noisePoint = [=](float i, float theta) {
     vec3 pos{sin(theta), cos(theta),0};
-    float r = i + magnitude * (.5 - noise.GetNoise(pos.x * frequency[0] * 10, pos.y * frequency[0] * 10, i * frequency[1]));
-    return pos * r;
+    float r = i + decay * magnitude * (.5 - noise.GetNoise(pos.x * frequency[0] , pos.y * frequency[0], i * frequency[1]));
+    return pos * r * fullscale;
   };
   auto noiseColor = [=](float i, float theta) {
-    return mix(startColor, endColor, abs(sin(theta)));
+    return mix(startColor, endColor, abs(sin(theta/2)+i));
   };
 
   float dTheta = 2 * pi / samples;
-  UI_Vertex center{{0, 0, 0}};
+  UI_Vertex center{{0, 0, 0}, {0,0,0,0}};
   for (float i = 1; i > .001f; i -= decay) {
     for (float theta = 0; theta < (2 * pi); theta += dTheta) {
       auto a = noisePoint(i, theta);
