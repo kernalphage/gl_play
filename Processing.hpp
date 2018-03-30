@@ -20,17 +20,18 @@ public:
 
   void flush();
   void clear();
-  void push(mat4 view) {
-    cur *= view;
+  void pushT(mat4 view) {
+    m_cur *= view;
     viewStack.push_back(view);
   }
-  void pop() {
+  void popT() {
     viewStack.pop_back();
-    cur = std::accumulate(viewStack.begin(), viewStack.end(), glm::mat4(1.0),
+    m_cur = std::accumulate(viewStack.begin(), viewStack.end(), glm::mat4(1.0),
                           std::multiplies<mat4>());
   }
 
   void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c);
+  void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d);
   void polygon(std::vector<UI_Vertex> v, bool loop = true);
   void line(UI_Vertex p1, UI_Vertex p2);
 
@@ -45,7 +46,7 @@ private:
   std::vector<unsigned int> m_indices;
   int indexVert(UI_Vertex p);
 
-  mat4 cur;
+  mat4 m_cur;
   std::vector<mat4> viewStack;
 
   Buffer m_VBO, m_EBO;

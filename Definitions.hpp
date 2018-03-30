@@ -15,6 +15,11 @@ using namespace glm;
 #define SPLAT3(t) t.x, t.y, t.z
 #define SPLAT4(t) t.x, t.y, t.z, t.w
 
+struct rect{
+  vec2 tl;
+  vec2 br;
+};
+
 struct UI_Vertex {
   vec3 pos;
   vec4 color = {1.0f, 0.0f, 1.0f, 1.0f};

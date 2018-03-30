@@ -3,12 +3,13 @@
 #include "Processing.hpp"
 #include "Triangulate.hpp"
 #include <algorithm>
-
+#include "glm/ext.hpp"
 #include "Random.hpp"
 #include "Window.hpp"
 #include "imgui.h"
 #include "imgui_impl/glfw_gl3.h"
 #include "ref/FastNoise/FastNoise.h"
+#include "Blob.hpp"
 
 using namespace std;
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
@@ -86,6 +87,37 @@ void spawnFlower(Processing *ctx) {
   ctx->flush();
 }
 
+
+void doPlacement(Processing * ctx){
+
+  static bool redraw = false;
+  static float rmin = .05;
+  static float rmax = .2;
+  static int samples = 100;
+  static float overlap = .04f;
+  static int seed = 0;
+  redraw |= ImGui::InputInt("Seed", &seed);
+  redraw |= ImGui::SliderFloat("rMin", &rmin, 0.001f, rmax);
+  redraw |= ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
+  redraw |= ImGui::SliderFloat("overlap", &overlap, 0.001f, 1.f);
+  redraw |= ImGui::SliderInt("samples", &samples, 20, 5000);
+  if(!redraw){
+    return;
+  }
+
+  Random::seed(seed);
+  vector<Blob*> blobs;
+  Partition p(2,2, {.5, .5});
+  p.gen_poisson({-1,-1}, {1,1}, rmin, rmax, samples, blobs, overlap);
+
+  ctx->clear();
+  for(auto b : blobs){
+    b->render(ctx);
+    delete(b);
+  }
+  ctx->flush();
+}
+
 int main() {
 
   Window mainWin;
@@ -114,6 +146,7 @@ int main() {
 
   static int counter = 0;
 
+  Blob b{{0,0}, .5f};
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
     ImGui_ImplGlfwGL3_NewFrame();
@@ -127,8 +160,9 @@ int main() {
         (float *)&clear_color); // Edit 3 floats representing a color
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-    //redraw = tri.imSettings();
-    spawnFlower(ctx);
+
+    doPlacement(ctx);
+    
     processInput(mainWin.window);
 
     glClearColor(SPLAT4(clear_color));

@@ -7,11 +7,7 @@
 #include <iostream>
 
 using namespace std;
-void Processing::tri(UI_Vertex a, UI_Vertex b, UI_Vertex c) {
-  indexVert(a);
-  indexVert(b);
-  indexVert(c);
-}
+
 void Processing::polygon(std::vector<UI_Vertex> v, bool loop) {
   int prev = indexVert(v[0]);
   int first = prev;
@@ -28,6 +24,15 @@ void Processing::polygon(std::vector<UI_Vertex> v, bool loop) {
   }
 }
 
+void Processing::tri(UI_Vertex a, UI_Vertex b, UI_Vertex c) {
+  indexVert(a);
+  indexVert(b);
+  indexVert(c);
+}
+void Processing::quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d){
+  tri(a,b,c);
+  tri(a,c,d);
+}
 void Processing::line(UI_Vertex p1, UI_Vertex p2) {
   indexVert(p1);
   indexVert(p2);
@@ -52,6 +57,8 @@ void Processing::render() {
 
 int Processing::indexVert(UI_Vertex p) {
   unsigned int idx = m_verts.size();
+  vec4 pos = m_cur* vec4(p.pos, 1);
+  p.pos = vec3(SPLAT3(pos));
   m_verts.push_back(p);
   m_indices.push_back(idx);
   return idx;
@@ -62,6 +69,8 @@ void Processing::clear() {
   m_indices.clear();
   m_VBO.lastUsed = 0;
   m_EBO.lastUsed = 0;
+    viewStack.clear();
+    m_cur = glm::mat4(1.0);
 }
 
 void Processing::flush() {
