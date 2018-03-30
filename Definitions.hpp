@@ -24,5 +24,10 @@ struct UI_Vertex {
   vec3 pos;
   vec4 color = {1.0f, 0.0f, 1.0f, 1.0f};
 };
+struct TEX_Vertex{
+  vec3 pos;
+  vec4 color;
+  vec2 uv;
+};
 
 #endif // DEFINITIONS_HPP

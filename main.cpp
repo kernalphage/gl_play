@@ -22,7 +22,6 @@ float t = 3;
 
 void genTriangle() {
   std::vector<Tri> seed = {Tri{{0, .8, 0}, {-.8, -.8, 0}, {.8, -.8, 0}, 0}};
-
   tri.triangulate(seed, ctx);
   ctx->flush();
 }
@@ -156,7 +155,7 @@ int main() {
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets
     // automatically appears in a window called "Debug".
     ImGui::ColorEdit3(
-        "clear color",
+        "clear_color",
         (float *)&clear_color); // Edit 3 floats representing a color
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
