@@ -33,9 +33,12 @@ void Processing::quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d){
   tri(a,b,c);
   tri(a,c,d);
 }
-void Processing::line(UI_Vertex p1, UI_Vertex p2) {
-  indexVert(p1);
-  indexVert(p2);
+void Processing::line(vec3 p1, vec3 p2, vec4 color) {
+  auto perp = normalize(rotateZ((p1-p2), 3.14f/2)) * .002;
+  quad({p1 + perp, color}, 
+       {p2 + perp, color}, 
+       {p2 - perp, color},
+       {p1 - perp, color}); 
 }
 void Processing::dump() {
   for (auto &v : m_verts) {

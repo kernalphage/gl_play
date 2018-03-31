@@ -106,10 +106,13 @@ void doPlacement(Processing * ctx){
 
   Random::seed(seed);
   vector<Blob*> blobs;
-  Partition p(2,2, {.5, .5});
+  float scale = 1 / rMax;
+  float numPts = 2;
+  Partition p(2,2, {1, 1});
   p.gen_poisson({-1,-1}, {1,1}, rmin, rmax, samples, blobs, overlap);
 
   ctx->clear();
+  ctx->line({0,0,0}, vec3{blobs[0]->pos,0}, {1,1,1,1});
   for(auto b : blobs){
     b->render(ctx);
     delete(b);

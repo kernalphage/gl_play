@@ -33,7 +33,7 @@ public:
   void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c);
   void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d);
   void polygon(std::vector<UI_Vertex> v, bool loop = true);
-  void line(UI_Vertex p1, UI_Vertex p2);
+  void line(vec3 p1, vec3 p2, vec4 color);
 
   void render();
   void dump();
