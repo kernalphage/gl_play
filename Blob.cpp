@@ -22,11 +22,14 @@ bool point_in_circle(vec2 pt, vec2 cpt, float cr) {
 }
 
 bool point_in_rectangle(vec2 pt, rect bounds) {
-  return !(pt.x < bounds.tl.x || pt.x > bounds.br.x || pt.y < bounds.tl.y || pt.y > bounds.br.y);
+  return (pt.x > bounds.tl.x && pt.x < bounds.br.x && pt.y > bounds.tl.y && pt.y < bounds.br.y);
 }
 
 float min_dist(const vec2 &pt, vector<Blob *> &v, rect bounds) {
   float curmin = 1000;
+  if (!point_in_rectangle(pt, bounds)) {
+    curmin = -1;
+  }
   for(auto b : v){
     if (point_in_circle(pt, b->pos, b->r)) return -1.0f;
     float mindist = std::min(distance(pt, b->pos) - b->r, curmin);

@@ -6,6 +6,8 @@
 #define GL_PLAY_BLOB_HPP
 #include "Definitions.hpp"
 #include <vector>
+#include <iostream>
+
 using namespace std;
 
 class Processing;
@@ -25,11 +27,12 @@ struct Blob{
 struct Partition{
 
 public:
-  Partition(int numgrids, float scale, vec2 offset) :
-      _numgrids(numgrids), _offset(offset), _scale(scale){
-    for(int i=0; i < numgrids; i++){
-      for(int j=0; j < numgrids; j++){
+  Partition(vec2 origin, vec2 extents, float maxSize):
+      _offset(origin), _scale(1 / (maxSize)), _numgrids((int) ceil(extents.x / maxSize)){
+    for(int i=0; i < _numgrids; i++){
+      for(int j=0; j < _numgrids; j++){
         _grid.push_back(vector<Blob*>{});
+        _heatmap.push_back(0);
       }
     }
   }
@@ -60,12 +63,22 @@ public:
   }
 
   int index(const vec2 v){
-    vec2 v2 = v + _offset;
+    vec2 v2 = v - _offset;
     int ex = (int) floor((v2.x) * _scale);
     int wy = (int) floor((v2.y) * _scale);
     ex = std::min(std::max(ex, 0), _numgrids-1);
     wy = std::min(std::max(wy, 0), _numgrids-1);
-    return ex + wy * _numgrids;
+    int idx = ex + wy * _numgrids;
+    _heatmap[idx]++;
+    return idx;
+  }
+  void dump(){
+    for(int i=0; i < _numgrids; i++) {
+      for (int j = 0; j < _numgrids; j++) {
+        cout<< _heatmap[i + j * _numgrids]<<"\t";
+      }
+      cout<<endl;
+    }
   }
 
   float _scale;
@@ -73,6 +86,8 @@ public:
   int _numgrids;
   vector<vector<Blob*>> _grid;
   vector<Blob*> _all;
+
+  vector<int> _heatmap;
 };
 
 #endif //GL_PLAY_BLOB_HPP

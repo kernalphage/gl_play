@@ -13,6 +13,7 @@
 
 using namespace std;
 void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+
   glViewport(0, 0, width, height);
 }
 // settings
@@ -91,25 +92,30 @@ void doPlacement(Processing * ctx){
 
   static bool redraw = false;
   static float rmin = .05;
-  static float rmax = .2;
+  static float rmax = .25;
   static int samples = 100;
   static float overlap = .04f;
   static int seed = 0;
-  redraw |= ImGui::InputInt("Seed", &seed);
-  redraw |= ImGui::SliderFloat("rMin", &rmin, 0.001f, rmax);
-  redraw |= ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
-  redraw |= ImGui::SliderFloat("overlap", &overlap, 0.001f, 1.f);
-  redraw |= ImGui::SliderInt("samples", &samples, 20, 5000);
+  redraw = ImGui::Button("redraw");
+  ImGui::SameLine();
+  redraw  |= ImGui::InputInt("Seed", &seed);
+   ImGui::SliderFloat("rMin", &rmin, 0.001f, rmax);
+   ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
+   ImGui::SliderFloat("overlap", &overlap, 0.001f, 1.f);
+   ImGui::SliderInt("samples", &samples, 20, 5000);
+
   if(!redraw){
     return;
   }
 
   Random::seed(seed);
   vector<Blob*> blobs;
-  float scale = 1 / rMax;
-  float numPts = 2;
-  Partition p(2,2, {1, 1});
+  float scale = 1 / rmax;
+  float numPts = 2 / scale; 
+  Partition p({-1,-1}, {2,2}, rmax * 2);
   p.gen_poisson({-1,-1}, {1,1}, rmin, rmax, samples, blobs, overlap);
+  p.dump();
+  cout<<"Blobs " << blobs.size() << " generated";
 
   ctx->clear();
   ctx->line({0,0,0}, vec3{blobs[0]->pos,0}, {1,1,1,1});
