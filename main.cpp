@@ -12,10 +12,7 @@
 #include "Blob.hpp"
 
 using namespace std;
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 
-  glViewport(0, 0, width, height);
-}
 // settings
 Processing *ctx;
 TriBuilder tri;
@@ -120,7 +117,7 @@ void doPlacement(Processing * ctx){
   ctx->clear();
   ctx->line({0,0,0}, vec3{blobs[0]->pos,0}, {1,1,1,1});
   for(auto b : blobs){
-    b->render(ctx);
+    b->render(ctx );
     delete(b);
   }
   ctx->flush();
@@ -129,9 +126,8 @@ void doPlacement(Processing * ctx){
 int main() {
 
   Window mainWin;
-  mainWin.init();
+  mainWin.init(500,500);
 
-  glfwSetFramebufferSizeCallback(mainWin.window, framebuffer_size_callback);
   glfwSetKeyCallback(mainWin.window, keyCallback);
 
   // build and compile our shader program

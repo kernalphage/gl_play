@@ -46,6 +46,9 @@ ELSE()
     include_directories(${GLFW_INCLUDE_DIRS})
     target_link_libraries(gl_play glfw ${GLFW_LIBRARIES})
     target_link_libraries(gl_play ${LIBRARIES})
+    find_library(LIBPNG png12)
+    target_link_libraries(gl_play ${LIBPNG})
+
 ENDIF()
 
 # yet another way to get shaders
