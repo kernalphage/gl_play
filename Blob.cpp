@@ -49,13 +49,13 @@ float min_dist(const vec2 &pt, vector<Blob *> &v, rect bounds) {
 }
 
 void
-Partition::gen_poisson(vec2 tl, vec2 br, float rmin, float rmax, int maxSamples, vector<Blob *> &out, float overlap) {
+Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vector<Blob *> &out, float overlap) {
   vector<Blob *> open;
 
   rect bounds{tl, br};
   vec2 seed = generate_random_point(bounds);
 
-  Blob *s = new Blob{seed, rmax};
+  Blob *s = new Blob{seed, distFN(seed).y};
   out.push_back(s);
   open.push_back(s);
   add(s);
@@ -67,6 +67,10 @@ Partition::gen_poisson(vec2 tl, vec2 br, float rmin, float rmax, int maxSamples,
 
     vector<vec2> samples;
     auto scale = 0;
+    vec2 radii = distFN(cur->pos);
+    float rmin = radii.x;
+    float rmax = radii.y;
+
     rect torus{vec2{rmin + cur->r, 0}, vec2{rmax + cur->r, 6.28}};
 
     //find a couple spots
@@ -109,8 +113,8 @@ void Blob::render(Processing *ctx) {
   // TODO: Make this a ctx->circle(pos, radius, steps)
   const float pi = 3.1415f;
   vec3 threepos{pos, 1};
-  UI_Vertex center{threepos, {1, 1, 1, 1}};
-  vec4 outer{1.0f, 1.0, 0.0, 0.0};
+  UI_Vertex center{threepos, {1, 1, 1, 0}};
+  vec4 outer{1.0f, 1.0, 0.0, 1.0};
   float dTheta = (2 * pi) / 16;
   for (float theta = dTheta; theta <= (2 * pi); theta += dTheta) {
     ctx->tri(UI_Vertex{vec3{sin(theta), cos(theta), 1} * r + threepos, outer},
