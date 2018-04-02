@@ -4,3 +4,6 @@
 [submodule "ref/FastNoise"]
 	path = ref/FastNoise
 	url = https://github.com/Auburns/FastNoise.git
+[submodule "ref/stb"]
+	path = ref/stb
+	url = https://github.com/nothings/stb.git

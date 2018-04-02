@@ -31,7 +31,7 @@ set(REF_SOURCE_FILES
 add_executable(gl_play ${SOURCE_FILES} ${REF_SOURCE_FILES})
 include_directories("ref/glad/include")
 include_directories("imgui_impl")
-include_directories("../../git/stb")
+include_directories("ref/stb")
 set(LIBRARIES "dl")
 
 
@@ -43,13 +43,15 @@ if(WIN32)
     include_directories("C:/Users/matt/git/glm")
 
     target_link_libraries(gl_play "${GLFW_PATH}/lib-vc2015/glfw3.lib")
+    # TODO: Link to png
+
 ELSE()
     find_package(PkgConfig REQUIRED)
     pkg_search_module(GLFW REQUIRED glfw3)
     include_directories(${GLFW_INCLUDE_DIRS})
     target_link_libraries(gl_play glfw ${GLFW_LIBRARIES})
     target_link_libraries(gl_play ${LIBRARIES})
-    find_library(LIBPNG png12)
+    find_library(LIBPNG png)
     target_link_libraries(gl_play ${LIBPNG})
 
 ENDIF()
