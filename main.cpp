@@ -88,18 +88,18 @@ void spawnFlower(Processing *ctx) {
 void doPlacement(Processing * ctx){
 
   static bool redraw = false;
-  static float rmin = .05;
-  static float rmax = .25;
-  static int samples = 100;
-  static float overlap = .00004f;
+  static float rmin = .01;
+  static float rmax = .15;
+  static int samples = 400;
+  static float overlap = 3.24f;
   static int seed = 0;
   redraw = ImGui::Button("redraw");
   ImGui::SameLine();
   redraw  |= ImGui::InputInt("Seed", &seed);
    ImGui::SliderFloat("rMin", &rmin, 0.0001f, rmax/2);
    ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
-   ImGui::SliderFloat("overlap", &overlap, 0.0001f, 1.f);
    ImGui::SliderInt("samples", &samples, 20, 5000);
+  ImGui::SliderFloat("frequency", &overlap, 0, 30);
 
   if(!redraw){
     return;
@@ -114,13 +114,16 @@ void doPlacement(Processing * ctx){
   auto radiusFN = [](vec2 pos){
    // vertical
     //float metric = pos.y/2 + 1;
-    float metric = length(pos);
+    //circle
+    //float metric = length(pos);
+    //sin waves
+    float metric = abs(cos(pos.x * overlap) + sin(pos.y * overlap));
 
     float sz = mix(rmin, rmax, metric);
     return vec2{sz*.5f,sz};
   };
 
-  p.gen_poisson({-1,-1}, {1,1}, radiusFN, samples, blobs, overlap);
+  p.gen_poisson({-1,-1}, {1,1}, radiusFN, samples, blobs, 0.0001f);
   p.dump();
   cout<<"Blobs " << blobs.size() << " generated";
 

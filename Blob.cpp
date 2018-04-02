@@ -66,7 +66,6 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
     auto endr = open.end();
 
     vector<vec2> samples;
-    auto scale = 0;
     vec2 radii = distFN(cur->pos);
     float rmin = radii.x;
     float rmax = radii.y;
@@ -83,10 +82,10 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
       neighbors(samp, std::back_inserter(cur_neighbors));
       float r = min_dist(samp, cur_neighbors, bounds);
 
-      if (r > rmin + scale) {
+      if (r > rmin) {
         generated++;
         maxSamples--;
-        Blob *n = new Blob{samp, std::min(r + overlap, rmax + scale)};
+        Blob *n = new Blob{samp, std::min(r + overlap, rmax)};
 
         open.push_back(n);
         out.push_back(n);

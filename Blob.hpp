@@ -13,6 +13,7 @@ using namespace std;
 class Processing;
 
 struct Blob{
+  Blob(vec2 _pos, float _r): pos(_pos), r(_r){ }
   void render(Processing* ctx);
 
   vec2 pos;
@@ -37,7 +38,9 @@ public:
     }
   }
 
-  void gen_poisson(vec2 tl, vec2 br, float rmin, float rmax, int maxSamples, vector<Blob*>& out, float overlap);
+  typedef std::function<vec2(vec2)> DistanceFN;
+
+  void gen_poisson(vec2 tl, vec2 br, DistanceFN sampleSize, int maxSamples, vector<Blob*>& out, float overlap);
   int add(Blob* t){
     int i = index(t);
     _all.push_back(t);
