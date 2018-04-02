@@ -14,15 +14,12 @@ class Processing;
 
 struct Blob{
   Blob(vec2 _pos, float _r): pos(_pos), r(_r){ }
-  void render(Processing* ctx);
+  void render(Processing *ctx, vec4 innerColor , vec4 outer);
+
 
   vec2 pos;
   float r;
   //int depth;
-  //Blob* parent;
-  //Blob* gparent;
-  //Blob* ggparent;
-  //Blob* child;
 };
 
 struct Partition{
@@ -32,7 +29,7 @@ public:
       _offset(origin), _scale(1 / (maxSize)), _numgrids((int) ceil(extents.x / maxSize)){
     for(int i=0; i < _numgrids; i++){
       for(int j=0; j < _numgrids; j++){
-        _grid.push_back(vector<Blob*>{});
+        _grid.push_back(vector<Blob>{});
         _heatmap.push_back(0);
       }
     }
@@ -40,8 +37,8 @@ public:
 
   typedef std::function<vec2(vec2)> DistanceFN;
 
-  void gen_poisson(vec2 tl, vec2 br, DistanceFN sampleSize, int maxSamples, vector<Blob*>& out, float overlap);
-  int add(Blob* t){
+  void gen_poisson(vec2 tl, vec2 br, DistanceFN sampleSize, int maxSamples, vector<Blob>& out, float overlap);
+  int add(Blob t){
     int i = index(t);
     _all.push_back(t);
     _grid[i].push_back(t);
@@ -61,8 +58,8 @@ public:
       }
     }
   }
-  int index(const Blob* b){
-    return index(b->pos);
+  int index(Blob b){
+    return index(b.pos);
   }
 
   int index(const vec2 v){
@@ -87,8 +84,8 @@ public:
   float _scale;
   const vec2 _offset;
   int _numgrids;
-  vector<vector<Blob*>> _grid;
-  vector<Blob*> _all;
+  vector<vector<Blob>> _grid;
+  vector<Blob> _all;
 
   vector<int> _heatmap;
 };

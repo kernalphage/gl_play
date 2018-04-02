@@ -10,12 +10,17 @@
 #include "imgui_impl/glfw_gl3.h"
 #include "ref/FastNoise/FastNoise.h"
 #include "Blob.hpp"
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 using namespace std;
 
 // settings
 Processing *ctx;
 TriBuilder tri;
+int texWidth, texHeight, texChannels;
+stbi_uc* pixels;
+
 float t = 3;
 
 void genTriangle() {
@@ -90,9 +95,12 @@ void doPlacement(Processing * ctx){
   static bool redraw = false;
   static float rmin = .01;
   static float rmax = .15;
-  static int samples = 400;
-  static float overlap = 3.24f;
+  static int samples = 1400;
+  static float overlap = 4.84f;
+  static vec4 colors[]{{1.0,1.0,1.0, 1.0}, {1.0,1.0,0.0, 1.0}, {0.0,0.0,1.0, 1.0}};
+  static vec4 innerColor;
   static int seed = 0;
+
   redraw = ImGui::Button("redraw");
   ImGui::SameLine();
   redraw  |= ImGui::InputInt("Seed", &seed);
@@ -101,37 +109,54 @@ void doPlacement(Processing * ctx){
    ImGui::SliderInt("samples", &samples, 20, 5000);
   ImGui::SliderFloat("frequency", &overlap, 0, 30);
 
+  ImGui::ColorEdit4("colorA", (float *)&colors[0]);
+  ImGui::ColorEdit4("colorb", (float *)&colors[1]);
+  ImGui::ColorEdit4("colorc", (float *)&colors[2]);
+
   if(!redraw){
     return;
   }
-
-  Random::seed(seed);
-  vector<Blob*> blobs;
-  float scale = 1 / rmax;
-  float numPts = 2 / scale; 
-  Partition p({-1,-1}, {2,2}, rmax * 2);
-
-  auto radiusFN = [](vec2 pos){
-   // vertical
-    //float metric = pos.y/2 + 1;
-    //circle
-    //float metric = length(pos);
-    //sin waves
-    float metric = abs(cos(pos.x * overlap) + sin(pos.y * overlap));
-
-    float sz = mix(rmin, rmax, metric);
-    return vec2{sz*.5f,sz};
-  };
-
-  p.gen_poisson({-1,-1}, {1,1}, radiusFN, samples, blobs, 0.0001f);
-  p.dump();
-  cout<<"Blobs " << blobs.size() << " generated";
-
   ctx->clear();
-  ctx->line({0,0,0}, vec3{blobs[0]->pos,0}, {1,1,1,1});
-  for(auto b : blobs){
-    b->render(ctx );
-    delete(b);
+  for(int i=0; i < 3; i++) {
+    auto sampleImage = [=](const vec2 pos) {
+      vec2 v2 = (pos + vec2{1, 1}) / 2;
+      int ex = (int) floor((v2.x) * texWidth);
+      int wy = (int) floor((v2.y) * texHeight);
+      ex = std::min(std::max(ex, 0), texWidth - 1);
+      wy = std::min(std::max(texHeight - wy, 0), texHeight - 1);
+      int idx = (ex + wy * texWidth) * 4;
+      return pixels[idx];
+    };
+
+
+    Random::seed(seed + i*10);
+    vector<Blob> blobs;
+    float scale = 1 / rmax;
+    float numPts = 2 / scale;
+    Partition p({-1, -1}, {2, 2}, rmax * 2);
+
+    auto radiusFN = [=](const vec2 pos) {
+      // vertical
+      //float metric = pos.y/2 + 1;
+      //circle
+      //float metric = length(pos);
+      //sin waves
+      float metric = abs(cos(pos.x * overlap) + sin(pos.y * overlap));
+
+
+      //float metric = 1-(sampleImage(pos) / 255.0f);
+      float sz = mix(rmin, rmax, metric);
+      return vec2{sz * .5f, sz};
+    };
+
+    p.gen_poisson({-1, -1}, {1, 1}, radiusFN, samples, blobs, 0.0001f);
+    p.dump();
+    cout << "Blobs " << blobs.size() << " generated";
+
+    for (auto &b : blobs) {
+      b.render(ctx, {0,0,0,0}, colors[i]);
+    }
+
   }
   ctx->flush();
 }
@@ -147,6 +172,7 @@ int main() {
 
   Material basic{"basic.vert", "basic.frag", true};
   ctx = new Processing{};
+  pixels = stbi_load("Selection_093.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
   // Setup ImGui binding
   ImGui::CreateContext();

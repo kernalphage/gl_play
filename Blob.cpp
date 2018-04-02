@@ -25,14 +25,14 @@ bool point_in_rectangle(vec2 pt, rect bounds) {
   return (pt.x > bounds.tl.x && pt.x < bounds.br.x && pt.y > bounds.tl.y && pt.y < bounds.br.y);
 }
 
-float min_dist(const vec2 &pt, vector<Blob *> &v, rect bounds) {
+float min_dist(const vec2 &pt, vector<Blob> &v, rect bounds) {
   float curmin = 1000;
   if (!point_in_rectangle(pt, bounds)) {
     curmin = -1;
   }
   for(auto b : v){
-    if (point_in_circle(pt, b->pos, b->r)) return -1.0f;
-    float mindist = std::min(distance(pt, b->pos) - b->r, curmin);
+    if (point_in_circle(pt, b.pos, b.r)) return -1.0f;
+    float mindist = std::min(distance(pt, b.pos) - b.r, curmin);
     curmin = mindist;
   };
 
@@ -49,71 +49,63 @@ float min_dist(const vec2 &pt, vector<Blob *> &v, rect bounds) {
 }
 
 void
-Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vector<Blob *> &out, float overlap) {
-  vector<Blob *> open;
+Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vector<Blob> &out, float overlap) {
+  vector<Blob> open;
 
   rect bounds{tl, br};
   vec2 seed = generate_random_point(bounds);
 
-  Blob *s = new Blob{seed, distFN(seed).y};
+  Blob s = Blob{seed, distFN(seed).y};
   out.push_back(s);
   open.push_back(s);
   add(s);
 
   //while there's space
   while (!open.empty() && maxSamples > 0) {
-    Blob *cur = open.back();
+    Blob cur = open.back(); open.pop_back();
     auto endr = open.end();
 
     vector<vec2> samples;
-    vec2 radii = distFN(cur->pos);
+    vec2 radii = distFN(cur.pos);
     float rmin = radii.x;
     float rmax = radii.y;
 
-    rect torus{vec2{rmin + cur->r, 0}, vec2{rmax + cur->r, 6.28}};
+    rect torus{vec2{rmin + cur.r, 0}, vec2{rmax + cur.r, 6.28}};
 
     //find a couple spots
     int generated = 0;
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 30; i++) {
       vec2 samp = generate_random_point(torus);
-      samp = cur->pos + (vec2{sin(samp.y), cos(samp.y)}) * samp.x;
+      samp = cur.pos + (vec2{sin(samp.y), cos(samp.y)}) * samp.x;
 
-      vector<Blob *> cur_neighbors;
+      vector<Blob> cur_neighbors;
       neighbors(samp, std::back_inserter(cur_neighbors));
       float r = min_dist(samp, cur_neighbors, bounds);
 
       if (r > rmin) {
         generated++;
         maxSamples--;
-        Blob *n = new Blob{samp, std::min(r + overlap, rmax)};
+        Blob n = Blob{samp, std::min(r + overlap, rmax)};
 
         open.push_back(n);
         out.push_back(n);
         add(n);
-        //n->parent = cur;
-        //n->gparent = cur->parent;
-        //if(n->gparent != nullptr){
-        //    n->ggparent = n->gparent->parent;
-        //}
-        //cur->child = n;
       }
       if (maxSamples <= 0)
         break;
     }
     // re-add it
-    if (generated == 0) {
-      auto idx = std::find(open.begin(), open.end(), cur);
-      open.erase(idx);
+    if (generated != 0) {
+      open.push_back(cur);
     }
   }
 }
 
-void Blob::render(Processing *ctx) {
+void Blob::render(Processing *ctx, vec4 innerColor , vec4 outer) {
   // TODO: Make this a ctx->circle(pos, radius, steps)
   const float pi = 3.1415f;
   vec3 threepos{pos, 1};
-  UI_Vertex center{threepos, {1, 1, 1, 0}};
-  vec4 outer{1.0f, 1.0, 0.0, 1.0};
+  UI_Vertex center{threepos, innerColor};
   float dTheta = (2 * pi) / 16;
   for (float theta = dTheta; theta <= (2 * pi); theta += dTheta) {
     ctx->tri(UI_Vertex{vec3{sin(theta), cos(theta), 1} * r + threepos, outer},

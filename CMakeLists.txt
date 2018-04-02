@@ -3,7 +3,7 @@ project(gl_play)
 
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-g" )
+set(CMAKE_CXX_FLAGS "-g -O2" )
 set(SOURCE_FILES
     main.cpp
     Material.hpp
@@ -31,7 +31,10 @@ set(REF_SOURCE_FILES
 add_executable(gl_play ${SOURCE_FILES} ${REF_SOURCE_FILES})
 include_directories("ref/glad/include")
 include_directories("imgui_impl")
+include_directories("../../git/stb")
 set(LIBRARIES "dl")
+
+
 
 if(WIN32)
     set(GLFW_PATH $ENV{GLFW_SDK})
