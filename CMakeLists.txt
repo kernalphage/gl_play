@@ -7,7 +7,8 @@ set(CMAKE_CXX_FLAGS "-g -O2" )
 set(SOURCE_FILES
     main.cpp
     Material.hpp
-    Processing.cpp
+    ProcessingSVG.cpp
+    ProcessingGL.cpp
     Processing.hpp
     Random.cpp
     Random.hpp
@@ -23,6 +24,7 @@ set(REF_SOURCE_FILES
     imgui_impl/imgui.cpp
     imgui_impl/imgui_demo.cpp
     imgui_impl/imgui_draw.cpp
+    imgui_impl/imguifilesystem.cpp
     ref/FastNoise/FastNoise.cpp
 	ref/FastNoise/FastNoise.h
 	ref/glad/src/glad.c

@@ -34,8 +34,6 @@ void processInput(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
 }
 
-void drawCircle(int numPts, float t, Processing *ctx);
-
 void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                  int mods) {
   return;
@@ -89,36 +87,7 @@ void spawnFlower(Processing *ctx) {
   ctx->flush();
 }
 
-
-void doPlacement(Processing * ctx){
-
-  static bool redraw = false;
-  static float rmin = .01;
-  static float rmax = .15;
-  static int samples = 1400;
-  static float overlap = 4.84f;
-  static vec4 colors[]{{1.0,0.0,0.0, 1.0}, {0.0,1.0,0.0, 1.0}, {0.0,0.0,1.0, 1.0}};
-  static vec4 innerColor;
-  static int seed = 0;
-
-  redraw = ImGui::Button("redraw");
-  ImGui::SameLine();
-  redraw  |= ImGui::InputInt("Seed", &seed);
-   ImGui::SliderFloat("rMin", &rmin, 0.0001f, rmax/2);
-   ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
-   ImGui::SliderInt("samples", &samples, 20, 5000);
-  ImGui::SliderFloat("frequency", &overlap, 0, 30);
-
-  ImGui::ColorEdit4("colorA", (float *)&colors[0]);
-  ImGui::ColorEdit4("colorb", (float *)&colors[1]);
-  ImGui::ColorEdit4("colorc", (float *)&colors[2]);
-
-  if(!redraw){
-    return;
-  }
-  ctx->clear();
-  for(int i=0; i < 3; i++) {
-    auto sampleImage = [=](const vec2 pos, int channel = 0) {
+int sampleImage(const vec2 pos, int channel = 0) {
       vec2 v2 = (pos + vec2{1, 1}) / 2;
       int ex = (int) floor((v2.x) * texWidth);
       int wy = (int) floor((v2.y) * texHeight);
@@ -126,41 +95,74 @@ void doPlacement(Processing * ctx){
       wy = std::min(std::max(texHeight - wy, 0), texHeight - 1);
       int idx = (ex + wy * texWidth) * 4;
       return pixels[idx + channel];
-    };
+};
+void doPlacement(Processing * ctx){
 
+  static bool redraw = false;
+  static bool recolor = false;
+  static float rmin = .01;
+  static float rmax = .15;
+  static float showThreshhold = .90;
+  static int samples = 1400;
+  static float overlap = 4.84f;
+  static vec4 colors[]{{1.0,0.0,0.0, 1.0}, {0.0,1.0,0.0, 1.0}, {0.0,0.0,1.0, 1.0}};
+  static vec4 innerColor;
+  static int seed = 0;
+  static vector<Blob> allBlobs[3];
+    
+  redraw = ImGui::Button("redraw");
+  ImGui::SameLine();
+  redraw  |= ImGui::InputInt("Seed", &seed);
+  ImGui::SliderFloat("rMin", &rmin, 0.0001f, rmax/2);
+  ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
+  ImGui::SliderInt("samples", &samples, 20, 5000);
+  ImGui::SliderFloat("frequency", &overlap, 0, 30);
 
-    Random::seed(seed + i*10);
-    vector<Blob> blobs;
-    float scale = 1 / rmax;
-    float numPts = 2 / scale;
-    Partition p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
+  recolor = false;
+  recolor |= ImGui::ColorEdit4("colorA", (float *)&colors[0]);
+  recolor |= ImGui::ColorEdit4("colorb", (float *)&colors[1]);
+  recolor |= ImGui::ColorEdit4("colorc", (float *)&colors[2]);
+  recolor |= ImGui::SliderFloat("showThreshhold", &showThreshhold, 0, 1);
 
-    auto radiusFN = [=](const vec2 pos) {
-      // vertical
-      //float metric = pos.y/2 + 1;
-      //circle
-      //float metric = length(pos);
-      //sin waves
-      float metric = abs(cos(pos.x * overlap) + sin(pos.y * overlap));
+  if(redraw){
+    for(int i=0; i < 3; i++) {
+      Random::seed(seed + i*10);
+      vector<Blob>& blobs = allBlobs[i];
+      blobs.clear();
+      float scale = 1 / rmax;
+      float numPts = 2 / scale;
+      Partition p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
 
+      auto radiusFN = [=](const vec2 pos) {
+        // vertical
+        //float metric = pos.y/2 + 1;
+        //circle
+        //float metric = length(pos);
+        //sin waves
+        float metric = abs(cos(pos.x * overlap) + sin(pos.y * overlap));
+        // Image density
+        //float metric = 1-(sampleImage(pos, i) / 255.0f);
+        float sz = mix(rmin, rmax, metric);
+        return vec2{sz * .5f, sz};
+      };
 
-      //float metric = 1-(sampleImage(pos, i) / 255.0f);
-      float sz = mix(rmin, rmax, metric);
-      return vec2{sz * .5f, sz};
-    };
-
-    p.gen_poisson({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs, 0.0001f);
-    p.dump();
-    cout << "Blobs " << blobs.size() << " generated";
-
-    for (auto &b : blobs) {
-      if(b.r < rmax * .9) {
-        b.render(ctx, colors[i], colors[i]);
-      }
+      p.gen_poisson({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs, 0.0001f);
+      cout << "Blobs " << blobs.size() << " generated";
     }
-
   }
-  ctx->flush();
+  
+  if(redraw || recolor){   
+    ctx->clear();
+     for(int i=0; i < 3; i++) {
+      for(auto b: allBlobs[i]){
+        if(b.r < rmax * showThreshhold){
+          b.render(ctx, colors[i], colors[i]);
+        }
+      }
+     }
+    ctx->flush();
+  }
+
 }
 
 int main() {
@@ -173,7 +175,7 @@ int main() {
   // build and compile our shader program
 
   Material basic{"basic.vert", "basic.frag", true};
-  ctx = new Processing{};
+  ctx = new ProcessingGL{};
   pixels = stbi_load("night.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
   // Setup ImGui binding
