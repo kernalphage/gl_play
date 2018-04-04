@@ -63,7 +63,6 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
   //while there's space
   while (!open.empty() && maxSamples > 0) {
     Blob cur = open.back(); open.pop_back();
-    auto endr = open.end();
 
     vector<vec2> samples;
     vec2 radii = distFN(cur.pos);

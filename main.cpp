@@ -42,7 +42,6 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
 void spawnFlower(Processing *ctx) {
 
   const float pi = 3.1415f;
-  const float tau = pi * 2;
 
   static vec2 frequency{5, .1f};
   static float magnitude = 2;
@@ -129,8 +128,6 @@ void doPlacement(Processing * ctx){
       Random::seed(seed + i*10);
       vector<Blob>& blobs = allBlobs[i];
       blobs.clear();
-      float scale = 1 / rmax;
-      float numPts = 2 / scale;
       Partition p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
 
       auto radiusFN = [=](const vec2 pos) {
@@ -150,7 +147,7 @@ void doPlacement(Processing * ctx){
       cout << "Blobs " << blobs.size() << " generated";
     }
   }
-  
+
   if(redraw || recolor){   
     ctx->clear();
      for(int i=0; i < 3; i++) {
@@ -191,14 +188,11 @@ int main() {
   ImGui::StyleColorsDark();
   vec4 clear_color{0.045f, 0.05f, 0.06f, 1.00f};
 
-  static int counter = 0;
-
   Blob b{{0,0}, .5f};
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
     ImGui_ImplGlfwGL3_NewFrame();
 
-    bool redraw = false;
     // 1. Show a simple window.
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets
     // automatically appears in a window called "Debug".

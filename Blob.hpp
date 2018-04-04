@@ -81,8 +81,8 @@ public:
     }
   }
 
-  float _scale;
   const vec2 _offset;
+  float _scale;
   int _numgrids;
   vector<vector<Blob>> _grid;
   vector<Blob> _all;

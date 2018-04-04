@@ -7,8 +7,6 @@
 #include "Definitions.hpp"
 #include <png.h>
 
-class GLFWwindow;
-
 class Window {
 
 public:
