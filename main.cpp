@@ -86,14 +86,14 @@ void spawnFlower(Processing *ctx) {
   ctx->flush();
 }
 
-int sampleImage(const vec2 pos, int channel = 0) {
+vec3 sampleImage(const vec2 pos, int channel = 0) {
       vec2 v2 = (pos + vec2{1, 1}) / 2;
       int ex = (int) floor((v2.x) * texWidth);
       int wy = (int) floor((v2.y) * texHeight);
       ex = std::min(std::max(ex, 0), texWidth - 1);
       wy = std::min(std::max(texHeight - wy, 0), texHeight - 1);
       int idx = (ex + wy * texWidth) * 4;
-      return pixels[idx + channel];
+      return vec3{pixels[idx + 0],pixels[idx + 1],pixels[idx + 2]} / 255;
 };
 void doPlacement(Processing * ctx){
 
@@ -108,19 +108,27 @@ void doPlacement(Processing * ctx){
   static vec4 innerColor;
   static int seed = 0;
   static vector<Blob> allBlobs[3];
+  static float gamma = 2;
+  static float thickness = .01;
     
   redraw = ImGui::Button("redraw");
   ImGui::SameLine();
   redraw  |= ImGui::InputInt("Seed", &seed);
+  const char* listbox_items[] = { "random", "circular", "sinwave", "image", "wipe"};
+  static int listbox_item_current = 1;
+  redraw |= ImGui::ListBox("Render Mode\n(single select)", &listbox_item_current, listbox_items, IM_ARRAYSIZE(listbox_items), 5);
+
   ImGui::SliderFloat("rMin", &rmin, 0.0001f, rmax/2);
   ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
   ImGui::SliderInt("samples", &samples, 20, 5000);
   ImGui::SliderFloat("frequency", &overlap, 0, 30);
+  ImGui::SliderFloat("SizeGamma", &gamma, 0, 20);
 
   recolor = false;
   recolor |= ImGui::ColorEdit4("colorA", (float *)&colors[0]);
   recolor |= ImGui::ColorEdit4("colorb", (float *)&colors[1]);
   recolor |= ImGui::ColorEdit4("colorc", (float *)&colors[2]);
+  recolor |= ImGui::SliderFloat("thickness", &thickness, 0, .05f);
   recolor |= ImGui::SliderFloat("showThreshhold", &showThreshhold, 0, 1);
 
   if(redraw){
@@ -129,16 +137,28 @@ void doPlacement(Processing * ctx){
       vector<Blob>& blobs = allBlobs[i];
       blobs.clear();
       Partition p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
-
+      cout<<"function " << listbox_item_current<< endl;
       auto radiusFN = [=](const vec2 pos) {
-        // vertical
-        //float metric = pos.y/2 + 1;
-        //circle
-        //float metric = length(pos);
-        //sin waves
-        float metric = abs(cos(pos.x * overlap) + sin(pos.y * overlap));
-        // Image density
-        //float metric = 1-(sampleImage(pos, i) / 255.0f);
+        float metric;
+        switch(listbox_item_current){
+          case 0:
+            metric = Random::range(0.0f, 1.0f);
+            break;
+          case 1:
+            metric = length(pos);
+            break;
+          case 2:
+            metric = abs(cos(pos.x * overlap) + sin(pos.y * overlap))/2;
+            break;
+          case 3:
+            metric = 1 - sampleImage(pos)[i];
+            break;
+          case 4:
+            metric = abs(dot(pos, vec2{1,0}));
+            break;
+        }
+
+        metric = pow(metric, gamma);
         float sz = mix(rmin, rmax, metric);
         return vec2{sz * .5f, sz};
       };
@@ -152,8 +172,8 @@ void doPlacement(Processing * ctx){
     ctx->clear();
      for(int i=0; i < 3; i++) {
       for(auto b: allBlobs[i]){
-        if(b.r < rmax * showThreshhold){
-          b.render(ctx, colors[i], colors[i]);
+        if(b.r <= rmax * showThreshhold){
+          b.render(ctx, colors[i],thickness);
         }
       }
      }
@@ -173,7 +193,7 @@ int main() {
 
   Material basic{"basic.vert", "basic.frag", true};
   ctx = new ProcessingGL{};
-  pixels = stbi_load("night.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+  pixels = stbi_load("sunset.jpeg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
   // Setup ImGui binding
   ImGui::CreateContext();

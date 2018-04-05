@@ -100,16 +100,16 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
   }
 }
 
-void Blob::render(Processing *ctx, vec4 inner, vec4 outer) {
+void Blob::render(Processing *ctx, vec4 color, float thickness) {
   // TODO: Make this a ctx->circle(pos, radius, steps)
   const float pi = 3.1415f;
   vec3 threepos{pos, 1};
   float dTheta = (2 * pi) / 16;
   auto cPos = [=](float t, float radius){ return vec3{sin(t), cos(t), 1} * radius + threepos;};
   for (float theta = dTheta; theta <= (2 * pi); theta += dTheta) {
-    ctx->quad(UI_Vertex{cPos(theta, r), outer},
-    		UI_Vertex{cPos(theta + dTheta, r), outer},
-    		UI_Vertex{cPos(theta + dTheta, r  - .005f), outer},
-    		UI_Vertex{cPos(theta, r - .005f), outer});
+    ctx->quad(UI_Vertex{cPos(theta, r), color},
+    		UI_Vertex{cPos(theta + dTheta, r), color},
+    		UI_Vertex{cPos(theta + dTheta, r  - thickness), color},
+    		UI_Vertex{cPos(theta, r - thickness), color});
   }
 }

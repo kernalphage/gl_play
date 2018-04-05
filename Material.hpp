@@ -70,12 +70,12 @@ public:
   // activate the shader
   // ------------------------------------------------------------------------
   void use() {
+    glUseProgram(ID);
     if (_transparent) {
       glEnable(GL_BLEND);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glBlendFunc(GL_ONE, GL_ONE);
+      glBlendEquation(GL_FUNC_ADD);
     }
-
-    glUseProgram(ID);
   }
   // utility uniform functions
   // ------------------------------------------------------------------------

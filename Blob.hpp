@@ -14,7 +14,7 @@ class Processing;
 
 struct Blob{
   Blob(vec2 _pos, float _r): pos(_pos), r(_r){ }
-  void render(Processing *ctx, vec4 innerColor , vec4 outer);
+  void render(Processing *ctx, vec4 color, float thickness);
 
 
   vec2 pos;
