@@ -65,7 +65,7 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
     Blob cur = open.back(); open.pop_back();
 
     vector<vec2> samples;
-    vec2 radii = distFN(cur.pos);
+    vec2  radii = distFN(cur.pos);
     float rmin = radii.x;
     float rmax = radii.y;
 
@@ -73,14 +73,18 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
 
     //find a couple spots
     int generated = 0;
-    for (int i = 0; i < 30; i++) {
+    for (int i = 0; i < 60; i++) {
       vec2 samp = generate_random_point(torus);
+     //	 samp.x = rmax + cur.r;
       samp = cur.pos + (vec2{sin(samp.y), cos(samp.y)}) * samp.x;
 
       vector<Blob> cur_neighbors;
       neighbors(samp, std::back_inserter(cur_neighbors));
       float r = min_dist(samp, cur_neighbors, bounds);
 
+    	radii = distFN(samp);
+    	rmin = radii.x;
+   
       if (r > rmin) {
         generated++;
         maxSamples--;
@@ -102,6 +106,7 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
 
 void Blob::render(Processing *ctx, vec4 color, float thickness) {
   // TODO: Make this a ctx->circle(pos, radius, steps)
+	thickness = std::min(thickness, r);
   const float pi = 3.1415f;
   vec3 threepos{pos, 1};
   float dTheta = (2 * pi) / 16;

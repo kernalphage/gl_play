@@ -95,6 +95,20 @@ vec3 sampleImage(const vec2 pos, int channel = 0) {
       int idx = (ex + wy * texWidth) * 4;
       return vec3{pixels[idx + 0],pixels[idx + 1],pixels[idx + 2]} / 255;
 };
+
+struct LayerSettings
+{
+  vector<Blob> blobs;
+  vec4 color;
+  bool ImSettings(int id){
+    ImGui::PushID(id);
+    bool recolor = false;
+    recolor |= ImGui::ColorEdit4("Color", (float *)&color);
+    ImGui::PopID();
+    return recolor;
+  }
+};
+
 void doPlacement(Processing * ctx){
 
   static bool redraw = false;
@@ -104,19 +118,23 @@ void doPlacement(Processing * ctx){
   static float showThreshhold = .90;
   static int samples = 1400;
   static float overlap = 4.84f;
-  static vec4 colors[]{{1.0,0.0,0.0, 1.0}, {0.0,1.0,0.0, 1.0}, {0.0,0.0,1.0, 1.0}};
   static vec4 innerColor;
   static int seed = 0;
-  static vector<Blob> allBlobs[3];
+  static int numLayers = 3;
+  static vector<LayerSettings> layers = {{{},{1.0,0.0,0.0, 1.0}}, {{},{0.0,1.0,0.0, 1.0}}, {{},{0.0,0.0,1.0, 1.0}}};
   static float gamma = 2;
   static float thickness = .01;
+  const char* listbox_items[] = { "random", "circular", "sinwave", "image", "wipe"};
+  static int listbox_item_current = 1;
+  static bool useImageColors = false;
     
   redraw = ImGui::Button("redraw");
   ImGui::SameLine();
-  redraw  |= ImGui::InputInt("Seed", &seed);
-  const char* listbox_items[] = { "random", "circular", "sinwave", "image", "wipe"};
-  static int listbox_item_current = 1;
+  redraw |= ImGui::InputInt("Seed", &seed);
   redraw |= ImGui::ListBox("Render Mode\n(single select)", &listbox_item_current, listbox_items, IM_ARRAYSIZE(listbox_items), 5);
+
+  redraw |= ImGui::InputInt("NumLayers", &numLayers, 1, 10);
+  layers.resize(numLayers);
 
   ImGui::SliderFloat("rMin", &rmin, 0.0001f, rmax/2);
   ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
@@ -125,19 +143,19 @@ void doPlacement(Processing * ctx){
   ImGui::SliderFloat("SizeGamma", &gamma, 0, 20);
 
   recolor = false;
-  recolor |= ImGui::ColorEdit4("colorA", (float *)&colors[0]);
-  recolor |= ImGui::ColorEdit4("colorb", (float *)&colors[1]);
-  recolor |= ImGui::ColorEdit4("colorc", (float *)&colors[2]);
   recolor |= ImGui::SliderFloat("thickness", &thickness, 0, .05f);
-  recolor |= ImGui::SliderFloat("showThreshhold", &showThreshhold, 0, 1);
+  recolor |= ImGui::SliderFloat("showThreshhold", &showThreshhold, 0, 1.5);
+  recolor |= ImGui::Checkbox("Use Image Colors", &useImageColors);
+  for(int i=0; i < layers.size(); i++) {
+      auto layer = layers[i];
+      recolor |= layers[i].ImSettings(i);
+  }
 
   if(redraw){
-    for(int i=0; i < 3; i++) {
-      Random::seed(seed + i*10);
-      vector<Blob>& blobs = allBlobs[i];
-      blobs.clear();
-      Partition p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
-      cout<<"function " << listbox_item_current<< endl;
+    int jiggle = 0;
+    for(int i=0; i < layers.size(); i++) {
+      auto& layer = layers[i];
+
       auto radiusFN = [=](const vec2 pos) {
         float metric;
         switch(listbox_item_current){
@@ -151,29 +169,45 @@ void doPlacement(Processing * ctx){
             metric = abs(cos(pos.x * overlap) + sin(pos.y * overlap))/2;
             break;
           case 3:
-            metric = 1 - sampleImage(pos)[i];
+            metric = distance((vec3{SPLAT3(layer.color)}), (sampleImage(pos)));
             break;
           case 4:
             metric = abs(dot(pos, vec2{1,0}));
             break;
         }
-
-        metric = pow(metric, gamma);
+        metric = std::min(std::max(metric, 0.01f), 0.99f);
+        //metric = pow(metric, gamma);
         float sz = mix(rmin, rmax, metric);
-        return vec2{sz * .5f, sz};
+        return vec2{sz * .4, sz};
       };
+      Random::seed(seed + i*10 + jiggle);
+      vector<Blob>& blobs = layer.blobs;
+      blobs.clear();
+      Partition p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
+
+      cout<<"function " << listbox_item_current<< endl;
+
 
       p.gen_poisson({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs, 0.0001f);
       cout << "Blobs " << blobs.size() << " generated";
+      if(blobs.size() == 1 && jiggle < 5){
+        i--;
+        jiggle ++;
+      }
     }
   }
 
   if(redraw || recolor){   
     ctx->clear();
-     for(int i=0; i < 3; i++) {
-      for(auto b: allBlobs[i]){
+     for(int i=0; i < numLayers; i++) {
+      for(auto b: layers[i].blobs){
         if(b.r <= rmax * showThreshhold){
-          b.render(ctx, colors[i],thickness);
+          if(useImageColors){
+            b.render(ctx, vec4{sampleImage(b.pos),1.0},thickness);
+          }
+          else{
+            b.render(ctx, layers[i].color, thickness);
+          }
         }
       }
      }
@@ -193,7 +227,7 @@ int main() {
 
   Material basic{"basic.vert", "basic.frag", true};
   ctx = new ProcessingGL{};
-  pixels = stbi_load("sunset.jpeg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+  pixels = stbi_load("oni.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
   // Setup ImGui binding
   ImGui::CreateContext();
