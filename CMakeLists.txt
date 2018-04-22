@@ -4,6 +4,7 @@ project(gl_play)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -g -O2" )
+
 set(SOURCE_FILES
     main.cpp
     Material.hpp
@@ -28,15 +29,20 @@ set(REF_SOURCE_FILES
     ref/FastNoise/FastNoise.cpp
 	ref/FastNoise/FastNoise.h
 	ref/glad/src/glad.c
+    ref/image.capnp.c++
 	)
 
 add_executable(gl_play ${SOURCE_FILES} ${REF_SOURCE_FILES})
 include_directories("ref/glad/include")
+include_directories("ref")
 include_directories("imgui_impl")
 include_directories("ref/stb")
 set(LIBRARIES "dl")
 
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "~/git/capnproto-c++-0.6.1/cmake/")
+find_package(CapnProto REQUIRED)
+target_link_libraries(gl_play capnp)
 
 if(WIN32)
     set(GLFW_PATH $ENV{GLFW_SDK})

@@ -6,6 +6,7 @@
 #include <functional>
 #include <numeric>
 #include <vector>
+#include <string>
 
 
 class Processing {
@@ -56,11 +57,18 @@ private:
   GLuint m_VAO;
 };
 
+struct circ{
+  circ(vec2 p, float rad): pos(p), r(rad){};
+  vec2 pos;
+  float r;
+};
 
 class ProcessingSVG : public Processing {
 public:
 
   void setFilename(std::string filename);
+
+  void circle(vec2 pos, float radius);
 
   void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c) override;
   void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d) override;
@@ -73,7 +81,8 @@ public:
 
 private:
 
-  void allocate_buffers(unsigned int vbo_size, unsigned int ebo_size);
+  std::string m_filename;
+  std::vector<circ> m_pts;
 };
 
 #endif // PROCESSING_HPP

@@ -21,12 +21,14 @@ TriBuilder tri;
 int texWidth, texHeight, texChannels;
 stbi_uc* pixels;
 
-float t = 3;
+float t = 0;
 
 void genTriangle() {
-  std::vector<Tri> seed = {Tri{{0, .8, 0}, {-.8, -.8, 0}, {.8, -.8, 0}, 0}};
-  tri.triangulate(seed, ctx);
-  ctx->flush();
+    if(tri.imSettings()){
+    ctx->clear();
+    tri.triangulate(t, ctx);
+    ctx->flush();
+  }
 }
 
 void processInput(GLFWwindow *window) {
@@ -178,7 +180,7 @@ void doPlacement(Processing * ctx){
         metric = std::min(std::max(metric, 0.01f), 0.99f);
         //metric = pow(metric, gamma);
         float sz = mix(rmin, rmax, metric);
-        return vec2{sz * .4, sz};
+        return vec2{sz * .5, sz};
       };
       Random::seed(seed + i*10 + jiggle);
       vector<Blob>& blobs = layer.blobs;
@@ -256,8 +258,9 @@ int main() {
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-    doPlacement(ctx);
-    
+  genTriangle();
+//    doPlacement(ctx);
+    t += .05f; // TODO: real deltatime
     processInput(mainWin.window);
 
     glClearColor(SPLAT4(clear_color));

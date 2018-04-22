@@ -71,6 +71,7 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
 
     rect torus{vec2{rmin + cur.r, 0}, vec2{rmax + cur.r, 6.28}};
 
+ // TODO: I fucked up something here and the circles don't look random anymore
     //find a couple spots
     int generated = 0;
     for (int i = 0; i < 60; i++) {

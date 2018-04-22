@@ -21,6 +21,9 @@ struct Tri {
       return b;
     return c;
   };
+  vec3 center() const{
+    return (a + b + c) * (1.0f/3.0f);
+  }
   int longestSide();
 };
 
@@ -28,14 +31,18 @@ struct TriBuilder {
 
   bool imSettings();
 
-  std::vector<Tri> triangulate(const std::vector<Tri> &seed, Processing *ctx);
+  std::vector<Tri> triangulate(float depthMod, Processing *ctx);
+
+  std::vector<Tri> _curTriangles = {Tri{{0, .8, 0}, {-.8, -.8, 0}, {.8, -.8, 0}, 0}};;
   int _seed;
-  float _decayMin = 1;
-  float _frequency = 1;
+  float _radius = .68f;
+  float _frequency = 20;
+  float _decayMin = .6f;
   float _decayMax = 1;
-  float _maxDepth = 3;
-  float _skew = .1f;
-  vec4 _minColor{0.0f};
+  float _maxDepth = 6;
+  float _zoom = 0;
+  float _skew = .18f;
+  vec4 _minColor{0.0f, 1.0f, 0.0f, .8f};
   vec4 _maxColor{1.0f};
 };
 
