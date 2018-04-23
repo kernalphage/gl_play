@@ -114,7 +114,8 @@ struct LayerSettings
 string timestamp(){
   char mbstr[100];
    std::time_t t = std::time(nullptr);
-  std::strftime(mbstr, sizeof(mbstr), "./%D_%T.svg", std::localtime(&t));
+  std::strftime(mbstr, sizeof(mbstr), "%m_%d_%T.svg", std::localtime(&t));
+  cout<<mbstr<<endl;
   return string(mbstr);
 }
 
