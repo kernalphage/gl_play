@@ -34,13 +34,16 @@ using namespace std;
 
     for(int i=0; i < m_pts.size(); i++){
       file<<"c"
-          << " "<< m_pts[i].pos.x
-          << " "<< m_pts[i].pos.y
-          << " "<< m_pts[i].r<< "\n";
+          << " "<< (m_pts[i].pos.x + 1) / 2
+          << " "<< (m_pts[i].pos.y + 1) / 2
+          << " "<< m_pts[i].r/2<< "\n";
     };
 
     file.flush();
     file.close();
+    string cmd = "python svgbuilder.py ";
+    cmd += m_filename;
+    system(cmd.c_str());
 }
 
 void ProcessingSVG::circle(vec2 pos, float radius) {

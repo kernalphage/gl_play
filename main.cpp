@@ -111,10 +111,11 @@ struct LayerSettings
   }
 };
 
-string timestamp(){
-  char mbstr[100];
+string timestamp(int seed){
+  char mbstr[150];
    std::time_t t = std::time(nullptr);
-  std::strftime(mbstr, sizeof(mbstr), "%m_%d_%T.svg", std::localtime(&t));
+  std::strftime(mbstr, sizeof(mbstr), "%m_%d_%s_%%d.txt", std::localtime(&t));
+  sprintf(mbstr, mbstr, seed);
   cout<<mbstr<<endl;
   return string(mbstr);
 }
@@ -227,7 +228,7 @@ void doPlacement(Processing * ctx){
   if( ImGui::Button("Save")){
     ProcessingSVG svg;
      for(int i=0; i < numLayers; i++) {
-      svg.setFilename(timestamp());
+      svg.setFilename(timestamp(i) );
       for(const auto& b: layers[i].blobs){
         if(b.r <= rmax * showThreshhold){
           svg.circle(b.pos, b.r);

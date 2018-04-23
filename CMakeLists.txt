@@ -67,9 +67,10 @@ ENDIF()
 # yet another way to get shaders
 
 set(SHADERS 
-    basic.vert
-	basic.frag
+    shaders/basic.vert
+	shaders/basic.frag
+    svgbuilder.py
 	)
 foreach(shader ${SHADERS})
-	configure_file( "shaders/${shader}" ${shader} COPYONLY)
+	configure_file( "${shader}" ${shader} COPYONLY)
 endforeach()

@@ -1,8 +1,5 @@
 import os
 import sys
-import capnp
-
-import image_capnp
 import time
 import cairo
 
