@@ -106,7 +106,7 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
 }
 
 void Blob::render(Processing *ctx, vec4 color, float thickness) {
-  // TODO: Make this a ctx->circle(pos, radius, steps)
+
 	thickness = std::min(thickness, r);
   const float pi = 3.1415f;
   vec3 threepos{pos, 1};

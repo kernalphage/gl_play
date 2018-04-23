@@ -111,6 +111,13 @@ struct LayerSettings
   }
 };
 
+string timestamp(){
+  char mbstr[100];
+   std::time_t t = std::time(nullptr);
+  std::strftime(mbstr, sizeof(mbstr), "./%D_%T.svg", std::localtime(&t));
+  return string(mbstr);
+}
+
 void doPlacement(Processing * ctx){
 
   static bool redraw = false;
@@ -216,6 +223,20 @@ void doPlacement(Processing * ctx){
     ctx->flush();
   }
 
+  if( ImGui::Button("Save")){
+    ProcessingSVG svg;
+     for(int i=0; i < numLayers; i++) {
+      svg.setFilename(timestamp());
+      for(const auto& b: layers[i].blobs){
+        if(b.r <= rmax * showThreshhold){
+          svg.circle(b.pos, b.r);
+        }
+      }
+      svg.render();
+     }
+
+  }
+
 }
 
 int main() {
@@ -258,8 +279,8 @@ int main() {
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-  genTriangle();
-//    doPlacement(ctx);
+  //genTriangle();
+  doPlacement(ctx);
     t += .05f; // TODO: real deltatime
     processInput(mainWin.window);
 
