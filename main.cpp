@@ -180,7 +180,7 @@ void doPlacement(Processing * ctx){
             metric = abs(cos(pos.x * overlap) + sin(pos.y * overlap))/2;
             break;
           case 3:
-            metric = distance((vec3{SPLAT3(layer.color)}), (sampleImage(pos)));
+            metric =1 - distance((vec3{SPLAT3(layer.color)}), (sampleImage(pos)));
             break;
           case 4:
             metric = abs(dot(pos, vec2{1,0}));
@@ -198,8 +198,8 @@ void doPlacement(Processing * ctx){
 
       cout<<"function " << listbox_item_current<< endl;
 
-
-      p.gen_poisson({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs, 0.0001f);
+      p.gen_random({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs);
+///      p.gen_poisson({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs, 0.0001f);
       cout << "Blobs " << blobs.size() << " generated";
       if(blobs.size() == 1 && jiggle < 5){
         i--;
@@ -212,7 +212,7 @@ void doPlacement(Processing * ctx){
     ctx->clear();
      for(int i=0; i < numLayers; i++) {
       for(auto b: layers[i].blobs){
-        if(b.r <= rmax * showThreshhold){
+        if(b.r >= rmax * showThreshhold){
           if(useImageColors){
             b.render(ctx, vec4{sampleImage(b.pos),1.0},thickness);
           }
@@ -230,13 +230,14 @@ void doPlacement(Processing * ctx){
      for(int i=0; i < numLayers; i++) {
       svg.setFilename(timestamp(i) );
       for(const auto& b: layers[i].blobs){
-        if(b.r <= rmax * showThreshhold){
+        if(b.r >= rmax * showThreshhold){
           svg.circle(b.pos, b.r);
         }
       }
       svg.render();
-     }
+      svg.clear();
 
+     }
   }
 
 }

@@ -37,6 +37,7 @@ public:
 
   typedef std::function<vec2(vec2)> DistanceFN;
 
+  void gen_random(vec2 tl, vec2 br, DistanceFN sampleSize, int maxSamples, std::vector<Blob>& out);
   void gen_poisson(vec2 tl, vec2 br, DistanceFN sampleSize, int maxSamples, vector<Blob>& out, float overlap);
   int add(Blob t){
     int i = index(t);

@@ -2,6 +2,19 @@ import os
 import sys
 import time
 import cairo
+import errno
+
+
+
+def symlink_force(target, link_name):
+    try:
+        os.symlink(target, link_name)
+    except OSError, e:
+        if e.errno == errno.EEXIST:
+            os.remove(link_name)
+            os.symlink(target, link_name)
+        else:
+            raise e
 
 knownCommands = {}
 
@@ -31,15 +44,16 @@ def parseCommand(ctx, cmd, values):
 
 f = open(sys.argv[1], 'r')
 
-
-surface = cairo.SVGSurface(sys.argv[1] + ".svg", 1000,1000)
+filename = sys.argv[1] + ".svg";
+surface = cairo.SVGSurface(filename, 8.5 * 300, 11 * 300)
 context = cairo.Context(surface)
 
 
 for line in f:
 	ll = line.split(" ")
 	cmd = ll[0]
-	vals = [float(x) * 400 for x in ll[1:]]
+	vals = [float(x) for x in ll[1:]]
 	parseCommand(context, cmd, vals)
 
 context.stroke()
+symlink_force(filename, "latest.svg")

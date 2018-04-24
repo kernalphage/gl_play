@@ -25,18 +25,19 @@ using namespace std;
 
   };
   void ProcessingSVG::clear() {
-
+    m_pts.clear();
   };
   void ProcessingSVG::render(){
 
     std::ofstream file;
     file.open(m_filename, ios::out);
-
+    vec2 sz_half = m_pagesize * .5f;
+    float maxSz = std::min(sz_half.x, sz_half.y) ; // Scale to parent (assuming [-1, 1])
     for(int i=0; i < m_pts.size(); i++){
       file<<"c"
-          << " "<< (m_pts[i].pos.x + 1) / 2
-          << " "<< (m_pts[i].pos.y + 1) / 2
-          << " "<< m_pts[i].r/2<< "\n";
+          << " "<< (m_pts[i].pos.x * maxSz + sz_half.x) * ppi
+          << " "<< (m_pts[i].pos.y * maxSz + sz_half.y) * ppi
+          << " "<< m_pts[i].r * ppi << "\n";
     };
 
     file.flush();

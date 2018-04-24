@@ -80,6 +80,8 @@ public:
 
 private:
 
+  vec2 m_pagesize{8.5,11};
+  float ppi = 300;
   std::string m_filename;
   std::vector<circ> m_pts;
   std::vector<vec3> m_lines;
