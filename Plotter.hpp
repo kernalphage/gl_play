@@ -7,6 +7,7 @@
 #include "Definitions.hpp"
 #include "Blob.hpp"
 #include "Random.hpp"
+#include "imguifilesystem.h"
 #include <stb_image.h>
 #include <vector>
 
@@ -56,6 +57,7 @@ vec3 sampleImage(const vec2 pos, int channel = 0) {
 
 int texWidth, texHeight, texChannels;
 stbi_uc* pixels = nullptr;
+static ImGuiFs::Dialog dlg;  // one per dialog (and must be static)
 
 };
 

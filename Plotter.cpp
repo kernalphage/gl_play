@@ -8,7 +8,8 @@
 
 
 const char* listbox_items[] = { "random", "circular", "sinwave", "image", "wipe"};
-  
+ImGuiFs::Dialog Plotter::dlg;
+
 bool LayerSettings::imSettings(int id){
     ImGui::PushID(id);
     bool recolor = false;
@@ -26,7 +27,7 @@ void Plotter::imSettings(){
 
   redraw = ImGui::Button("redraw");
   ImGui::SameLine();
-  redraw |= ImGui::InputInt("Seed", &seed);
+  redraw |= ImGui::InputInt("Seed", &seed);  
   redraw |= ImGui::ListBox("Render Mode\n(single select)", &listbox_item_current, listbox_items, IM_ARRAYSIZE(listbox_items), 5);
 
   redraw |= ImGui::InputInt("NumLayers", &numLayers, 1, 10);
@@ -47,13 +48,30 @@ void Plotter::imSettings(){
       recolor |= layers[i].imSettings(i);
   }
 
-  if(pixels == nullptr){
-  	pixels = stbi_load("oni.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+  bool loadImagePressed = ImGui::Button("...");
+  const char* chosenPath = dlg.chooseFileDialog(loadImagePressed);
+  if(strlen(chosenPath) > 0 ){
+    // Reload image   
+    if(pixels != nullptr){
+      stbi_image_free(pixels);
+      pixels = nullptr;
+    }
+    if(pixels == nullptr){
+      pixels = stbi_load(chosenPath, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+    }
   }
+  if (strlen(dlg.getChosenPath())>0) {
+    ImGui::SameLine();
+    ImGui::Text("Chosen file: \"%s\"",dlg.getChosenPath());
+}
 }
 
 void Plotter::update(Processing * ctx){
   imSettings();
+
+  if(listbox_item_current == 3 && pixels == nullptr){
+    return;
+  }
 
   if(redraw){
     int jiggle = 0;
