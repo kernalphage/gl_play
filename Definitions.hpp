@@ -8,6 +8,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
+#include <glm/ext.hpp>
+#include <string>
+#include <ctime>
 
 using namespace glm;
 
@@ -28,6 +31,18 @@ struct TEX_Vertex{
   vec3 pos;
   vec4 color;
   vec2 uv;
+};
+
+struct Util{
+
+static	std::string timestamp(int seed){
+	  char mbstr[150];
+	   std::time_t t = std::time(nullptr);
+	  std::strftime(mbstr, sizeof(mbstr), "%m_%d_%s_%%d.txt", std::localtime(&t));
+	  sprintf(mbstr, mbstr, seed);
+	  return std::string(mbstr);
+	}
+
 };
 
 #endif // DEFINITIONS_HPP

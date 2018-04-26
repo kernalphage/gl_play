@@ -18,7 +18,7 @@ set(SOURCE_FILES
     Window.cpp
     Window.hpp
     Definitions.hpp
-        Blob.cpp Blob.hpp)
+        Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp)
 set(REF_SOURCE_FILES
     imgui_impl/glfw_gl3.cpp
     imgui_impl/glfw_gl3.h
