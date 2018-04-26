@@ -41,7 +41,7 @@ vec3 sampleImage(const vec2 pos, int channel = 0) {
 
   float rmin = .01;
   float rmax = .15;
-  float showThreshhold = .90;
+  float showThreshhold = .10;
   int samples = 1400;
   float overlap = 4.84f;
   vec4 innerColor;

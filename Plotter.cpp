@@ -5,7 +5,6 @@
 #include "Plotter.hpp"
 #include "Processing.hpp"
 #include "imgui.h"
-#include <stb_image.h>
 
 
 const char* listbox_items[] = { "random", "circular", "sinwave", "image", "wipe"};
@@ -18,6 +17,13 @@ bool LayerSettings::imSettings(int id){
     return recolor;
 }
 void Plotter::imSettings(){
+  static int numRuns = 0;
+  if(numRuns++ == 1){
+    redraw = true;
+    recolor = true;
+    return;
+  }
+
   redraw = ImGui::Button("redraw");
   ImGui::SameLine();
   redraw |= ImGui::InputInt("Seed", &seed);
@@ -26,11 +32,11 @@ void Plotter::imSettings(){
   redraw |= ImGui::InputInt("NumLayers", &numLayers, 1, 10);
   layers.resize(numLayers);
 
-  ImGui::SliderFloat("rMin", &rmin, 0.0001f, rmax/2);
-  ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
-  ImGui::SliderInt("samples", &samples, 20, 5000);
-  ImGui::SliderFloat("frequency", &overlap, 0, 30);
-  ImGui::SliderFloat("SizeGamma", &gamma, 0, 20);
+  redraw |= ImGui::SliderFloat("rMin", &rmin, 0.0001f, rmax/2);
+  redraw |= ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
+  redraw |= ImGui::SliderInt("samples", &samples, 20, 5000);
+  redraw |= ImGui::SliderFloat("frequency", &overlap, 0, 30);
+  redraw |= ImGui::SliderFloat("SizeGamma", &gamma, 0, 20);
 
   recolor = false;
   recolor |= ImGui::SliderFloat("thickness", &thickness, 0, .05f);
@@ -82,12 +88,9 @@ void Plotter::update(Processing * ctx){
       vector<Blob>& blobs = layer.blobs;
       blobs.clear();
       Partition p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
-
-      cout<<"function " << listbox_item_current<< endl;
-
+      
       p.gen_random({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs);
 ///      p.gen_poisson({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs, 0.0001f);
-      cout << "Blobs " << blobs.size() << " generated";
       if(blobs.size() == 1 && jiggle < 5){
         i--;
         jiggle ++;

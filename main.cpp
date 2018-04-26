@@ -108,7 +108,7 @@ int main() {
 
   // Setup style
   ImGui::StyleColorsDark();
-  vec4 clear_color{0.045f, 0.05f, 0.06f, 1.00f};
+  vec4 clear_color{0.95f, 0.95f, 0.96f, 1.00f};
 
   Blob b{{0,0}, .5f};
   while (!glfwWindowShouldClose(mainWin.window)) {

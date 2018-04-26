@@ -74,7 +74,7 @@ public:
     if (_transparent) {
       glEnable(GL_BLEND);
       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-      glBlendEquation(GL_FUNC_ADD);
+      glBlendEquation(GL_MIN);
     }
   }
   // utility uniform functions
