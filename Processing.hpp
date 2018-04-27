@@ -66,7 +66,7 @@ class ProcessingSVG : public Processing {
 public:
 
   void setFilename(std::string filename) { m_filename = filename;};
-
+  void setStrokeColor(vec3 color){m_color =color;};
   void circle(vec2 pos, float radius);
 
   void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c) override;
@@ -82,6 +82,7 @@ private:
 
   vec2 m_pagesize{8.5,11};
   float ppi = 300;
+  vec3 m_color{0,0,0};
   std::string m_filename;
   std::vector<circ> m_pts;
   std::vector<vec3> m_lines;

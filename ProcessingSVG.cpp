@@ -28,9 +28,13 @@ using namespace std;
     m_pts.clear();
   };
   void ProcessingSVG::render(){
-
     std::ofstream file;
     file.open(m_filename, ios::out);
+
+    file <<"stroke "<<SPLAT_OP_3(m_color, << " " <<) << "\n";
+
+    //file <<"stroke "<<m_color.x <<" "<<m_color.y<<" " <<m_color.z<<"\n";
+
     vec2 sz_half = m_pagesize * .5f;
     float maxSz = std::min(sz_half.x, sz_half.y) ; // Scale to parent (assuming [-1, 1])
     for(int i=0; i < m_pts.size(); i++){

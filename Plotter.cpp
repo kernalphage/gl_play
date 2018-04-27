@@ -98,7 +98,7 @@ void Plotter::update(Processing * ctx){
             break;
         }
         metric = std::min(std::max(metric, 0.01f), 0.99f);
-        //metric = pow(metric, gamma);
+        metric = pow(metric, gamma);
         float sz = mix(rmin, rmax, metric);
         return vec2{sz * .5, sz};
       };
@@ -136,12 +136,13 @@ void Plotter::update(Processing * ctx){
   if(ImGui::Button("Save")){
     ProcessingSVG svg;
      for(int i=0; i < numLayers; i++) {
-      svg.setFilename(Util::timestamp(i) );
       for(const auto& b: layers[i].blobs){
         if(b.r >= rmax * showThreshhold){
           svg.circle(b.pos, b.r);
         }
       }
+      svg.setFilename(Util::timestamp(i) );
+      svg.setStrokeColor(layers[i].color);
       svg.render();
       svg.clear();
 

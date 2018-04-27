@@ -26,10 +26,12 @@ def circle(ctx, values):
 def translate(ctx, values):
 	ctx.translate(values[0], values[1])
 
-
+def stroke(ctx, values):
+	ctx.set_source_rgb(*values)
 
 knownCommands["c"] = circle;
 knownCommands["translate"] = translate
+knownCommands["stroke"] = stroke
 
 # knownCommands["rotate"] = rotate
 

@@ -18,6 +18,12 @@ using namespace glm;
 #define SPLAT3(t) t.x, t.y, t.z
 #define SPLAT4(t) t.x, t.y, t.z, t.w
 
+#define SPLAT_OP_2(t, op) t.x op t.y
+#define SPLAT_OP_3(t, op) t.x op t.y op t.z
+#define SPLAT_OP_4(t, op) t.x op t.y op t.z op t.w
+
+
+
 struct rect{
   vec2 tl;
   vec2 br;
