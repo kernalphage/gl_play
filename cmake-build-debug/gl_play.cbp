@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="gl_play"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\git\;CMake Files\..\..\git\capnproto-c++-0.6.1\;CMake Files\..\..\git\capnproto-c++-0.6.1\cmake\;CMake Files\shaders\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/home/matt/projects/gl_play/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/home/matt/projects/gl_play/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/home/matt/projects/gl_play/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gl_play">
+				<Option output="/home/matt/projects/gl_play/cmake-build-debug/gl_play" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/matt/projects/gl_play/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/matt/projects/gl_play/ref/glad/include"/>
+					<Add directory="/home/matt/projects/gl_play/ref"/>
+					<Add directory="/home/matt/projects/gl_play/imgui_impl"/>
+					<Add directory="/home/matt/projects/gl_play/ref/stb"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 gl_play"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="gl_play/fast">
+				<Option output="/home/matt/projects/gl_play/cmake-build-debug/gl_play" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/matt/projects/gl_play/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/home/matt/projects/gl_play/ref/glad/include"/>
+					<Add directory="/home/matt/projects/gl_play/ref"/>
+					<Add directory="/home/matt/projects/gl_play/imgui_impl"/>
+					<Add directory="/home/matt/projects/gl_play/ref/stb"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+					<Add directory="/usr/include/c++/7"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/7"/>
+					<Add directory="/usr/include/c++/7/backward"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 gl_play/fast"/>
+					<CompileFile command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j4 -f &quot;/home/matt/projects/gl_play/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/home/matt/projects/gl_play/Blob.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Blob.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Definitions.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Hex.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Hex.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Material.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Plotter.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Plotter.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Processing.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/ProcessingGL.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/ProcessingSVG.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Random.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Random.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/RenderTarget.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/RenderTarget.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Triangulate.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Triangulate.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Window.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/Window.hpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/imgui_impl/glfw_gl3.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/imgui_impl/glfw_gl3.h">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/imgui_impl/imgui.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/imgui_impl/imgui.h">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/imgui_impl/imgui_demo.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/imgui_impl/imgui_draw.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/imgui_impl/imguifilesystem.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/imgui_impl/imguifilesystem.h">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/main.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/ref/FastNoise/FastNoise.cpp">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/ref/FastNoise/FastNoise.h">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/ref/glad/src/glad.c">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/ref/image.capnp.c++">
+			<Option target="gl_play"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/svgbuilder.py">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/../../git/capnproto-c++-0.6.1/cmake/FindCapnProto.cmake">
+			<Option virtualFolder="CMake Files\..\..\git\capnproto-c++-0.6.1\cmake\"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/shaders/basic.vert">
+			<Option virtualFolder="CMake Files\shaders\"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/shaders/basic.frag">
+			<Option virtualFolder="CMake Files\shaders\"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/shaders/two_tri.vert">
+			<Option virtualFolder="CMake Files\shaders\"/>
+		</Unit>
+		<Unit filename="/home/matt/projects/gl_play/shaders/two_tri.frag">
+			<Option virtualFolder="CMake Files\shaders\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

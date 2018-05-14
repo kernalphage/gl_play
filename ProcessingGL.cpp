@@ -57,9 +57,17 @@ void ProcessingGL::line(vec3 p1, vec3 p2, vec4 color) {
 
 void ProcessingGL::render() {
   // convert to gl buffer
+
   glBindVertexArray(m_VAO);
-  glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
+
+    glDrawElements(GL_TRIANGLES, m_indices.size(), GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 }
 
 int ProcessingGL::indexVert(UI_Vertex p) {

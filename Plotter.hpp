@@ -22,10 +22,12 @@ class Processing;
 
 class Plotter {
 public:
-  void update(Processing* ctx);
+  void update(Processing* ctx, float t);
   void imSettings();
 
 private:
+
+  void matchImage();
 
 vec3 sampleImage(const vec2 pos, int channel = 0) {
       vec2 v2 = (pos + vec2{1, 1}) / 2;
@@ -42,18 +44,24 @@ vec3 sampleImage(const vec2 pos, int channel = 0) {
 
   float rmin = .01;
   float rmax = .05;
-  float showThreshhold = .10;
+  float showThreshhold = 1.90;
   int samples = 400;
-  float overlap = 4.84f;
+  float overlap = 1.84f;
+  float amplitude = 1.0;
   vec4 innerColor;
   int seed = 0;
-  int numLayers = 11;
+  int numLayers = 4;
   std::vector<LayerSettings> layers = {
 //  {{},{1.0,0.0,0.0, 1.0}}, 
 //  {{},{0.0,1.0,0.0, 1.0}}, 
 //  {{},{0.0,0.0,1.0, 1.0}}
+      /*{{},{0.9019607843,	0.9215686275,	0.5607843137,1}},
+      {{},{0.9176470588,	0.9607843137,	0.9294117647,1}},
+      {{},{0.5921568627,	0.8117647059,	0.5647058824,1}},
+      {{},{0.066666666,	0.5803921569,	0.3843137255,1}}
+       */
 
-{{}, {0.0, 0.0, 0.0, 1.0}}, 
+{{}, {0.0, 0.0, 0.0, 1.0}},
 {{}, {0.0, 0.0, 0.9411764705882353, 1.0}},
 {{}, {0.0, 0.9411764705882353, 0.0, 1.0}},
 {{}, {0.6470588235294118, 0.00392156862745098, 0.23921568627450981, 1.0}},
@@ -63,7 +71,8 @@ vec3 sampleImage(const vec2 pos, int channel = 0) {
 {{}, {0.3764705882352941, 1.0, 0.10980392156862745, 1.0}},
 {{}, {1.0, 0.0, 0.0, 1.0}}, 
 {{}, {1.0, 0.3058823529411765, 0.7607843137254902, 1.0}},
-{{}, {1.0, 0.5490196078431373, 0.0, 1.0}} 
+{{}, {1.0, 0.5490196078431373, 0.0, 1.0}}
+
 };
   float gamma = 2;
   float thickness = .01;

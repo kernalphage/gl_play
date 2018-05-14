@@ -2,7 +2,6 @@
 #define DEFINITIONS_HPP
 
 #include <glad/glad.h>
-
 #include <GLFW/glfw3.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
@@ -21,7 +20,6 @@ using namespace glm;
 #define SPLAT_OP_2(t, op) t.x op t.y
 #define SPLAT_OP_3(t, op) t.x op t.y op t.z
 #define SPLAT_OP_4(t, op) t.x op t.y op t.z op t.w
-
 
 
 struct rect{

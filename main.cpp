@@ -3,13 +3,14 @@
 #include "Processing.hpp"
 #include "Triangulate.hpp"
 #include <algorithm>
-#include "Random.hpp"
 #include "Window.hpp"
 #include "imgui.h"
 #include "imgui_impl/glfw_gl3.h"
 #include "ref/FastNoise/FastNoise.h"
 #include "Blob.hpp"
 #include "Plotter.hpp"
+#include "RenderTarget.hpp"
+
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -19,6 +20,8 @@ Processing *ctx;
 TriBuilder tri;
 Plotter p;
 float t = 0;
+GLuint d;
+static GLubyte *pixels = NULL;
 
 void genTriangle() {
     if(tri.imSettings()){
@@ -37,6 +40,7 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
                  int mods) {
   return;
 }
+
 
 void spawnFlower(Processing *ctx) {
 
@@ -104,13 +108,15 @@ int main() {
       ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad
   // Controls
-  ImGui_ImplGlfwGL3_Init(mainWin.window, true);
+  ImGui_ImplGlfwGL3_Init(mainWin.window, false);
 
   // Setup style
   ImGui::StyleColorsDark();
   vec4 clear_color{0.95f, 0.95f, 0.96f, 1.00f};
 
   Blob b{{0,0}, .5f};
+  RenderTarget buff(500,500);
+
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
     ImGui_ImplGlfwGL3_NewFrame();
@@ -125,15 +131,24 @@ int main() {
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
   //genTriangle();
-  p.update(ctx);
-    t += .05f; // TODO: real deltatime
+  p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
 
     glClearColor(SPLAT4(clear_color));
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    buff.activate();
     basic.use();
     ctx->render();
+
+    if(t == 0){
+      RenderTarget::screenshot_ppm("SCROTE.ppm", 500,500, &pixels);
+    }
+
+    buff.render();
+    //basic.use();
+    //ctx->render();
+    t += .05f; // TODO: real deltatime
 
     ImGui::Render();
     ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());

@@ -18,7 +18,7 @@ set(SOURCE_FILES
     Window.cpp
     Window.hpp
     Definitions.hpp
-        Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp)
+        Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp RenderTarget.cpp RenderTarget.hpp Hex.cpp Hex.hpp)
 set(REF_SOURCE_FILES
     imgui_impl/glfw_gl3.cpp
     imgui_impl/glfw_gl3.h
@@ -66,11 +66,13 @@ ENDIF()
 
 # yet another way to get shaders
 
-set(SHADERS 
-    shaders/basic.vert
-	shaders/basic.frag
-    svgbuilder.py
+set(SHADERS
+        shaders/basic.vert
+        shaders/basic.frag
+        shaders/two_tri.vert
+        shaders/two_tri.frag
+        svgbuilder.py
 	)
 foreach(shader ${SHADERS})
-	configure_file( "${shader}" ${shader} COPYONLY)
+	configure_file( "${shader}" ${shader})
 endforeach()

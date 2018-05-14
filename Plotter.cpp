@@ -2,6 +2,7 @@
 // Created by matt on 4/25/18.
 //
 
+#include <FastNoise/FastNoise.h>
 #include "Plotter.hpp"
 #include "Processing.hpp"
 #include "imgui.h"
@@ -37,6 +38,7 @@ void Plotter::imSettings(){
   redraw |= ImGui::SliderFloat("rMax", &rmax, rmin, 1.f);
   redraw |= ImGui::SliderInt("samples", &samples, 20, 5000);
   redraw |= ImGui::SliderFloat("frequency", &overlap, 0, 30);
+  redraw |= ImGui::SliderFloat("amplitude", &amplitude, 0, 30);
   redraw |= ImGui::SliderFloat("SizeGamma", &gamma, 0, 20);
 
   recolor = false;
@@ -66,13 +68,17 @@ void Plotter::imSettings(){
 }
 }
 
-void Plotter::update(Processing * ctx){
+void Plotter::update(Processing * ctx, float t){
   imSettings();
 
   if(listbox_item_current == 3 && pixels == nullptr){
+    if(redraw){
+      cout<<"Could not find image ";
+    }
     return;
   }
 
+  redraw = true;
   if(redraw){
     int jiggle = 0;
     for(size_t i=0; i < layers.size(); i++) {
@@ -106,9 +112,29 @@ void Plotter::update(Processing * ctx){
       vector<Blob>& blobs = layer.blobs;
       blobs.clear();
       Partition p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
-      
-      p.gen_random({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs);
-///      p.gen_poisson({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs, 0.0001f);
+
+      FastNoise noise;
+      noise.SetSeed(seed );
+
+      for(int pts=0; pts < samples; pts++){
+        vec2 pos = Random::random_point({0, 0}, {6.28, .8});
+        pos = vec2{sin(pos.x) * pos.y, cos(pos.x) * pos.y};
+
+        float r = std::max(1.0f - glm::length(pos), 0.0f) ;
+        pos.x += r * noise.GetSimplexFractal((sin(t+ (i / numLayers)))  * amplitude,  cos(t + pos.x)* overlap, sin(t + pos.x) * overlap) * gamma;
+        pos.y += r * noise.GetSimplexFractal((cos(t- (i / numLayers)))  * amplitude,  sin(t + pos.y)* overlap, gamma + cos(t + pos.y) * overlap) * gamma;
+
+
+        //pos.x += r * noise.GetSimplexFractal((sin(t+ (i / numLayers))  )  * amplitude,   pos.x* overlap,   pos.x * amplitude) * gamma;
+        //pos.y += r * noise.GetSimplexFractal((cos(t- (i / numLayers))  )  * amplitude,   pos.y* overlap, gamma + pos.y * amplitude) * gamma;
+
+
+        vec2  radii = radiusFN(pos);
+        float radius = Random::range(radii.x, radii.y);
+        blobs.emplace_back(pos, rmin);
+      }
+
+      //p.gen_poisson({-.8, -.8}, {.8, .8}, radiusFN, samples, blobs, 0.0001f);
       if(blobs.size() == 1 && jiggle < 5){
         i--;
         jiggle ++;
@@ -120,7 +146,7 @@ void Plotter::update(Processing * ctx){
     ctx->clear();
      for(int i=0; i < numLayers; i++) {
       for(auto b: layers[i].blobs){
-        if(b.r >= rmax * showThreshhold){
+        if(b.r <= rmax * showThreshhold){
           if(useImageColors){
             b.render(ctx, vec4{sampleImage(b.pos),1.0},thickness);
           }
@@ -137,7 +163,7 @@ void Plotter::update(Processing * ctx){
     ProcessingSVG svg;
      for(int i=0; i < numLayers; i++) {
       for(const auto& b: layers[i].blobs){
-        if(b.r >= rmax * showThreshhold){
+        if(b.r <= rmax * showThreshhold){
           svg.circle(b.pos, b.r);
         }
       }

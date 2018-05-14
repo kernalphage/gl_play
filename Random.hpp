@@ -1,6 +1,7 @@
 #ifndef RANDOM_HPP
 #define RANDOM_HPP
 #include <random>
+#include "Definitions.hpp"
 
 class Random {
   static std::default_random_engine generator;
@@ -18,6 +19,11 @@ public:
   }
   static float range(float a, float b) {
     return a + (b - a) * distribution(generator);
+  }
+
+  static vec2 random_point(vec2 tl, vec2 br) {
+    return {Random::range(tl.x, br.x),
+            Random::range(tl.y, br.y)};
   }
 };
 

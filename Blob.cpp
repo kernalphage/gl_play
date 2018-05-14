@@ -12,10 +12,7 @@
 // min_dist
 // make_circle?
 
-vec2 generate_random_point(rect b) {
-  return {Random::range(b.tl.x, b.br.x),
-          Random::range(b.tl.y, b.br.y)};
-}
+
 
 bool point_in_circle(vec2 pt, vec2 cpt, float cr) {
   return length(pt - cpt) < cr;
@@ -53,9 +50,8 @@ float min_dist(const vec2 &pt, vector<Blob> &v, rect bounds) {
 void
 Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vector<Blob> &out, float overlap) {
   vector<Blob> open;
-
   rect bounds{tl, br};
-  vec2 seed = generate_random_point(bounds);
+  vec2 seed = Random::random_point(tl, br);
 
   Blob s = Blob{seed, distFN(seed).y};
   out.push_back(s);
@@ -71,13 +67,12 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
     float rmin = radii.x;
     float rmax = radii.y;
 
-    rect torus{vec2{rmin + cur.r, 0}, vec2{rmax + cur.r, 6.28}};
 
  // TODO: I fucked up something here and the circles don't look random anymore
     //find a couple spots
     int generated = 0;
     for (int i = 0; i < 60; i++) {
-      vec2 samp = generate_random_point(torus);
+      vec2 samp =  Random::random_point(vec2{rmin + cur.r, 0}, vec2{rmax + cur.r, 6.28});
      //	 samp.x = rmax + cur.r;
       samp = cur.pos + (vec2{sin(samp.y), cos(samp.y)}) * samp.x;
 
@@ -126,11 +121,5 @@ void Blob::render(Processing *ctx, vec4 color, float thickness) {
 
 void Partition::gen_random(vec2 tl, vec2 br, DistanceFN sampleSize, int maxSamples, std::vector<Blob> &out){
 
-  rect bounds{tl, br};
-  for(int i=0; i < maxSamples; i++){
-      vec2 pos = generate_random_point(bounds);
-      vec2  radii = sampleSize(pos);
-      float radius = Random::range(radii.x, radii.y);
-      out.emplace_back(pos, radius);
-   }
+
 }
