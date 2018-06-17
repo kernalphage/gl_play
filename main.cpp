@@ -44,13 +44,14 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
 
 template<typename T>
 vector<T> chaikin(vector<T> seed, float smooth, float minDist){
+  int maxIterations = seed.size() * 10; // todo: better heuristic ;
+
 	do {
 		vector<T> output{ seed[0] };
 		bool needed_cut = false;
 		for(int i=0; i < seed.size() - 1; i++){
 			if(distance(seed[i], seed[i+1]) < minDist) {
         output.push_back( seed[i] );
-        output.push_back( seed[i+1]);
 				continue;
 		 	};
 			needed_cut = true;
@@ -64,31 +65,35 @@ vector<T> chaikin(vector<T> seed, float smooth, float minDist){
 			return output;
 		}
 		seed = output;
-	} while(true);
+	} while(maxIterations-- > 0);
 }
 
 void do_curve(Processing* ctx){
   static int seed = 0;
   static int numPts = 5;
   static float minDist = 1;
-
+  static float spikiness = 0.f;
   bool redraw = false;
   redraw |= ImGui::InputInt("Seed", &seed);
   redraw |= ImGui::SliderInt("numPts", &numPts, 2, 50);
   redraw |= ImGui::SliderFloat("minDist", &minDist, 0.001f, 2.f);
-
+  redraw |= ImGui::SliderFloat("spikiness", &spikiness, 0.f, 1.f);
 
   if(!redraw) return;
   ctx->clear();
   Random::seed(seed);
   vector<vec3> pts;
   for(int i=0; i < numPts; i++){
-    // if()
-    pts.push_back( vec3{ Random::range(-1.f,1.f),Random::range(-1.f,1.f),Random::range(-1.f,1.f)} );
+    vec3 newpt{ Random::range(-1.f,1.f),Random::range(-1.f,1.f),Random::range(-1.f,1.f)};
+    if( Random::f() < spikiness && i > 1){
+      pts.push_back( pts[ i ]);
+      continue;
+    }
+    pts.push_back(newpt);
   }
   pts = chaikin(pts,.3333, minDist);
 
-  ctx->spline(pts, {.2,.5,.7,1});
+  ctx->spline(pts, {.2,.5,.7,.1});
   ctx->flush();
 }
 

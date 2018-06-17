@@ -138,3 +138,16 @@ void ProcessingGL::allocate_buffers(unsigned int vbo_size,
                         (void *)(sizeof(vec3)));
   glEnableVertexAttribArray(1);
 }
+
+void ProcessingGL::spline(vector<vec3> pts, vec4 color) {
+
+  for(int i=0; i < pts.size(); i++){
+    vec3 p = pts[i];
+    quad(UI_Vertex{p+vec3{.01,0,0}, color},
+         UI_Vertex{p+vec3{.01,.01,0}, color},
+         UI_Vertex{p+vec3{0,.01,0}, color},
+         UI_Vertex{p+vec3{0,0,0}, color});
+
+
+  }
+}

@@ -39,7 +39,7 @@ public:
   void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c) override;
   void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d) override;
   void polygon(std::vector<UI_Vertex> v, bool loop = true) override;
-
+  void spline(std::vector<vec3> pts, vec4 color) override ;
   void line(vec3 p1, vec3 p2, vec4 color) override;
   
   void flush() override;
