@@ -42,6 +42,56 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
 }
 
 
+template<typename T>
+vector<T> chaikin(vector<T> seed, float smooth, float minDist){
+	do {
+		vector<T> output{ seed[0] };
+		bool needed_cut = false;
+		for(int i=0; i < seed.size() - 1; i++){
+			if(distance(seed[i], seed[i+1]) < minDist) {
+        output.push_back( seed[i] );
+        output.push_back( seed[i+1]);
+				continue;
+		 	};
+			needed_cut = true;
+			T q = mix(seed[i], seed[i+1], smooth);
+			T r = mix(seed[i], seed[i+1], 1 - smooth);
+			output.push_back( q );
+			output.push_back( r );
+		}
+		output.push_back(seed[seed.size()-1]);
+		if(!needed_cut){
+			return output;
+		}
+		seed = output;
+	} while(true);
+}
+
+void do_curve(Processing* ctx){
+  static int seed = 0;
+  static int numPts = 5;
+  static float minDist = 1;
+
+  bool redraw = false;
+  redraw |= ImGui::InputInt("Seed", &seed);
+  redraw |= ImGui::SliderInt("numPts", &numPts, 2, 50);
+  redraw |= ImGui::SliderFloat("minDist", &minDist, 0.001f, 2.f);
+
+
+  if(!redraw) return;
+  ctx->clear();
+  Random::seed(seed);
+  vector<vec3> pts;
+  for(int i=0; i < numPts; i++){
+    // if()
+    pts.push_back( vec3{ Random::range(-1.f,1.f),Random::range(-1.f,1.f),Random::range(-1.f,1.f)} );
+  }
+  pts = chaikin(pts,.3333, minDist);
+
+  ctx->spline(pts, {.2,.5,.7,1});
+  ctx->flush();
+}
+
 void spawnFlower(Processing *ctx) {
 
   const float pi = 3.1415f;
@@ -115,7 +165,7 @@ int main() {
   vec4 clear_color{0.95f, 0.95f, 0.96f, 1.00f};
 
   Blob b{{0,0}, .5f};
-  RenderTarget buff(500,500);
+ // RenderTarget buff(500,500);
 
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -131,21 +181,19 @@ int main() {
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
   //genTriangle();
-  p.update(ctx, (float) glfwGetTime());
+    do_curve(ctx);
+  //p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
 
     glClearColor(SPLAT4(clear_color));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    buff.activate();
+    //buff.activate();
     basic.use();
     ctx->render();
 
-    if(t == 0){
-      RenderTarget::screenshot_ppm("SCROTE.ppm", 500,500, &pixels);
-    }
 
-    buff.render();
+    //buff.render();
     //basic.use();
     //ctx->render();
     t += .05f; // TODO: real deltatime

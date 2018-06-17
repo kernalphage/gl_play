@@ -47,8 +47,10 @@ void ProcessingGL::quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d){
   tri(a,b,c);
   tri(a,c,d);
 }
+
+
 void ProcessingGL::line(vec3 p1, vec3 p2, vec4 color) {
-  auto perp = normalize(rotateZ((p1-p2), 3.14f/2)) * .002;
+  auto perp = normalize(rotateZ((p1-p2), 3.14f/2)) * .02;
   quad({p1 + perp, color}, 
        {p2 + perp, color}, 
        {p2 - perp, color},

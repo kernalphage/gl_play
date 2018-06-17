@@ -15,6 +15,11 @@ public:
   virtual void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c)= 0;
   virtual void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d)= 0;
   virtual void polygon(std::vector<UI_Vertex> v, bool loop = true)= 0;
+  virtual void spline(std::vector<vec3> points, vec4 color) {
+    for(int i =0; i < points.size() - 1; i++){
+      line(points[i], points[i+1], color);
+    }
+  }
   virtual void line(vec3 p1, vec3 p2, vec4 color) = 0;   
   virtual void flush() = 0;
   virtual void clear() = 0;
@@ -34,6 +39,7 @@ public:
   void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c) override;
   void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d) override;
   void polygon(std::vector<UI_Vertex> v, bool loop = true) override;
+
   void line(vec3 p1, vec3 p2, vec4 color) override;
   
   void flush() override;
