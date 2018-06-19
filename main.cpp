@@ -10,6 +10,7 @@
 #include "Blob.hpp"
 #include "Plotter.hpp"
 #include "RenderTarget.hpp"
+#include "Flame.hpp"
 
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
@@ -43,26 +44,26 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action,
 
 
 template<typename T>
-vector<T> chaikin(vector<T> seed, float smooth, float minDist){
+vector<T> chaikin(vector<T> init, float smooth, float minDist){
+  // http://graphics.cs.ucdavis.edu/education/CAGDNotes/Chaikins-Algorithm/Chaikins-Algorithm.html
+  vector<T> seed = init;
   int maxIterations = seed.size() * 10; // todo: better heuristic ;
 
 	do {
 		vector<T> output{ seed[0] };
 		bool needed_cut = false;
 		for(int i=0; i < seed.size() - 1; i++){
-			if(distance(seed[i], seed[i+1]) < minDist) {
+			if(distance(seed[i], seed[i+1]) < minDist) { //i think it's fucky here?
         output.push_back( seed[i] );
-				continue;
+        output.push_back( seed[i+1] );
+
+        continue;
 		 	};
 			needed_cut = true;
 			T q = mix(seed[i], seed[i+1], smooth);
 			T r = mix(seed[i], seed[i+1], 1 - smooth);
 			output.push_back( q );
 			output.push_back( r );
-		}
-		output.push_back(seed[seed.size()-1]);
-		if(!needed_cut){
-			return output;
 		}
 		seed = output;
 	} while(maxIterations-- > 0);
@@ -94,6 +95,46 @@ void do_curve(Processing* ctx){
   pts = chaikin(pts,.3333, minDist);
 
   ctx->spline(pts, {.2,.5,.7,.1});
+  ctx->flush();
+}
+void do_flame(Processing * ctx){
+  static int seed = 0;
+  static int numPts = 5;
+  static vec2 offset{0,0};
+  static vec4 vars{0,0,0,0};
+  static float strength = .5;
+  static float domain = 3;
+
+  static vec4 color{1, 0, 0, 1};
+  bool redraw = false;
+
+  redraw |= ImGui::InputInt("Seed", &seed);
+  redraw |= ImGui::SliderInt("numPts", &numPts, 2, 500);
+  redraw |= ImGui::SliderFloat2("offset", (float*)&offset, -2,2);
+  redraw |= ImGui::SliderFloat4("vars", (float*)&vars, -2,2);
+  redraw |= ImGui::SliderFloat("strength", &strength, 0, 1);
+  redraw |= ImGui::SliderFloat("domain", &domain, .5, 5);
+
+
+  if(!redraw) return;
+  ctx->clear();
+  Random::seed(seed);
+  float di = 2.0f / numPts;
+  for(int i=0; i < numPts; i++){
+    for(int j = 0; j < numPts; j++){
+      vec2 p = Random::random_point({-domain,-domain}, {domain,domain} ) ;
+      p = mix( p, Flame::swirl(p + offset, vars), strength);
+
+      p /= domain;
+      vec3 pp{p.x,p.y, 0};
+
+      ctx->quad(UI_Vertex{pp+vec3{.01,0,0}, color},
+                    UI_Vertex{pp+vec3{.01,.01,0}, color},
+                    UI_Vertex{pp+vec3{0,.01,0}, color},
+                    UI_Vertex{pp+vec3{0,0,0}, color});
+    }
+  }
+
   ctx->flush();
 }
 
@@ -186,7 +227,8 @@ int main() {
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
   //genTriangle();
-    do_curve(ctx);
+  //  do_curve(ctx);
+    do_flame(ctx);
   //p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
 
