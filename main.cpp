@@ -24,6 +24,9 @@ float t = 0;
 GLuint d;
 static GLubyte *pixels = NULL;
 
+#define impl_STATIC_DO_ONCE(x, y) {static bool __doonce##y=true; if(__doonce##y == true){__doonce##y = false; x;}};
+#define STATIC_DO_ONCE(x) impl_STATIC_DO_ONCE(x, __LINE__);
+
 void genTriangle() {
     if(tri.imSettings()){
     ctx->clear();
@@ -98,40 +101,68 @@ void do_curve(Processing* ctx){
   ctx->flush();
 }
 void do_flame(Processing * ctx){
-  static int seed = 0;
-  static int numPts = 5;
-  static vec2 offset{0,0};
-  static vec4 vars{0,0,0,0};
-  static float strength = .5;
-  static float domain = 3;
+  static int seed = 12;
+  static int numPts = 55;
+  static float startScale = 3;
+  static float endScale = 1/3.0f;
+  static vector<Flame> ff(5);
 
-  static vec4 color{1, 0, 0, 1};
+  static vec4 color{80/255.0f, 7/255.f, 1/255.f, 1};
+
   bool redraw = false;
+  bool reseed = false;
 
-  redraw |= ImGui::InputInt("Seed", &seed);
+  STATIC_DO_ONCE(redraw = true;);
+  STATIC_DO_ONCE(reseed = true;);
+
+  redraw |= reseed = ImGui::InputInt("Seed", &seed);
   redraw |= ImGui::SliderInt("numPts", &numPts, 2, 500);
-  redraw |= ImGui::SliderFloat2("offset", (float*)&offset, -2,2);
-  redraw |= ImGui::SliderFloat4("vars", (float*)&vars, -2,2);
-  redraw |= ImGui::SliderFloat("strength", &strength, 0, 1);
-  redraw |= ImGui::SliderFloat("domain", &domain, .5, 5);
+  redraw |= ImGui::SliderFloat("startScale", &startScale, .05, 5);
+  redraw |= ImGui::SliderFloat("endScale", &endScale, .05, 5);
 
+  redraw |= ImGui::ColorEdit4(
+      "ptColor",
+      (float *)&color); // Edit 3 floats representing a color
+  for(int i=0; i < ff.size(); i++){
+    redraw |= ff[i].imSettings(i);
+  }
 
   if(!redraw) return;
   ctx->clear();
   Random::seed(seed);
+  if(reseed){
+    for(auto&f:ff){ f.randomInit();};
+  }
+
   float di = 2.0f / numPts;
   for(int i=0; i < numPts; i++){
     for(int j = 0; j < numPts; j++){
-      vec2 p = Random::random_point({-domain,-domain}, {domain,domain} ) ;
-      p = mix( p, Flame::swirl(p + offset, vars), strength);
+      vec2 p = Random::random_point({-startScale,-startScale}, {startScale,startScale} ) ;
 
-      p /= domain;
+      for(auto f : ff) {
+        p = f.fn(p);
+      }
+      p *= endScale;
       vec3 pp{p.x,p.y, 0};
+      float r = .01;
+      float thickness = .01;
+      const float pi = 3.1415f;
+      vec3 threepos{p, 1};
+      float dTheta = (2 * pi) / 16;
+      auto cPos = [=](float t, float radius){ return vec3{sin(t), cos(t), 1} * radius + threepos;};
+      for (float theta = dTheta; theta <= (2 * pi); theta += dTheta) {
+        ctx->quad(UI_Vertex{cPos(theta, r), color},
+                  UI_Vertex{cPos(theta + dTheta, r), color},
+                  UI_Vertex{cPos(theta + dTheta, r  - thickness), color},
+                  UI_Vertex{cPos(theta, r - thickness), color});
+      }
 
-      ctx->quad(UI_Vertex{pp+vec3{.01,0,0}, color},
-                    UI_Vertex{pp+vec3{.01,.01,0}, color},
-                    UI_Vertex{pp+vec3{0,.01,0}, color},
+      /*
+      ctx->quad(UI_Vertex{pp+vec3{.1,0,0}, color},
+                    UI_Vertex{pp+vec3{.1,.1,0}, color},
+                    UI_Vertex{pp+vec3{0,.1,0}, color},
                     UI_Vertex{pp+vec3{0,0,0}, color});
+                    */
     }
   }
 
@@ -204,11 +235,11 @@ int main() {
       ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
   // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad
   // Controls
-  ImGui_ImplGlfwGL3_Init(mainWin.window, false);
+  ImGui_ImplGlfwGL3_Init(mainWin.window, true);
 
   // Setup style
   ImGui::StyleColorsDark();
-  vec4 clear_color{0.95f, 0.95f, 0.96f, 1.00f};
+  vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
 
   Blob b{{0,0}, .5f};
  // RenderTarget buff(500,500);
@@ -226,14 +257,14 @@ int main() {
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
                 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
+    glClearColor(SPLAT4(clear_color));
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   //genTriangle();
   //  do_curve(ctx);
     do_flame(ctx);
   //p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
-
-    glClearColor(SPLAT4(clear_color));
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     //buff.activate();
     basic.use();

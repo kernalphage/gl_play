@@ -25,6 +25,18 @@ public:
     return {Random::range(tl.x, br.x),
             Random::range(tl.y, br.y)};
   }
+  static vec3 random_point(vec3 tl, vec3 br) {
+    return {Random::range(tl.x, br.x),
+            Random::range(tl.y, br.y),
+            Random::range(tl.z, br.z)};
+  }  
+  static vec4 random_point(vec4 tl, vec4 br) {
+    return {Random::range(tl.x, br.x),
+            Random::range(tl.y, br.y),
+            Random::range(tl.z, br.z),
+            Random::range(tl.w, br.w)};
+  }
+
 };
 
 #endif
