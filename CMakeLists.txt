@@ -31,7 +31,6 @@ set(REF_SOURCE_FILES
     ref/FastNoise/FastNoise.cpp
 	ref/FastNoise/FastNoise.h
 	ref/glad/src/glad.c
-    ref/image.capnp.c++
 	)
 
 add_executable(gl_play ${SOURCE_FILES} ${REF_SOURCE_FILES})
@@ -40,7 +39,6 @@ include_directories("ref")
 include_directories("imgui_impl")
 include_directories("ref/stb")
 set(LIBRARIES "dl")
-
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "~/git/capnproto-c++-0.6.1/cmake/")
 find_package(CapnProto REQUIRED)
@@ -76,5 +74,5 @@ set(SHADERS
         svgbuilder.py
 	)
 foreach(shader ${SHADERS})
-	configure_file( "${shader}" ${shader})
+	configure_file( "${shader}" ${shader} COPYONLY)
 endforeach()

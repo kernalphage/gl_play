@@ -100,7 +100,7 @@ void do_curve(Processing* ctx){
   ctx->spline(pts, {.2,.5,.7,.1});
   ctx->flush();
 }
-void do_flame(Processing * ctx){
+bool do_flame(Processing * ctx){
   static int seed = 12;
   static int numPts = 55;
   static float startScale = 3;
@@ -127,7 +127,7 @@ void do_flame(Processing * ctx){
     redraw |= ff[i].imSettings(i);
   }
 
-  if(!redraw) return;
+  if(!redraw) return false;
   ctx->clear();
   Random::seed(seed);
   if(reseed){
@@ -144,8 +144,8 @@ void do_flame(Processing * ctx){
       }
       p *= endScale;
       vec3 pp{p.x,p.y, 0};
-      float r = .01;
-      float thickness = .01;
+      float r = .3;
+      float thickness = .3;
       const float pi = 3.1415f;
       vec3 threepos{p, 1};
       float dTheta = (2 * pi) / 16;
@@ -167,6 +167,7 @@ void do_flame(Processing * ctx){
   }
 
   ctx->flush();
+  return redraw;
 }
 
 void spawnFlower(Processing *ctx) {
@@ -216,13 +217,20 @@ void spawnFlower(Processing *ctx) {
   ctx->flush();
 }
 
+static void error_callback(int error, const char* description)
+{
+  fprintf(stderr, "Error %d: %s\n", error, description);
+}
+
+
 int main() {
 
   Window mainWin;
   mainWin.init(500,500);
 
+  glfwSetErrorCallback(error_callback);
   glfwSetKeyCallback(mainWin.window, keyCallback);
-
+  glEnable(GL_DEBUG_OUTPUT);
   // build and compile our shader program
 
   Material basic{"basic.vert", "basic.frag", true};
@@ -231,47 +239,44 @@ int main() {
   // Setup ImGui binding
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
-  io.ConfigFlags |=
-      ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-  // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad
+  io.ConfigFlags |=  ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad
   // Controls
   ImGui_ImplGlfwGL3_Init(mainWin.window, true);
 
   // Setup style
-  ImGui::StyleColorsDark();
-  vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
+ // ImGui::StyleColorsDark();
+  vec4 clear_color{0.05f, 0.15f, 0.16f, 0.00f};
 
   Blob b{{0,0}, .5f};
- // RenderTarget buff(500,500);
+  RenderTarget buff(500,500);
+ // buff.init();
 
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
-    ImGui_ImplGlfwGL3_NewFrame();
+   ImGui_ImplGlfwGL3_NewFrame();
 
     // 1. Show a simple window.
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets
     // automatically appears in a window called "Debug".
-    ImGui::ColorEdit3(
-        "clear_color",
-        (float *)&clear_color); // Edit 3 floats representing a color
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",
-                1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+     ImGui::ColorEdit3(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
     glClearColor(SPLAT4(clear_color));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   //genTriangle();
   //  do_curve(ctx);
-    do_flame(ctx);
+    bool redraw = do_flame(ctx);
   //p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
 
-    //buff.activate();
+    //buff.begin(redraw);
     basic.use();
-    ctx->render();
+   //if(redraw)
+     ctx->render();
+    //buff.end();
 
-
-    //buff.render();
     //basic.use();
     //ctx->render();
     t += .05f; // TODO: real deltatime

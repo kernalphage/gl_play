@@ -1,46 +1,89 @@
-void init(void)  {
-    int glget;
+#include "ref/glad/include/glad/glad.h"
+#include "RenderTarget.hpp"
+#include "Material.hpp"
+#include "Definitions.hpp"
+#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+void RenderTarget::init(void)  {
 
-    if (offscreen) {
-        /*  Framebuffer */
-        glGenFramebuffers(1, &fbo);
-        glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glGenFramebuffers(1, &m_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 
-        /* Color renderbuffer. */
-        glGenRenderbuffers(1, &rbo_color);
-        glBindRenderbuffer(GL_RENDERBUFFER, rbo_color);
-        /* Storage must be one of: */
-        /* GL_RGBA4, GL_RGB565, GL_RGB5_A1, GL_DEPTH_COMPONENT16, GL_STENCIL_INDEX8. */
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_RGB565, WIDTH, HEIGHT);
-        glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, rbo_color);
+    glGenTextures(1, &m_texture);
+    glBindTexture(GL_TEXTURE_2D, m_texture);
 
-        /* Depth renderbuffer. */
-        glGenRenderbuffers(1, &rbo_depth);
-        glBindRenderbuffer(GL_RENDERBUFFER, rbo_depth);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, WIDTH, HEIGHT);
-        glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rbo_depth);
+    // Color buffer
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
 
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
+   //  glClearColor(0,0,0,1);
+  //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        /* Sanity check. */
-        assert(glCheckFramebufferStatus(GL_FRAMEBUFFER));
-        glGetIntegerv(GL_MAX_RENDERBUFFER_SIZE, &glget);
-        assert(WIDTH * HEIGHT < (unsigned int)glget);
-    } else {
-        glReadBuffer(GL_BACK);
-    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glClearColor(0.0, 0.0, 0.0, 0.0);
-    glEnable(GL_DEPTH_TEST);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glViewport(0, 0, WIDTH, HEIGHT);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glMatrixMode(GL_MODELVIEW);
+  vec4 verts[] = {{ -.9f,  .9f,  0,  1,},
+                  {  .9f,  .9f,  1,  1,},
+                  { -.9f, -.9f,  0,  0,},
+                  {  .9f, -.9f,  1,  0,},
+  };
+  // Data for those sweet, sweet two triangles
+  glGenVertexArrays(1, &m_vao);
+    glGenBuffers(1, &m_vbo);
+    glBindVertexArray(m_vao);
 
-    time0 = glutGet(GLUT_ELAPSED_TIME);
-    model_init();
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
+    glUseProgram(m_twotri->ID);
+
+// Linking shader attributes to cpp structs
+    GLint posAttrib = glGetAttribLocation(m_twotri->ID, "vertex_pos");
+    glEnableVertexAttribArray(posAttrib);
+    glVertexAttribPointer(posAttrib, 2, GL_FLOAT, GL_FALSE,
+                          sizeof(glm::vec4), (void*) 0);
+
+    GLint texAttrib = glGetAttribLocation(m_twotri->ID, "vertex_uv");
+    glEnableVertexAttribArray(texAttrib);
+    glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE,
+                          sizeof(glm::vec4), (void*) OFFSETOF(vec4, z));
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+
 #if FFMPEG
     ffmpeg_encoder_start("tmp.mpg", AV_CODEC_ID_MPEG1VIDEO, 25, WIDTH, HEIGHT);
 #endif
+}
+
+void RenderTarget::deinit() {
+    glDeleteFramebuffers(1, &m_fbo);
+}
+
+void RenderTarget::begin(bool clear) {
+
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+    glViewport(0,0,WIDTH,HEIGHT);
+  if(clear) {
+    glClearColor(0, 0, 0, 255);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  }
+}
+
+void RenderTarget::end() {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  m_twotri->use();
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, m_texture);
+  glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+  glBindVertexArray(m_vao);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0,4);
+  glBindVertexArray(0);
+
+}
+
+RenderTarget::RenderTarget(int _w, int _h) {
+  m_twotri = new Material{"two_tri.vert", "two_tri.frag", false};
+  WIDTH = _w;
+  HEIGHT = _h;
 }
