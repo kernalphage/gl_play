@@ -2,11 +2,14 @@
 
 in vec2 UV;
 
-layout(location = 0) out vec3 color;
+layout(location = 0) out vec4 color;
 
 uniform sampler2D renderedTexture;
-uniform float time;
+uniform float gamma;
+uniform float energy;
 
 void main(){
-    color = vec3(UV, 1);//texture( renderedTexture, UV ).xyz;
+    vec4 val = texture( renderedTexture, UV );
+    vec4 lum =  pow(val, vec4(gamma))/energy;
+    color = lum;
 }
