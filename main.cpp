@@ -100,9 +100,11 @@ void do_curve(Processing* ctx){
   ctx->spline(pts, {.2,.5,.7,.1});
   ctx->flush();
 }
-bool do_flame(Processing * ctx){
+void do_flame(Processing * ctx, bool& _r, bool& _c){
   static int seed = 12;
   static int numPts = 55;
+  static int numLayers = 20;
+  static int curLayer = 0;
   static float startScale = 3;
   static float endScale = 1/3.0f;
   static vector<Flame> ff(5);
@@ -123,36 +125,43 @@ bool do_flame(Processing * ctx){
   redraw |= ImGui::ColorEdit4(
       "ptColor",
       (float *)&color); // Edit 3 floats representing a color
+  vec4 aColor = vec4(color.x, color.y, color.z, 0);
   for(int i=0; i < ff.size(); i++){
     redraw |= ff[i].imSettings(i);
   }
 
-  if(!redraw) return false;
+  if(!redraw &&  curLayer >= numLayers ) return;
+  cout<<"Layer "<< curLayer<<endl;
+  curLayer++;
   ctx->clear();
-  Random::seed(seed);
+  if(redraw || reseed){
+    curLayer = 0;
+  }
   if(reseed){
     for(auto&f:ff){ f.randomInit();};
+
   }
+  Random::seed(seed + curLayer);
 
   float di = 2.0f / numPts;
   for(int i=0; i < numPts; i++){
     for(int j = 0; j < numPts; j++){
       vec2 p = Random::random_point({-startScale,-startScale}, {startScale,startScale} ) ;
-
       for(auto f : ff) {
         p = f.fn(p);
       }
       p *= endScale;
+
       vec3 pp{p.x,p.y, 0};
-      float r = .3;
-      float thickness = .3;
+      float r = .03;
+      float thickness = .03;
       const float pi = 3.1415f;
       vec3 threepos{p, 1};
       float dTheta = (2 * pi) / 16;
       auto cPos = [=](float t, float radius){ return vec3{sin(t), cos(t), 1} * radius + threepos;};
       for (float theta = dTheta; theta <= (2 * pi); theta += dTheta) {
-        ctx->quad(UI_Vertex{cPos(theta, r), color},
-                  UI_Vertex{cPos(theta + dTheta, r), color},
+        ctx->quad(UI_Vertex{cPos(theta, r), aColor},
+                  UI_Vertex{cPos(theta + dTheta, r), aColor},
                   UI_Vertex{cPos(theta + dTheta, r  - thickness), color},
                   UI_Vertex{cPos(theta, r - thickness), color});
       }
@@ -167,7 +176,9 @@ bool do_flame(Processing * ctx){
   }
 
   ctx->flush();
-  return redraw;
+  _r = true;
+  _c = curLayer == 0;
+  return ;
 }
 
 void spawnFlower(Processing *ctx) {
@@ -246,11 +257,11 @@ int main() {
 
   // Setup style
  // ImGui::StyleColorsDark();
-  vec4 clear_color{0.05f, 0.15f, 0.16f, 0.00f};
+  vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
 
   Blob b{{0,0}, .5f};
   RenderTarget buff(500,500);
- // buff.init();
+  buff.init();
 
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -259,7 +270,7 @@ int main() {
     // 1. Show a simple window.
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets
     // automatically appears in a window called "Debug".
-     ImGui::ColorEdit3(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
+     ImGui::ColorEdit4(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
     glClearColor(SPLAT4(clear_color));
@@ -267,18 +278,17 @@ int main() {
 
   //genTriangle();
   //  do_curve(ctx);
-    bool redraw = do_flame(ctx);
+    bool redraw = false, clear = false;
+    do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
   //p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
 
-    //buff.begin(redraw);
+    buff.begin(clear);
     basic.use();
-   //if(redraw)
+   if(redraw)
      ctx->render();
-    //buff.end();
+    buff.end();
 
-    //basic.use();
-    //ctx->render();
     t += .05f; // TODO: real deltatime
 
     ImGui::Render();

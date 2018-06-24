@@ -2,6 +2,9 @@
 #include "RenderTarget.hpp"
 #include "Material.hpp"
 #include "Definitions.hpp"
+
+#include "imgui.h"
+
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 void RenderTarget::init(void)  {
 
@@ -12,11 +15,14 @@ void RenderTarget::init(void)  {
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
     // Color buffer
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGB, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture, 0);
 
+
+     glEnable(GL_BLEND);
+     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
    //  glClearColor(0,0,0,1);
   //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -67,6 +73,13 @@ void RenderTarget::begin(bool clear) {
     glClearColor(0, 0, 0, 255);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
+
+  ImGui::SliderFloat("Gamma", &gamma, 0,12);
+  ImGui::SliderFloat("Energy", &energy, 0,111);
+
+  m_twotri->setFloat("gamma", gamma);
+  m_twotri->setFloat("energy", energy);
+
 }
 
 void RenderTarget::end() {

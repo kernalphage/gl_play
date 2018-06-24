@@ -75,10 +75,10 @@ public:
       glEnable(GL_BLEND);
 
     //  glBlendFunc(GL_ONE, GL_ONE);
-      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
       //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-      //glBlendEquation(GL_FUNC_ADD);
+      glBlendEquation(GL_FUNC_ADD);
     }
   }
   // utility uniform functions
