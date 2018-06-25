@@ -42,6 +42,10 @@ void RenderTarget::init(void)  {
     glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
     glUseProgram(m_twotri->ID);
 
+
+  m_twotri->setInt("renderedTexture", 0);
+  m_twotri->setInt("tonemap", 1);
+
 // Linking shader attributes to cpp structs
     GLint posAttrib = glGetAttribLocation(m_twotri->ID, "vertex_pos");
     glEnableVertexAttribArray(posAttrib);
@@ -70,12 +74,12 @@ void RenderTarget::begin(bool clear) {
     glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     glViewport(0,0,WIDTH,HEIGHT);
   if(clear) {
-    glClearColor(0, 0, 0, 255);
+     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  ImGui::SliderFloat("Gamma", &gamma, 0,12);
-  ImGui::SliderFloat("Energy", &energy, 0,111);
+  ImGui::SliderFloat("Gamma", &gamma, 0,2);
+  ImGui::InputFloat("Energy", &energy);
 
   m_twotri->setFloat("gamma", gamma);
   m_twotri->setFloat("energy", energy);
@@ -88,6 +92,10 @@ void RenderTarget::end() {
   m_twotri->use();
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, m_texture);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, m_tonemap);
+
+
   glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
   glBindVertexArray(m_vao);
   glDrawArrays(GL_TRIANGLE_STRIP, 0,4);
@@ -99,4 +107,15 @@ RenderTarget::RenderTarget(int _w, int _h) {
   m_twotri = new Material{"two_tri.vert", "two_tri.frag", false};
   WIDTH = _w;
   HEIGHT = _h;
+
+
+  // Start texture load
+  pixels = stbi_load("tonemap.png", &texWidth, &texHeight, &texChannels, 0);
+  glGenTextures(1, &m_tonemap);
+  glBindTexture(GL_TEXTURE_2D, m_tonemap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 }

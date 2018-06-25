@@ -22,6 +22,7 @@ TriBuilder tri;
 Plotter p;
 float t = 0;
 GLuint d;
+int guessDepth;
 static GLubyte *pixels = NULL;
 
 #define impl_STATIC_DO_ONCE(x, y) {static bool __doonce##y=true; if(__doonce##y == true){__doonce##y = false; x;}};
@@ -102,14 +103,14 @@ void do_curve(Processing* ctx){
 }
 void do_flame(Processing * ctx, bool& _r, bool& _c){
   static int seed = 12;
-  static int numPts = 55;
-  static int numLayers = 20;
+  static int numPts = 12;
+  static int numLayers = 12;
   static int curLayer = 0;
   static float startScale = 3;
-  static float endScale = 1/3.0f;
+  static float endScale = 1.f;
   static vector<Flame> ff(5);
 
-  static vec4 color{80/255.0f, 7/255.f, 1/255.f, 1};
+  static vec4 color{1.f, 1.f, 0.f, 1};
 
   bool redraw = false;
   bool reseed = false;
@@ -118,14 +119,12 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   STATIC_DO_ONCE(reseed = true;);
 
   redraw |= reseed = ImGui::InputInt("Seed", &seed);
+  redraw |= ImGui::SliderInt("Layers", &numLayers, 2, 100);
+  ImGui::SameLine();
   redraw |= ImGui::SliderInt("numPts", &numPts, 2, 500);
   redraw |= ImGui::SliderFloat("startScale", &startScale, .05, 5);
   redraw |= ImGui::SliderFloat("endScale", &endScale, .05, 5);
 
-  redraw |= ImGui::ColorEdit4(
-      "ptColor",
-      (float *)&color); // Edit 3 floats representing a color
-  vec4 aColor = vec4(color.x, color.y, color.z, 0);
   for(int i=0; i < ff.size(); i++){
     redraw |= ff[i].imSettings(i);
   }
@@ -146,24 +145,29 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   float di = 2.0f / numPts;
   for(int i=0; i < numPts; i++){
     for(int j = 0; j < numPts; j++){
-      vec2 p = Random::random_point({-startScale,-startScale}, {startScale,startScale} ) ;
+      float pi= 1.f*i/numPts , pj= 1.f*j/numPts;
+      vec2 p = Random::random_point({-startScale, -startScale}, {startScale, startScale});
+      vec4 xcolor = vec4(p.x,p.y, 0, 1 );
+      vec4 aColor = vec4(xcolor.x, xcolor.y, xcolor.z, 0);
+
       for(auto f : ff) {
         p = f.fn(p);
       }
       p *= endScale;
 
       vec3 pp{p.x,p.y, 0};
-      float r = .03;
-      float thickness = .03;
-      const float pi = 3.1415f;
+      float r = .09;
+      float thickness = .09;
+      const float tau = 6.282;
       vec3 threepos{p, 1};
-      float dTheta = (2 * pi) / 16;
+      float dTheta = (tau) / 16;
+
       auto cPos = [=](float t, float radius){ return vec3{sin(t), cos(t), 1} * radius + threepos;};
-      for (float theta = dTheta; theta <= (2 * pi); theta += dTheta) {
+      for (float theta = dTheta; theta <= (tau); theta += dTheta) {
         ctx->quad(UI_Vertex{cPos(theta, r), aColor},
                   UI_Vertex{cPos(theta + dTheta, r), aColor},
-                  UI_Vertex{cPos(theta + dTheta, r  - thickness), color},
-                  UI_Vertex{cPos(theta, r - thickness), color});
+                  UI_Vertex{cPos(theta + dTheta, r  - thickness), xcolor},
+                  UI_Vertex{cPos(theta, r - thickness), xcolor});
       }
 
       /*
@@ -237,7 +241,7 @@ static void error_callback(int error, const char* description)
 int main() {
 
   Window mainWin;
-  mainWin.init(500,500);
+  mainWin.init(900,500);
 
   glfwSetErrorCallback(error_callback);
   glfwSetKeyCallback(mainWin.window, keyCallback);
