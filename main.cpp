@@ -58,7 +58,6 @@ vector<T> chaikin(vector<T> init, float smooth, float minDist){
 		bool needed_cut = false;
 		for(int i=0; i < seed.size() - 1; i++){
 			if(distance(seed[i], seed[i+1]) < minDist) { //i think it's fucky here?
-        output.push_back( seed[i] );
         output.push_back( seed[i+1] );
 
         continue;
@@ -69,8 +68,12 @@ vector<T> chaikin(vector<T> init, float smooth, float minDist){
 			output.push_back( q );
 			output.push_back( r );
 		}
-		seed = output;
+    if(!needed_cut){
+      return output;
+    }
+    seed = output;
 	} while(maxIterations-- > 0);
+  return seed;
 }
 
 void do_curve(Processing* ctx){
@@ -102,9 +105,12 @@ void do_curve(Processing* ctx){
   ctx->flush();
 }
 void do_flame(Processing * ctx, bool& _r, bool& _c){
+  // TODO: abstract the heatmap from the thing that draws on the heatmap
+
   static int seed = 12;
   static int numPts = 12;
   static int numLayers = 12;
+  static int num_iterations = 8;
   static int curLayer = 0;
   static float startScale = 3;
   static float endScale = 1.f;
@@ -120,8 +126,8 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
 
   redraw |= reseed = ImGui::InputInt("Seed", &seed);
   redraw |= ImGui::SliderInt("Layers", &numLayers, 2, 100);
-  ImGui::SameLine();
   redraw |= ImGui::SliderInt("numPts", &numPts, 2, 500);
+  redraw |= ImGui::SliderInt("NumIterations", &num_iterations, 2,99);
   redraw |= ImGui::SliderFloat("startScale", &startScale, .05, 5);
   redraw |= ImGui::SliderFloat("endScale", &endScale, .05, 5);
 
@@ -147,20 +153,21 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
     for(int j = 0; j < numPts; j++){
       float pi= 1.f*i/numPts , pj= 1.f*j/numPts;
       vec2 p = Random::random_point({-startScale, -startScale}, {startScale, startScale});
-      vec4 xcolor = vec4(p.x,p.y, 0, 1 );
+      vec4 xcolor = vec4(abs(p.x),abs(p.y), 0, 1 );
       vec4 aColor = vec4(xcolor.x, xcolor.y, xcolor.z, 0);
 
-      for(auto f : ff) {
+      for(int i =0; i < num_iterations; i++) {
+        auto f = ff[Random::range(0, ff.size())];
         p = f.fn(p);
       }
       p *= endScale;
 
       vec3 pp{p.x,p.y, 0};
-      float r = .09;
-      float thickness = .09;
+      float r = .02;
+      float thickness = r;
       const float tau = 6.282;
       vec3 threepos{p, 1};
-      float dTheta = (tau) / 16;
+      float dTheta = (tau) / 6;
 
       auto cPos = [=](float t, float radius){ return vec3{sin(t), cos(t), 1} * radius + threepos;};
       for (float theta = dTheta; theta <= (tau); theta += dTheta) {
@@ -238,7 +245,27 @@ static void error_callback(int error, const char* description)
 }
 
 
+void test_chaikin(){
+  vector<vector<float>> params{
+      {0, 16},
+      {0,1,16},
+      {0,1,16, 16},
+      {0,0,1,4,7,9,11,3,444,16,16},
+  };
+
+  for(auto line : params){
+    auto chain = chaikin(line, .25, 1);
+    for(auto c : chain){
+      cout<< c<<" ";
+    }
+    cout<<endl;
+  }
+}
+
+
 int main() {
+  test_chaikin();
+  return 0;
 
   Window mainWin;
   mainWin.init(900,500);
