@@ -51,15 +51,14 @@ template<typename T>
 vector<T> chaikin(vector<T> init, float smooth, float minDist){
   // http://graphics.cs.ucdavis.edu/education/CAGDNotes/Chaikins-Algorithm/Chaikins-Algorithm.html
   vector<T> seed = init;
-  int maxIterations = seed.size() * 10; // todo: better heuristic ;
+  int maxIterations = 9; // todo: better heuristic, this will be ~ sizeof(init) * 512
 
 	do {
 		vector<T> output{ seed[0] };
 		bool needed_cut = false;
 		for(int i=0; i < seed.size() - 1; i++){
 			if(distance(seed[i], seed[i+1]) < minDist) { //i think it's fucky here?
-        output.push_back( seed[i+1] );
-
+        output.push_back( seed[i] );
         continue;
 		 	};
 			needed_cut = true;
@@ -101,7 +100,7 @@ void do_curve(Processing* ctx){
   }
   pts = chaikin(pts,.3333, minDist);
 
-  ctx->spline(pts, {.2,.5,.7,.1});
+  ctx->spline(pts, {1.,.5,.7,1}, .01f);
   ctx->flush();
 }
 void do_flame(Processing * ctx, bool& _r, bool& _c){
@@ -264,8 +263,6 @@ void test_chaikin(){
 
 
 int main() {
-  test_chaikin();
-  return 0;
 
   Window mainWin;
   mainWin.init(900,500);
@@ -291,8 +288,8 @@ int main() {
   vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
 
   Blob b{{0,0}, .5f};
-  RenderTarget buff(500,500);
-  buff.init();
+ // RenderTarget buff(500,500);
+ // buff.init();
 
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -310,15 +307,17 @@ int main() {
   //genTriangle();
   //  do_curve(ctx);
     bool redraw = false, clear = false;
-    do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
+
+    do_curve(ctx);
+    //do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
   //p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
 
-    buff.begin(clear);
+   // buff.begin(clear);
     basic.use();
-   if(redraw)
+   //if(redraw)
      ctx->render();
-    buff.end();
+    //buff.end();
 
     t += .05f; // TODO: real deltatime
 

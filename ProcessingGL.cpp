@@ -139,15 +139,21 @@ void ProcessingGL::allocate_buffers(unsigned int vbo_size,
   glEnableVertexAttribArray(1);
 }
 
-void ProcessingGL::spline(vector<vec3> pts, vec4 color) {
-
-  for(int i=0; i < pts.size(); i++){
+void ProcessingGL::spline(vector<vec3> pts, vec4 color, float thickness ) {
+ auto prevPerp = normalize(rotateZ((pts[0], pts[1]), 3.14f/2)) * thickness;
+  for(int i=0; i < pts.size() - 1; i++){
+    vec3 curPerp = prevPerp;
+    vec3 dPos = (pts[i] - pts[i+1]);
+    if(length(dPos) > thickness * .0001f){
+      curPerp = normalize(rotateZ(dPos, 3.14f/2)) * thickness;
+    }
     vec3 p = pts[i];
-    quad(UI_Vertex{p+vec3{.01,0,0}, color},
-         UI_Vertex{p+vec3{.01,.01,0}, color},
-         UI_Vertex{p+vec3{0,.01,0}, color},
-         UI_Vertex{p+vec3{0,0,0}, color});
-
+    quad(UI_Vertex{pts[i]+prevPerp, color},
+         UI_Vertex{pts[i]-prevPerp, color},
+         UI_Vertex{pts[i+1]-curPerp, color},
+         UI_Vertex{pts[i+1]+curPerp, color});
+     prevPerp = curPerp;
 
   }
+
 }
