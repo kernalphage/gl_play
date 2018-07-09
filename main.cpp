@@ -80,11 +80,13 @@ void do_curve(Processing* ctx){
   static int numPts = 5;
   static float minDist = 1;
   static float spikiness = 0.f;
+  static float thickness = 0.f;
   bool redraw = false;
   redraw |= ImGui::InputInt("Seed", &seed);
   redraw |= ImGui::SliderInt("numPts", &numPts, 2, 50);
   redraw |= ImGui::SliderFloat("minDist", &minDist, 0.001f, 2.f);
   redraw |= ImGui::SliderFloat("spikiness", &spikiness, 0.f, 1.f);
+  redraw |= ImGui::SliderFloat("thickness", &thickness, 0.f, 1.f);
 
   if(!redraw) return;
   ctx->clear();
@@ -100,7 +102,7 @@ void do_curve(Processing* ctx){
   }
   pts = chaikin(pts,.3333, minDist);
 
-  ctx->spline(pts, {1.,.5,.7,1}, .01f);
+  ctx->spline(pts, {1.,.5,.7,1}, {.5, .5,.7, 0}, thickness);
   ctx->flush();
 }
 void do_flame(Processing * ctx, bool& _r, bool& _c){
@@ -108,7 +110,7 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
 
   static int seed = 12;
   static int numPts = 12;
-  static int numLayers = 12;
+  static int numLayers = 2;
   static int num_iterations = 8;
   static int curLayer = 0;
   static float startScale = 3;
@@ -122,19 +124,32 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
 
   STATIC_DO_ONCE(redraw = true;);
   STATIC_DO_ONCE(reseed = true;);
+  // Typically we would use ImVec2(-1.0f,0.0f) to use all available width, or ImVec2(width,0.0f) for a specified width. ImVec2(0.0f,0.0f) uses ItemWidth.
+  ImGui::ProgressBar((float) curLayer / numLayers, ImVec2(0.0f,0.0f));
+  ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+  ImGui::Text("Progress Bar");
 
   redraw |= reseed = ImGui::InputInt("Seed", &seed);
-  redraw |= ImGui::SliderInt("Layers", &numLayers, 2, 100);
+  ImGui::SliderInt("Layers", &numLayers, 2, 100);
   redraw |= ImGui::SliderInt("numPts", &numPts, 2, 500);
   redraw |= ImGui::SliderInt("NumIterations", &num_iterations, 2,99);
   redraw |= ImGui::SliderFloat("startScale", &startScale, .05, 5);
   redraw |= ImGui::SliderFloat("endScale", &endScale, .05, 5);
 
   for(int i=0; i < ff.size(); i++){
-    redraw |= ff[i].imSettings(i);
+    if (ImGui::TreeNode((void*)(intptr_t)i, "Flame %d", i)) {
+      redraw |= ff[i].imSettings(i);
+      ImGui::TreePop();
+    }
   }
 
-  if(!redraw &&  curLayer >= numLayers ) return;
+  if(!redraw && curLayer >= numLayers )
+  {
+    redraw = false;
+    _r = false;
+    _c = false;
+    return;
+  }
   cout<<"Layer "<< curLayer<<endl;
   curLayer++;
   ctx->clear();
@@ -166,7 +181,7 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
       float thickness = r;
       const float tau = 6.282;
       vec3 threepos{p, 1};
-      float dTheta = (tau) / 6;
+      float dTheta = (tau) / 4;
 
       auto cPos = [=](float t, float radius){ return vec3{sin(t), cos(t), 1} * radius + threepos;};
       for (float theta = dTheta; theta <= (tau); theta += dTheta) {
@@ -288,13 +303,14 @@ int main() {
   vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
 
   Blob b{{0,0}, .5f};
- // RenderTarget buff(500,500);
- // buff.init();
-
+  RenderTarget buff(500,500);
+  buff.init();
+bool openDebug;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
    ImGui_ImplGlfwGL3_NewFrame();
 
+    ImGui::ShowDemoWindow(&openDebug);
     // 1. Show a simple window.
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets
     // automatically appears in a window called "Debug".
@@ -304,20 +320,20 @@ int main() {
     glClearColor(SPLAT4(clear_color));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  //genTriangle();
-  //  do_curve(ctx);
     bool redraw = false, clear = false;
 
-    do_curve(ctx);
-    //do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
+    //genTriangle();
+  //  do_curve(ctx);
+    do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
   //p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
 
-   // buff.begin(clear);
-    basic.use();
-   //if(redraw)
+   buff.begin(clear);
+   if(redraw) {
+     basic.use();
      ctx->render();
-    //buff.end();
+   }
+    buff.end();
 
     t += .05f; // TODO: real deltatime
 

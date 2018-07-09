@@ -46,7 +46,7 @@ static	std::string timestamp(int seed){
 	  sprintf(mbstr, mbstr, seed);
 	  return std::string(mbstr);
 	}
-
 };
+
 
 #endif // DEFINITIONS_HPP

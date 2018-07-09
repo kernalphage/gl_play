@@ -33,7 +33,6 @@ void Flame::randomInit(){
 }
 
 bool Flame::imSettings(int id){
-  ImGui::PushID(id);
   bool redraw = false;
 
   redraw |= ImGui::SliderFloat2("offset", (float*)&offset, -2,2);
@@ -41,8 +40,6 @@ bool Flame::imSettings(int id){
   redraw |= ImGui::SliderFloat("strength", &strength, 0, 1);
 
   redraw |= ImGui::ListBox("FlameStyle", &type, flame_listbox_items, IM_ARRAYSIZE(flame_listbox_items), 4);
-
-  ImGui::PopID();
   return redraw;
 }
 
