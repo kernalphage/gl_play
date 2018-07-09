@@ -57,7 +57,8 @@ void Window::resize(int width, int height) {
 
 }
 
-/* Adapted from https://github.com/cirosantilli/cpp-cheat/blob/19044698f91fefa9cb75328c44f7a487d336b541/png/open_manipulate_write.c */
+/*
+ //Adapted from https://github.com/cirosantilli/cpp-cheat/blob/19044698f91fefa9cb75328c44f7a487d336b541/png/open_manipulate_write.c
  void Window::screenshot_png(const char *filename, unsigned int width, unsigned int height,
                            GLubyte **pixels, png_byte **png_bytes, png_byte ***png_rows) {
   size_t i, nvals;
@@ -94,3 +95,4 @@ void Window::resize(int width, int height) {
   png_write_end(png, NULL);
   fclose(f);
 }
+ */

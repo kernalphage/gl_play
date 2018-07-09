@@ -18,7 +18,8 @@ set(SOURCE_FILES
     Window.cpp
     Window.hpp
     Definitions.hpp
-        Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp RenderTarget.cpp RenderTarget.hpp Hex.cpp Hex.hpp 
+        Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp RenderTarget.cpp RenderTarget.hpp
+        # Hex.cpp Hex.hpp
         Flame.hpp
         Flame.cpp )
 set(REF_SOURCE_FILES
@@ -40,15 +41,15 @@ include_directories("imgui_impl")
 include_directories("ref/stb")
 set(LIBRARIES "dl")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "~/git/capnproto-c++-0.6.1/cmake/")
-find_package(CapnProto REQUIRED)
-target_link_libraries(gl_play capnp)
+# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "~/git/capnproto-c++-0.6.1/cmake/")
+# find_package(CapnProto REQUIRED)
+# target_link_libraries(gl_play capnp)
 
 if(WIN32)
     set(GLFW_PATH $ENV{GLFW_SDK})
     include_directories("${GLFW_PATH}/include")
-    include_directories($ENV{RANGES_INCLUDE})
-    include_directories("C:/Users/matt/git/glm")
+    # include_directories($ENV{RANGES_INCLUDE})
+    include_directories("$ENV{GLM_INCLUDE}")
 
     target_link_libraries(gl_play "${GLFW_PATH}/lib-vc2015/glfw3.lib")
     # TODO: Link to png
@@ -59,8 +60,8 @@ ELSE()
     include_directories(${GLFW_INCLUDE_DIRS})
     target_link_libraries(gl_play glfw ${GLFW_LIBRARIES})
     target_link_libraries(gl_play ${LIBRARIES})
-    find_library(LIBPNG png)
-    target_link_libraries(gl_play ${LIBPNG})
+   # find_library(LIBPNG png)
+   # target_link_libraries(gl_play ${LIBPNG})
 
 ENDIF()
 
@@ -71,7 +72,7 @@ set(SHADERS
         shaders/basic.frag
         shaders/two_tri.vert
         shaders/two_tri.frag
-        svgbuilder.py
+        tonemap.png
 	)
 foreach(shader ${SHADERS})
 	configure_file( "${shader}" ${shader} COPYONLY)

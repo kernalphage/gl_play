@@ -1,9 +1,4 @@
 #include "Processing.hpp"
-#include "image.capnp.h"
-#include <capnp/message.h>
-#include <capnp/serialize-packed.h>
-#include <ctime>
-#include <fcntl.h>
 #include <iostream>
 #include <fstream>
 using namespace std;

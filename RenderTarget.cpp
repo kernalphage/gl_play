@@ -78,8 +78,8 @@ void RenderTarget::begin(bool clear) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
-  ImGui::SliderFloat("Gamma", &gamma, 0,2);
-  ImGui::InputFloat("Energy", &energy);
+  ImGui::SliderFloat("Gamma", &gamma, 0,1.0);
+  ImGui::SliderFloat("Energy", &energy, 1, 10);
 
   m_twotri->setFloat("gamma", gamma);
   m_twotri->setFloat("energy", energy);
@@ -104,7 +104,7 @@ void RenderTarget::end() {
 }
 
 RenderTarget::RenderTarget(int _w, int _h) {
-  m_twotri = new Material{"two_tri.vert", "two_tri.frag", false};
+  m_twotri = new Material{"shaders/two_tri.vert", "shaders/two_tri.frag", false};
   WIDTH = _w;
   HEIGHT = _h;
 

@@ -115,6 +115,7 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   static int curLayer = 0;
   static float startScale = 3;
   static float endScale = 1.f;
+  static bool symmetrical = false;
   static vector<Flame> ff(5);
 
   static vec4 color{1.f, 1.f, 0.f, 1};
@@ -135,6 +136,7 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   redraw |= ImGui::SliderInt("NumIterations", &num_iterations, 2,99);
   redraw |= ImGui::SliderFloat("startScale", &startScale, .05, 5);
   redraw |= ImGui::SliderFloat("endScale", &endScale, .05, 5);
+  redraw |= ImGui::Checkbox("Symmetrical", &symmetrical);
 
   for(int i=0; i < ff.size(); i++){
     if (ImGui::TreeNode((void*)(intptr_t)i, "Flame %d", i)) {
@@ -158,7 +160,6 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   }
   if(reseed){
     for(auto&f:ff){ f.randomInit();};
-
   }
   Random::seed(seed + curLayer);
 
@@ -171,6 +172,9 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
       vec4 aColor = vec4(xcolor.x, xcolor.y, xcolor.z, 0);
 
       for(int i =0; i < num_iterations; i++) {
+        if(symmetrical && Random::range(0,10) <= 5){
+          p = vec2(-p.x, p.y);
+        }
         auto f = ff[Random::range(0, ff.size())];
         p = f.fn(p);
       }
@@ -287,7 +291,7 @@ int main() {
   glEnable(GL_DEBUG_OUTPUT);
   // build and compile our shader program
 
-  Material basic{"basic.vert", "basic.frag", true};
+  Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
   ctx = new ProcessingGL{};
 
   // Setup ImGui binding

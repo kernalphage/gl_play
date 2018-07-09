@@ -11,8 +11,10 @@ uniform float energy;
 
 void main(){
     vec4 val = texture( renderedTexture, UV );
-    vec4 lum =  pow(val/energy, vec4(gamma));
+    vec4 lum =  log(val) * gamma;
     lum = clamp(lum, 0., 1.);
+    lum = pow(lum, vec4(energy) );
+
     //lum.y =1 - lum.y;
-    color = texture(tonemap, lum);
+    color = vec4(lum.rgb, 1);// texture(tonemap, lum);
 }
