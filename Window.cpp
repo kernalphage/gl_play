@@ -5,7 +5,7 @@
 #include "Window.hpp"
 #include "Definitions.hpp"
 #include <iostream>
-#include <png.h>
+//#include <png.h>
 using namespace std;
 
 Window::Window() {}
@@ -53,7 +53,7 @@ int Window::init(int width, int height) {
 void Window::resize(int width, int height) {
   _width = width;
   _height = height;
-  glViewport(0,0,_width, _height);
+  glViewport(0,0,_height, _height);
 
 }
 

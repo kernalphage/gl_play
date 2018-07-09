@@ -57,6 +57,7 @@ std::vector<Tri> TriBuilder::triangulate(float zoom,
   }
 
   _curTriangles = to_draw;
+  return _curTriangles;
 }
 
 bool TriBuilder::imSettings() {

@@ -67,8 +67,8 @@ public:
     vec2 v2 = v - _offset;
     int ex = (int) floor((v2.x) * _scale);
     int wy = (int) floor((v2.y) * _scale);
-    ex = std::min(std::max(ex, 0), _numgrids-1);
-    wy = std::min(std::max(wy, 0), _numgrids-1);
+    ex = glm::min(glm::max(ex, 0), _numgrids-1);
+    wy = glm::min(glm::max(wy, 0), _numgrids-1);
     int idx = ex + wy * _numgrids;
     _heatmap[idx]++;
     return idx;

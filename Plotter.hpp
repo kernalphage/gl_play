@@ -33,8 +33,8 @@ vec3 sampleImage(const vec2 pos, int channel = 0) {
       vec2 v2 = (pos + vec2{1, 1}) / 2;
       int ex = (int) floor((v2.x) * texWidth);
       int wy = (int) floor((v2.y) * texHeight);
-      ex = std::min(std::max(ex, 0), texWidth - 1);
-      wy = std::min(std::max(texHeight - wy, 0), texHeight - 1);
+      ex = glm::min(glm::max(ex, 0), texWidth - 1);
+      wy = glm::min(glm::max(texHeight - wy, 0), texHeight - 1);
       int idx = (ex + wy * texWidth) * 4;
       return vec3{pixels[idx + 0],pixels[idx + 1],pixels[idx + 2]} / 255;
 };

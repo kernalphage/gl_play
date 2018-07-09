@@ -1,5 +1,7 @@
 #ifndef DEFINITIONS_HPP
 #define DEFINITIONS_HPP
+#define NOMINMAX
+
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>

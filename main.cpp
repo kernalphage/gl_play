@@ -109,9 +109,9 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   // TODO: abstract the heatmap from the thing that draws on the heatmap
 
   static int seed = 12;
-  static int numPts = 12;
-  static int numLayers = 2;
-  static int num_iterations = 8;
+  static int numPts = 22;
+  static int numLayers = 12;
+  static int num_iterations = 18;
   static int curLayer = 0;
   static float startScale = 3;
   static float endScale = 1.f;
@@ -163,19 +163,21 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   }
   Random::seed(seed + curLayer);
 
+  int fnSize = ff.size();
   float di = 2.0f / numPts;
   for(int i=0; i < numPts; i++){
     for(int j = 0; j < numPts; j++){
       float pi= 1.f*i/numPts , pj= 1.f*j/numPts;
       vec2 p = Random::random_point({-startScale, -startScale}, {startScale, startScale});
-      vec4 xcolor = vec4(abs(p.x),abs(p.y), 0, 1 );
+      vec4 xcolor = vec4(1.f,1.f, p.x, 1 );
       vec4 aColor = vec4(xcolor.x, xcolor.y, xcolor.z, 0);
 
       for(int i =0; i < num_iterations; i++) {
         if(symmetrical && Random::range(0,10) <= 5){
           p = vec2(-p.x, p.y);
         }
-        auto f = ff[Random::range(0, ff.size())];
+		int idx = Random::range(0, fnSize);
+        auto f = ff[glm::min(idx, fnSize)];
         p = f.fn(p);
       }
       p *= endScale;
@@ -307,7 +309,7 @@ int main() {
   vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
 
   Blob b{{0,0}, .5f};
-  RenderTarget buff(500,500);
+  RenderTarget buff(1024,1024);
   buff.init();
 bool openDebug;
   while (!glfwWindowShouldClose(mainWin.window)) {
@@ -337,6 +339,7 @@ bool openDebug;
      basic.use();
      ctx->render();
    }
+   glViewport(0,0,mainWin._height, mainWin._height);
     buff.end();
 
     t += .05f; // TODO: real deltatime

@@ -79,7 +79,7 @@ void RenderTarget::begin(bool clear) {
   }
 
   ImGui::SliderFloat("Gamma", &gamma, 0,1.0);
-  ImGui::SliderFloat("Energy", &energy, 1, 10);
+  ImGui::SliderFloat("Energy", &energy, 1, 100);
 
   m_twotri->setFloat("gamma", gamma);
   m_twotri->setFloat("energy", energy);
@@ -95,7 +95,7 @@ void RenderTarget::end() {
   glActiveTexture(GL_TEXTURE1);
   glBindTexture(GL_TEXTURE_2D, m_tonemap);
 
-
+  
   glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
   glBindVertexArray(m_vao);
   glDrawArrays(GL_TRIANGLE_STRIP, 0,4);
