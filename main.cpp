@@ -102,7 +102,7 @@ void do_curve(Processing* ctx){
   }
   pts = chaikin(pts,.3333, minDist);
 
-  ctx->spline(pts, {1.,.5,.7,1}, {.5, .5,.7, 0}, thickness);
+  ctx->spline(pts, {1,1,1,1}, {0,0,0, 0}, thickness);
   ctx->flush();
 }
 void do_flame(Processing * ctx, bool& _r, bool& _c){
@@ -112,8 +112,10 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   static int numPts = 22;
   static int numLayers = 12;
   static int num_iterations = 18;
+  static int num_samples = 5; // Number of samples to place after reaching num_iterations
   static int curLayer = 0;
   static float startScale = 3;
+  static vec2 endOffset = vec2(0,0);
   static float endScale = 1.f;
   static bool symmetrical = false;
   static float sampleSize = .01;
@@ -132,10 +134,12 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   ImGui::Text("Progress Bar");
 
   redraw |= reseed = ImGui::InputInt("Seed", &seed);
-  ImGui::SliderInt("Layers", &numLayers, 2, 1000);
-  redraw |= ImGui::SliderInt("numPts", &numPts, 2, 500 * 500);
+  redraw |= ImGui::SliderInt("numPts", &numPts, 2, 250000);
+  ImGui::SliderInt("Layers", &numLayers, 2, 400);
   redraw |= ImGui::SliderInt("NumIterations", &num_iterations, 2,99);
+  redraw |= ImGui::SliderInt("NumSamples", &num_samples, 1, 20);
   redraw |= ImGui::SliderFloat("startScale", &startScale, .05, 5);
+  redraw |= ImGui::SliderFloat2("endOffset", (float*)&endOffset, -2, 2 );
   redraw |= ImGui::SliderFloat("endScale", &endScale, .05, 5);
   redraw |= ImGui::Checkbox("Symmetrical", &symmetrical);
   redraw |= ImGui::SliderFloat("sampleSize", &sampleSize, .0001, .05);
@@ -168,10 +172,10 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   int fnSize = ff.size();
   for(int i=0; i < numPts; i++){
       vec2 p = Random::random_point({-startScale, -startScale}, {startScale, startScale});
-      vec4 xcolor = vec4(1.f,1.f, p.x, 1 );
-      vec4 aColor = vec4(xcolor.x, xcolor.y, xcolor.z, 0);
+    vec4 xcolor = vec4(1.f,1.f, p.x, 1 );
+    vec4 aColor = vec4(xcolor.x, xcolor.y, xcolor.z, 0);
 
-      for(int i =0; i < num_iterations; i++) {
+      for(int i =0; i < num_iterations + num_samples; i++) {
         if(symmetrical && Random::range(0,10) <= 5){
           p = vec2(-p.x, p.y);
         }
@@ -179,25 +183,26 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
         idx = idx % fnSize;
         auto f = ff[glm::min(idx, fnSize)];
         p = f.fn(p);
+
+        if(i > num_iterations){
+          vec3 pp{p.x,p.y, 0};
+          pp *= endScale;
+          pp += vec3(endOffset.x, endOffset.y, 0);
+          float r = sampleSize;
+          float thickness = r;
+          const float tau = 6.282;
+          float dTheta = (tau) / 4;
+
+          auto cPos = [=](float t, float radius){ return vec3{sin(t), cos(t), 1} * radius + pp;};
+          for (float theta = dTheta; theta <= (tau); theta += dTheta) {
+            ctx->quad(UI_Vertex{cPos(theta, sampleSize), aColor},
+                      UI_Vertex{cPos(theta + dTheta, sampleSize), aColor},
+                      UI_Vertex{cPos(theta + dTheta, 0), xcolor},
+                      UI_Vertex{cPos(theta, 0), xcolor});
+          }
+        }
       }
-      p *= endScale;
 
-
-      // TODO: AfterNumIterations, add a FinalIterations to plot the final point a couple more times
-      vec3 pp{p.x,p.y, 0};
-      float r = sampleSize;
-      float thickness = r;
-      const float tau = 6.282;
-      vec3 threepos{p, 1};
-      float dTheta = (tau) / 4;
-
-      auto cPos = [=](float t, float radius){ return vec3{sin(t), cos(t), 1} * radius + threepos;};
-      for (float theta = dTheta; theta <= (tau); theta += dTheta) {
-        ctx->quad(UI_Vertex{cPos(theta, r), aColor},
-                  UI_Vertex{cPos(theta + dTheta, r), aColor},
-                  UI_Vertex{cPos(theta + dTheta, r  - thickness), xcolor},
-                  UI_Vertex{cPos(theta, r - thickness), xcolor});
-      }
   }
 
   ctx->flush();
