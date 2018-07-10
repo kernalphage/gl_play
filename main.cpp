@@ -116,6 +116,7 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   static float startScale = 3;
   static float endScale = 1.f;
   static bool symmetrical = false;
+  static float sampleSize = .01;
   static vector<Flame> ff(5);
 
   static vec4 color{1.f, 1.f, 0.f, 1};
@@ -131,12 +132,13 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   ImGui::Text("Progress Bar");
 
   redraw |= reseed = ImGui::InputInt("Seed", &seed);
-  ImGui::SliderInt("Layers", &numLayers, 2, 100);
-  redraw |= ImGui::SliderInt("numPts", &numPts, 2, 500);
+  ImGui::SliderInt("Layers", &numLayers, 2, 1000);
+  redraw |= ImGui::SliderInt("numPts", &numPts, 2, 500 * 500);
   redraw |= ImGui::SliderInt("NumIterations", &num_iterations, 2,99);
   redraw |= ImGui::SliderFloat("startScale", &startScale, .05, 5);
   redraw |= ImGui::SliderFloat("endScale", &endScale, .05, 5);
   redraw |= ImGui::Checkbox("Symmetrical", &symmetrical);
+  redraw |= ImGui::SliderFloat("sampleSize", &sampleSize, .0001, .05);
 
   for(int i=0; i < ff.size(); i++){
     if (ImGui::TreeNode((void*)(intptr_t)i, "Flame %d", i)) {
@@ -164,10 +166,7 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
   Random::seed(seed + curLayer);
 
   int fnSize = ff.size();
-  float di = 2.0f / numPts;
   for(int i=0; i < numPts; i++){
-    for(int j = 0; j < numPts; j++){
-      float pi= 1.f*i/numPts , pj= 1.f*j/numPts;
       vec2 p = Random::random_point({-startScale, -startScale}, {startScale, startScale});
       vec4 xcolor = vec4(1.f,1.f, p.x, 1 );
       vec4 aColor = vec4(xcolor.x, xcolor.y, xcolor.z, 0);
@@ -176,14 +175,17 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
         if(symmetrical && Random::range(0,10) <= 5){
           p = vec2(-p.x, p.y);
         }
-		int idx = Random::range(0, fnSize);
+		    int idx = Random::range(0, fnSize);
+        idx = idx % fnSize;
         auto f = ff[glm::min(idx, fnSize)];
         p = f.fn(p);
       }
       p *= endScale;
 
+
+      // TODO: AfterNumIterations, add a FinalIterations to plot the final point a couple more times
       vec3 pp{p.x,p.y, 0};
-      float r = .02;
+      float r = sampleSize;
       float thickness = r;
       const float tau = 6.282;
       vec3 threepos{p, 1};
@@ -196,14 +198,6 @@ void do_flame(Processing * ctx, bool& _r, bool& _c){
                   UI_Vertex{cPos(theta + dTheta, r  - thickness), xcolor},
                   UI_Vertex{cPos(theta, r - thickness), xcolor});
       }
-
-      /*
-      ctx->quad(UI_Vertex{pp+vec3{.1,0,0}, color},
-                    UI_Vertex{pp+vec3{.1,.1,0}, color},
-                    UI_Vertex{pp+vec3{0,.1,0}, color},
-                    UI_Vertex{pp+vec3{0,0,0}, color});
-                    */
-    }
   }
 
   ctx->flush();
