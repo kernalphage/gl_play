@@ -60,8 +60,9 @@ ELSE()
     include_directories(${GLFW_INCLUDE_DIRS})
     target_link_libraries(gl_play glfw ${GLFW_LIBRARIES})
     target_link_libraries(gl_play ${LIBRARIES})
-   # find_library(LIBPNG png)
-   # target_link_libraries(gl_play ${LIBPNG})
+
+    find_library(LIBPNG png)
+    target_link_libraries(gl_play ${LIBPNG})
 
 ENDIF()
 

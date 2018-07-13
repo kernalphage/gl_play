@@ -52,7 +52,7 @@ vector<T> chaikin(vector<T> init, float smooth, float minDist){
   // http://graphics.cs.ucdavis.edu/education/CAGDNotes/Chaikins-Algorithm/Chaikins-Algorithm.html
   vector<T> seed = init;
   int maxIterations = 9; // todo: better heuristic, this will be ~ sizeof(init) * 512
-
+  if(seed.size() == 0){ return {};}
 	do {
 		vector<T> output{ seed[0] };
 		bool needed_cut = false;
@@ -75,35 +75,77 @@ vector<T> chaikin(vector<T> init, float smooth, float minDist){
   return seed;
 }
 
-void do_curve(Processing* ctx){
+void do_curve(Processing* ctx, bool &_r, bool &_c){
   static int seed = 0;
   static int numPts = 5;
-  static float minDist = 1;
-  static float spikiness = 0.f;
-  static float thickness = 0.f;
+  static float minDist = .1;
+  static float thickness = 0.002f;
+  static int curLayer = 0;
+  static int numLayers = 16;
+  static float stepSize = .0003;
+  static float noiseSize = 3;
+  static int numSamples = 24;
+  static FastNoise fnoise;
+
+  static vector<vec3> line;
+
   bool redraw = false;
+
+  STATIC_DO_ONCE(redraw = true;);
+
+  // Typically we would use ImVec2(-1.0f,0.0f) to use all available width, or ImVec2(width,0.0f) for a specified width. ImVec2(0.0f,0.0f) uses ItemWidth.
+  ImGui::ProgressBar((float) curLayer / numLayers, ImVec2(0.0f,0.0f));
+  ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+  ImGui::Text("Progress Bar");
   redraw |= ImGui::InputInt("Seed", &seed);
-  redraw |= ImGui::SliderInt("numPts", &numPts, 2, 50);
+  redraw |= ImGui::SliderInt("numPts", &numPts, 2, 150);
   redraw |= ImGui::SliderFloat("minDist", &minDist, 0.001f, 2.f);
-  redraw |= ImGui::SliderFloat("spikiness", &spikiness, 0.f, 1.f);
-  redraw |= ImGui::SliderFloat("thickness", &thickness, 0.f, 1.f);
+  redraw |= ImGui::SliderFloat("thickness", &thickness, 0.000001f, .1f);
+  redraw |= ImGui::SliderFloat("Step Size", &stepSize, 0.000001, 0.001);
+  redraw |= ImGui::SliderFloat("NoiseSize", &noiseSize, 0, 1114);
+  redraw |= ImGui::SliderInt("NumSamples", &numSamples, 2, 200);
+  ImGui::SliderInt("Layers", &numLayers, 2, 400);
 
-  if(!redraw) return;
-  ctx->clear();
-  Random::seed(seed);
-  vector<vec3> pts;
-  for(int i=0; i < numPts; i++){
-    vec3 newpt{ Random::range(-1.f,1.f),Random::range(-1.f,1.f),Random::range(-1.f,1.f)};
-    if( Random::f() < spikiness && i > 1){
-      pts.push_back( pts[ i ]);
-      continue;
-    }
-    pts.push_back(newpt);
+  if(!redraw && curLayer >= numLayers )
+  {
+    redraw = false;
+    _r = false;
+    _c = false;
+    return;
   }
-  pts = chaikin(pts,.3333, minDist);
 
-  ctx->spline(pts, {1,1,1,1}, {0,0,0, 0}, thickness);
+  curLayer++;
+  if(redraw) {
+    curLayer = 0;
+  }
+  ctx->clear();
+  Random::seed(seed + curLayer);
+  fnoise.SetSeed(seed+curLayer);
+
+  if(redraw){
+    line.clear();
+    //Generate base line
+    float di = 2.0f / numPts;
+    for (int i = 0; i < numPts; i++) {
+      vec3 newpt{0, 1 - i * di, 0};
+      line.push_back(newpt);
+    }
+  }
+  // moveDots
+ for(int sample = 0; sample < numSamples; sample++) {
+   for (int i = 0; i < line.size(); i++) {
+     line[i].x +=
+         fnoise.GetNoise(line[i].x * noiseSize, line[i].y * noiseSize, (float) curLayer / numLayers * noiseSize) *
+         stepSize ;
+   }
+
+    vector<vec3> pts = chaikin(line, .3333, minDist);
+     ctx->spline(pts, {1, 1, 1, 1}, {0, 0, 0, 0}, thickness);
+  }
   ctx->flush();
+  _r = true;
+  _c = curLayer == 0;
+  return ;
 }
 void do_flame(Processing * ctx, bool& _r, bool& _c){
   // TODO: abstract the heatmap from the thing that draws on the heatmap
@@ -329,7 +371,9 @@ bool openDebug;
 
     //genTriangle();
   //  do_curve(ctx);
-    do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
+
+    do_curve(ctx, redraw, clear);
+    //do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
   //p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
 
@@ -339,6 +383,7 @@ bool openDebug;
      ctx->render();
    }
    glViewport(0,0,mainWin._height, mainWin._height);
+// interlace a secondary buffer to save the final image?
     buff.end();
 
     t += .05f; // TODO: real deltatime
