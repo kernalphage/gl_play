@@ -140,23 +140,25 @@ void ProcessingGL::allocate_buffers(unsigned int vbo_size,
 }
 
 void ProcessingGL::spline(vector<vec3> pts, vec4 middleColor, vec4 edgeColor, float thickness ) {
- auto prevPerp = normalize(rotateZ((pts[0], pts[1]), 3.14f/2)) * thickness;
-  for(int i=0; i < pts.size() - 1; i++){
-    vec3 curPerp = prevPerp;
-    vec3 dPos = (pts[i] - pts[i+1]);
 
-    vec3 p = pts[i];
+  auto perp = [](vec3 a, vec3 b){ vec3 d = normalize(a-b); return  vec3(d.y, -d.x, (a.z+b.z)*.5);};
+
+  for(int i=0; i < pts.size() - 3; i++){
+    auto prevPerp = perp(pts[i+0], pts[i+1])* thickness;
+    vec3 curPerp =  perp(pts[i+1], pts[i+2])* thickness;
+    auto nextPerp = perp(pts[i+2], pts[i+3])* thickness;
+
+    vec3 startPerp = (curPerp + prevPerp) *.5;
+    vec3 endPerp =  (curPerp + nextPerp) * .5;
     quad(UI_Vertex{pts[i], middleColor},
-         UI_Vertex{pts[i]-prevPerp, edgeColor},
-         UI_Vertex{pts[i+1]-curPerp, edgeColor},
+         UI_Vertex{pts[i]  -startPerp, edgeColor},
+         UI_Vertex{pts[i+1]-endPerp, edgeColor},
          UI_Vertex{pts[i+1], middleColor});
 
-    quad(UI_Vertex{pts[i]+prevPerp, edgeColor},
+    quad(UI_Vertex{pts[i]+startPerp, edgeColor},
          UI_Vertex{pts[i], middleColor},
          UI_Vertex{pts[i+1], middleColor},
-         UI_Vertex{pts[i+1]+curPerp, edgeColor});
-     prevPerp = curPerp;
-
+         UI_Vertex{pts[i+1]+endPerp, edgeColor});
   }
 
 }

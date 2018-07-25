@@ -85,6 +85,7 @@ void do_curve(Processing* ctx, bool &_r, bool &_c){
   static float stepSize = .0003;
   static float noiseSize = 3;
   static int numSamples = 24;
+  static float smoothing = .25;
   static FastNoise fnoise;
 
   static vector<vec3> line;
@@ -101,7 +102,8 @@ void do_curve(Processing* ctx, bool &_r, bool &_c){
   redraw |= ImGui::SliderInt("numPts", &numPts, 2, 150);
   redraw |= ImGui::SliderFloat("minDist", &minDist, 0.001f, 2.f);
   redraw |= ImGui::SliderFloat("thickness", &thickness, 0.000001f, .1f);
-  redraw |= ImGui::SliderFloat("Step Size", &stepSize, 0.000001, 0.001);
+  redraw |= ImGui::SliderFloat("sliderFloat", &smoothing, 0.01, 1.f);
+  redraw |= ImGui::SliderFloat("Step Size", &stepSize, 0.0001, 0.1);
   redraw |= ImGui::SliderFloat("NoiseSize", &noiseSize, 0, 1114);
   redraw |= ImGui::SliderInt("NumSamples", &numSamples, 2, 200);
   ImGui::SliderInt("Layers", &numLayers, 2, 400);
@@ -125,21 +127,19 @@ void do_curve(Processing* ctx, bool &_r, bool &_c){
   if(redraw){
     line.clear();
     //Generate base line
-    float di = 2.0f / numPts;
+    float di = 6.0f / numPts;
     for (int i = 0; i < numPts; i++) {
-      vec3 newpt{0, 1 - i * di, 0};
+      vec3 newpt{sin(i*di), cos(i * di), 0};
       line.push_back(newpt);
     }
   }
   // moveDots
  for(int sample = 0; sample < numSamples; sample++) {
    for (int i = 0; i < line.size(); i++) {
-     line[i].x +=
-         fnoise.GetNoise(line[i].x * noiseSize, line[i].y * noiseSize, (float) curLayer / numLayers * noiseSize) *
-         stepSize ;
+   //  line[i].x +=         fnoise.GetNoise(line[i].x * noiseSize, line[i].y * noiseSize, (float) curLayer / numLayers * noiseSize) *         stepSize ;
    }
 
-    vector<vec3> pts = chaikin(line, .3333, minDist);
+    vector<vec3> pts = chaikin(line, smoothing, minDist);
      ctx->spline(pts, {1, 1, 1, 1}, {0, 0, 0, 0}, thickness);
   }
   ctx->flush();
