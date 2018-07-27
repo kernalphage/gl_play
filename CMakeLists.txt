@@ -73,6 +73,7 @@ set(SHADERS
         shaders/basic.frag
         shaders/two_tri.vert
         shaders/two_tri.frag
+        shaders/flame.geom
         tonemap.png
 	)
 foreach(shader ${SHADERS})

@@ -334,7 +334,7 @@ int main() {
   glEnable(GL_DEBUG_OUTPUT);
   // build and compile our shader program
 
-  Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
+  Material basic{"shaders/basic.vert", "shaders/basic.frag", true, "shaders/flame.geom"};
   ctx = new ProcessingGL{};
 
   // Setup ImGui binding
@@ -350,7 +350,7 @@ int main() {
   vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
 
   Blob b{{0,0}, .5f};
-  RenderTarget buff(1024,1024);
+  RenderTarget buff(500,500);
   buff.init();
 bool openDebug;
   while (!glfwWindowShouldClose(mainWin.window)) {
@@ -366,20 +366,20 @@ bool openDebug;
 
     glClearColor(SPLAT4(clear_color));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     bool redraw = false, clear = false;
 
     //genTriangle();
   //  do_curve(ctx);
 
-    do_curve(ctx, redraw, clear);
-    //do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
+    //do_curve(ctx, redraw, clear);
+    do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
   //p.update(ctx, (float) glfwGetTime());
     processInput(mainWin.window);
 
    buff.begin(clear);
    if(redraw) {
      basic.use();
+     basic.setVec("u_adj", clear_color);
      ctx->render();
    }
    glViewport(0,0,mainWin._height, mainWin._height);

@@ -2,7 +2,7 @@
 #define MATERIAL_HPP
 
 #include <glad/glad.h>
-
+#include "Definitions.hpp"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -27,13 +27,15 @@ public:
       std::stringstream vShaderStream;
       vShaderStream << sFile.rdbuf();
       sFile.close();
-      code = vShaderStream.str();
       // catch
-      return code;
+      return vShaderStream.str();;
     };
 
-    const char *vShaderCode = loadCode(vertexPath).c_str();
-    const char *fShaderCode = loadCode(fragmentPath).c_str();
+
+    std::string vShader = loadCode(vertexPath);
+    std::string fShader = loadCode(fragmentPath);
+    const char *vShaderCode = vShader.c_str();
+    const char *fShaderCode = fShader.c_str();
     // 2. compile shaders
     unsigned int vertex, fragment;
     // vertex shader
@@ -51,10 +53,13 @@ public:
     ID = glCreateProgram();
 
     if(geomPath != nullptr){
-      const char* gShaderCode = loadCode(geomPath).c_str();
+      std::string geomCode = loadCode(geomPath);
+      const char* gShaderCode = geomCode.c_str();
       unsigned int geom;
       geom = glCreateShader(GL_GEOMETRY_SHADER);
       glShaderSource(geom, 1, &gShaderCode, NULL);
+      glCompileShader(geom);
+      checkCompileErrors(geom, "GEOM",fragmentPath);
       glAttachShader(ID, geom);
     }
 
@@ -93,6 +98,9 @@ public:
   // ------------------------------------------------------------------------
   void setFloat(const std::string &name, float value) const {
     glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+  }
+  void setVec(const std::string &name, glm::vec4 value) const {
+    glUniform4fv(glGetUniformLocation(ID, name.c_str()),1, (float*) &value);
   }
 
 private:
