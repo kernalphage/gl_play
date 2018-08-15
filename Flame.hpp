@@ -6,9 +6,12 @@
 #define GL_PLAY_FLAME_HPP
 #include "Definitions.hpp"
 
+class Processing;
 
 class Flame {
-public: 
+public:
+
+  static void do_flame(Processing* ctx, bool & _r, bool& _c);
   void randomInit();
   
   bool imSettings(int id);

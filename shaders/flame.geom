@@ -1,10 +1,10 @@
 #version 330 core
 
 layout (points) in;
-layout (points, max_vertices = 10) out;
+layout (points, max_vertices = 16) out;
 out vec4 ourColor;
 
-uniform vec4 u_adj;
+uniform vec4 u_adj[10];
 
   vec2 sinus( vec2 p,  vec4 adj){
   	return sin(p * (1 + adj.xy) + adj.zw);
@@ -35,18 +35,26 @@ uniform vec4 u_adj;
     return vec2(sin(theta + r + adj.z), cos(theta - r + adj.w));
   }
 
-
-
-vec2 f(vec2 p){
-	return sinus(handkerchief(p, u_adj), u_adj);
-}
-
 void main(){
 	vec2 p = gl_in[0].gl_Position.xy;
-	for(int i=0; i < 10; i++){
-		p = f(p);
+	vec2 pp = gl_in[0].gl_Position.xy;
+	for(int i=0; i < 16; i++){
+	    int fun = int(p.x * i * 4623);
+	    fun = fun % 4;
+	    if(fun == 0){
+	        p = handkerchief(p, u_adj[0]);
+	    }
+	    if(fun == 1){
+	        p = sinus(p, u_adj[1]);
+	    }
+	    if(fun == 2){
+	        p = swirl(p, u_adj[2]);
+	    }
+	    if(fun == 3){
+	        p = vec2(-p.x, p.y);
+	    }
 		gl_Position = vec4(p, 0,1);
-		ourColor = vec4(1, 0, 0,1);
+		ourColor = vec4(pp, 0,1);
 		EmitVertex();
 		EndPrimitive();
 	}
