@@ -46,7 +46,7 @@ float min_dist(const vec2 &pt, vector<Blob> &v, rect bounds) {
 }
 
 
-
+/*
 void
 Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vector<Blob> &out, float overlap) {
   vector<Blob> open;
@@ -101,6 +101,7 @@ Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vect
     }
   }
 }
+ */
 
 void Blob::render(Processing *ctx, vec4 color, float thickness) {
 
@@ -117,9 +118,10 @@ void Blob::render(Processing *ctx, vec4 color, float thickness) {
   }
 }
 
-
+/*
 
 void Partition::gen_random(vec2 tl, vec2 br, DistanceFN sampleSize, int maxSamples, std::vector<Blob> &out){
 
 
 }
+ */
