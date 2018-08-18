@@ -60,6 +60,7 @@ void RenderTarget::init(void)  {
     glBindVertexArray(0);
 
 
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 #if FFMPEG
     ffmpeg_encoder_start("tmp.mpg", AV_CODEC_ID_MPEG1VIDEO, 25, WIDTH, HEIGHT);
 #endif

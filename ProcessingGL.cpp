@@ -65,7 +65,7 @@ void ProcessingGL::render() {
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
 
-    glDrawElements(GL_POINTS, m_indices.size(), GL_UNSIGNED_INT, 0);
+    glDrawElements(m_mode, m_indices.size(), GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);

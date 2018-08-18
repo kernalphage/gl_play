@@ -23,6 +23,9 @@ using namespace glm;
 #define SPLAT_OP_3(t, op) t.x op t.y op t.z
 #define SPLAT_OP_4(t, op) t.x op t.y op t.z op t.w
 
+#define impl_STATIC_DO_ONCE(x, y) {static bool __doonce##y=true; if(__doonce##y == true){__doonce##y = false; x;}};
+#define STATIC_DO_ONCE(x) impl_STATIC_DO_ONCE(x, __LINE__);
+
 
 struct rect{
   vec2 tl;

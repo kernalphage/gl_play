@@ -45,11 +45,12 @@ public:
   void flush() override;
   void clear() override;
   void render() override;
+  void setMode(GLenum mode){ m_mode = mode;}
 
 private:
 
   void allocate_buffers(unsigned int vbo_size, unsigned int ebo_size);
-
+  GLenum m_mode;
   mat4 view;
   std::vector<UI_Vertex> m_verts;
   std::vector<unsigned int> m_indices;

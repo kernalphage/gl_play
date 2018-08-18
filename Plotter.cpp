@@ -111,7 +111,7 @@ void Plotter::update(Processing * ctx, float t){
       Random::seed(seed + i*10 + jiggle);
       vector<Blob>& blobs = layer.blobs;
       blobs.clear();
-      Partition p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
+      Partition<Blob> p({-.8, -.8}, {1.6f, 1.6f}, rmax * 2);
 
       FastNoise noise;
       noise.SetSeed(seed );
@@ -157,6 +157,7 @@ void Plotter::update(Processing * ctx, float t){
       }
      }
     ctx->flush();
+    ctx->render();
   }
 
   if(ImGui::Button("Save")){

@@ -11,6 +11,7 @@
 #include "Plotter.hpp"
 #include "RenderTarget.hpp"
 #include "Flame.hpp"
+#include "Streamline.hpp"
 
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
@@ -226,7 +227,8 @@ int main() {
   glEnable(GL_DEBUG_OUTPUT);
   // build and compile our shader program
 
-  Material basic{"shaders/basic.vert", "shaders/basic.frag", true, "shaders/flame.geom"};
+  Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
+  Material flame{"shaders/basic.vert", "shaders/basic.frag", true, "shaders/flame.geom"};
   ctx = new ProcessingGL{};
 
   // Setup ImGui binding
@@ -242,10 +244,12 @@ int main() {
   vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
 
   Blob b{{0,0}, .5f};
-  RenderTarget buff(2000,2000);
-  buff.init();
+//  RenderTarget buff(2000,2000);
+ // buff.init();
 bool openDebug;
   vec4 params[4];
+  int demoNumber;
+
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
    ImGui_ImplGlfwGL3_NewFrame();
@@ -256,33 +260,56 @@ bool openDebug;
     // automatically appears in a window called "Debug".
      ImGui::ColorEdit4(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::InputInt("DemoNumber", &demoNumber,0,4);
 
     glClearColor(SPLAT4(clear_color));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   glViewport(0,0,mainWin._height, mainWin._height);
+
     bool redraw = false, clear = false;
 
-    //genTriangle();
-  //  do_curve(ctx);
 
-    for(int i=0; i < 4; i++){
-      ImGui::PushID(i);
-      ImGui::ColorEdit4("arg", (float*)&(params[i]));
-      ImGui::PopID();
-    }
-    //do_curve(ctx, redraw, clear);
-    Flame::do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
-  //p.update(ctx, (float) glfwGetTime());
-    processInput(mainWin.window);
+    switch(demoNumber){
+      case 0:
+        genTriangle();
+        basic.use();
+        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
+        ctx->render();
+        break;
+      case 1:
+        do_curve(ctx, redraw, clear);
+        if(redraw){
+          ctx->render();
+        }
+        break;
+      case 2:
+        for(int i=0; i < 4; i++){
+          ImGui::PushID(i);
+          ImGui::ColorEdit4("arg", (float*)&(params[i]));
+          ImGui::PopID();
+        }
 
-   buff.begin(clear);
-   if(redraw) {
-     basic.use();
-     glUniform4fv(glGetUniformLocation(basic.ID, "u_adj"), 4, (float*) &params[0]);
-     ctx->render();
-   }
-   glViewport(0,0,mainWin._height, mainWin._height);
+        ((ProcessingGL*) ctx)->setMode(GL_POINTS);
+        Flame::do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
+        //buff.begin(clear);
+        if(redraw) {
+          flame.use();
+          glUniform4fv(glGetUniformLocation(flame.ID, "u_adj"), 4, (float*) &params[0]);
+          ctx->render();
+        }
+        glViewport(0,0,mainWin._height, mainWin._height);
 // interlace a secondary buffer to save the final image?
-    buff.end();
+       // buff.end();
+        break;
+      case 3:
+        p.update(ctx, (float) glfwGetTime());
+        break;
+      default:
+        break;
+    }
+
+
+    processInput(mainWin.window);
 
     t += .05f; // TODO: real deltatime
 
