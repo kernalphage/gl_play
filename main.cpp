@@ -238,6 +238,7 @@ int main() {
    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad
   // Controls
   ImGui_ImplGlfwGL3_Init(mainWin.window, true);
+  glPointSize(4);
 
   // Setup style
  // ImGui::StyleColorsDark();
@@ -247,9 +248,9 @@ int main() {
 //  RenderTarget buff(2000,2000);
  // buff.init();
 bool openDebug;
-  vec4 params[4];
-  int demoNumber;
-
+  vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
+  int demoNumber = 3;
+  bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
    ImGui_ImplGlfwGL3_NewFrame();
@@ -302,6 +303,19 @@ bool openDebug;
        // buff.end();
         break;
       case 3:
+        for(int i=0; i < 4; i++){
+          ImGui::PushID(i);
+          ImGui::ColorEdit4("arg", (float*)&(params[i]));
+          ImGui::PopID();
+        }
+        if(ImGui::Checkbox("Trip out", &trippy)){
+          flame.use();
+          ((ProcessingGL*) ctx)->setMode(GL_POINTS);
+        }
+        else{
+          basic.use();
+          ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
+        }
         p.update(ctx, (float) glfwGetTime());
         break;
       default:
