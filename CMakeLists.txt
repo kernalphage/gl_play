@@ -21,7 +21,7 @@ set(SOURCE_FILES
         Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp RenderTarget.cpp RenderTarget.hpp
         # Hex.cpp Hex.hpp
         Flame.hpp
-        Flame.cpp Streamline.cpp Streamline.hpp)
+        Flame.cpp Streamline.cpp Streamline.hpp sketches.hpp)
 set(REF_SOURCE_FILES
     imgui_impl/glfw_gl3.cpp
     imgui_impl/glfw_gl3.h
