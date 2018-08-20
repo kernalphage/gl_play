@@ -2,11 +2,9 @@
 #include "Material.hpp"
 #include "Processing.hpp"
 #include "Triangulate.hpp"
-#include <algorithm>
 #include "Window.hpp"
 #include "imgui.h"
 #include "imgui_impl/glfw_gl3.h"
-#include "ref/FastNoise/FastNoise.h"
 #include "Blob.hpp"
 #include "Plotter.hpp"
 #include "RenderTarget.hpp"
@@ -25,9 +23,6 @@ Processing *ctx;
 TriBuilder tri;
 Plotter p;
 float t = 0;
-GLuint d;
-int guessDepth;
-static GLubyte *pixels = NULL;
 
 void genTriangle() {
     if(tri.imSettings()){
@@ -61,8 +56,8 @@ int main() {
   glfwSetErrorCallback(error_callback);
   glfwSetKeyCallback(mainWin.window, keyCallback);
   glEnable(GL_DEBUG_OUTPUT);
-  // build and compile our shader program
 
+  // build and compile our shader program
   Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
   Material flame{"shaders/basic.vert", "shaders/basic.frag", true, "shaders/flame.geom"};
   ctx = new ProcessingGL{};
@@ -71,13 +66,10 @@ int main() {
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
   io.ConfigFlags |=  ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
-   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad
   // Controls
   ImGui_ImplGlfwGL3_Init(mainWin.window, true);
-  glPointSize(4);
 
-  // Setup style
- // ImGui::StyleColorsDark();
   vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
 
   Blob b{{0,0}, .5f};
@@ -92,10 +84,7 @@ bool openDebug;
    ImGui_ImplGlfwGL3_NewFrame();
 
     ImGui::ShowDemoWindow(&openDebug);
-    // 1. Show a simple window.
-    // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets
-    // automatically appears in a window called "Debug".
-     ImGui::ColorEdit4(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
+    ImGui::ColorEdit4(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::InputInt("DemoNumber", &demoNumber,0,4);
 
@@ -105,7 +94,7 @@ bool openDebug;
 
     bool redraw = false, clear = false;
 
-
+// interlace a secondary buffer to save the final image?
     switch(demoNumber){
       case 0:
         genTriangle();
@@ -135,7 +124,6 @@ bool openDebug;
           ctx->render();
         }
         glViewport(0,0,mainWin._height, mainWin._height);
-// interlace a secondary buffer to save the final image?
        // buff.end();
         break;
       case 3:

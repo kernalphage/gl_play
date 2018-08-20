@@ -5,9 +5,8 @@
 #ifndef GL_PLAY_SKETCHES_HPP
 #define GL_PLAY_SKETCHES_HPP
 
-#endif //GL_PLAY_SKETCHES_HPP
-
-
+#include "Definitions.hpp"
+#include "ref/FastNoise/FastNoise.h"
 
 
 template<typename T>
@@ -175,3 +174,7 @@ void test_chaikin(){
     cout<<endl;
   }
 }
+
+
+#endif //GL_PLAY_SKETCHES_HPP
+
