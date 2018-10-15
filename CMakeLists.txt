@@ -19,9 +19,9 @@ set(SOURCE_FILES
     Window.hpp
     Definitions.hpp
         Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp RenderTarget.cpp RenderTarget.hpp
-        # Hex.cpp Hex.hpp
+        hexlib.hpp
         Flame.hpp
-        Flame.cpp Streamline.cpp Streamline.hpp sketches.hpp)
+        Flame.cpp Streamline.cpp Streamline.hpp sketches.hpp flowmap.cpp flowmap.hpp proc_map.cpp proc_map.hpp)
 set(REF_SOURCE_FILES
     imgui_impl/glfw_gl3.cpp
     imgui_impl/glfw_gl3.h
@@ -34,6 +34,8 @@ set(REF_SOURCE_FILES
 	ref/glad/src/glad.c
 	)
 
+include_directories("ref/DonerSerializer/DonerSerializer/include")
+include_directories("ref/DonerSerializer/DonerSerializer/thirdparty/DonerReflection/DonerReflection/include")
 add_executable(gl_play ${SOURCE_FILES} ${REF_SOURCE_FILES})
 include_directories("ref/glad/include")
 include_directories("ref")

@@ -12,7 +12,7 @@ public:
 
 	void end();
 	void deinit();
-
+	void save(const char*const filename);
 private:
 
   GLuint m_fbo;

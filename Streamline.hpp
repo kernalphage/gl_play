@@ -26,76 +26,39 @@ class Streamline {
   };
 public:
 
+  Streamline(float _width, float _height):
+      p{{0,0},{_width,_height}, _width/100},
+      width(_width), height(_height)
+  {
+  };
   ~Streamline(){
-    //hoo boy
+    destroy();
   }
 
-  bool isvalid(Node* n){
-    vec2 pt = n->pos;
+  bool imSettings();
 
-    if(pt.x < 0 || pt.y < 0){
-      return false;
-    }
-    if(pt.x > width || pt.y > height){
-      return false;
-    }
-    vector<Node *> neigh;
-    p.neighbors(pt, std::back_inserter(neigh));
+  bool isvalid(vec2 pt);
 
+  vec2 next(Node* pos, bool backwards);
 
-    const auto distfn = [=]( Node* next ){ return glm::distance2(next->pos, pt);};
-    float nodeDist = std::accumulate(neigh.begin(), neigh.end(), distfn(neigh[0]), [=](float d, Node* n){
-      return std::min(d, distfn(n));
-    });
-
-    return nodeDist > minDist;
-
-  };
-
-  Node* next(Node* pos, bool backwards){
-    return new Node{nullptr, pos->pos + vec2{.05f, .05}, false};
-  };
-
-  Node* stream_point(Node* start){
-
-    Node* cur = start;
-    bool backwards = false;
-    while(cur){
-      auto nextp = next(cur, backwards);
-      if(!isvalid(nextp)) {
-        //leak!
-        if(!backwards){
-          backwards = true;
-          cur = start;
-          continue;
-        }
-        else{
-          break;
-        }
-      }
-
-      p.add(cur);
-
-      if(backwards){
-        nextp->next = cur;
-      }else{
-        cur->next = nextp;
-      }
-      cur = nextp;
-    }
-
-    return cur; //the "start" of our line
-  }
+  Node* stream_point(vec2 startPos);
 
   void render(Processing* ctx);
 
 private:
+  void destroy();
+  template<typename T>
+  void compute_curl(vec2 pos, T turbulence);
 
   vector<Node*> lines;
   Partition<Node*> p;
   float width;
   float height;
   float minDist;
+
+  float lineWidth=.004;
+  float stepDist = .01;
+  float windStrength = .2;
 };
 
 

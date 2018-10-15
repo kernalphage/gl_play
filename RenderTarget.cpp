@@ -4,6 +4,8 @@
 #include "Definitions.hpp"
 
 #include "imgui.h"
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 void RenderTarget::init(void)  {
@@ -15,6 +17,7 @@ void RenderTarget::init(void)  {
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
     // Color buffer
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGB, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -80,7 +83,7 @@ void RenderTarget::begin(bool clear) {
   }
 
   ImGui::SliderFloat("Gamma", &gamma, 0,1.0);
-  ImGui::SliderFloat("Energy", &energy, 1, 100);
+  ImGui::SliderFloat("Energy", &energy, 1, 30);
 
   m_twotri->setFloat("gamma", gamma);
   m_twotri->setFloat("energy", energy);
@@ -88,6 +91,10 @@ void RenderTarget::begin(bool clear) {
 }
 
 void RenderTarget::end() {
+  if(ImGui::Button("Save")){
+    save("tmp.png");
+  }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   m_twotri->use();
@@ -120,3 +127,37 @@ RenderTarget::RenderTarget(int _w, int _h) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 }
+
+void RenderTarget::save(const char *const filename) {
+
+
+  float* highres_pixels = new float[WIDTH*HEIGHT*4];
+  unsigned char* mapped_pixels = new unsigned char[WIDTH*HEIGHT*4];
+
+  glReadPixels(0,0,WIDTH, HEIGHT, GL_RGBA, GL_FLOAT, highres_pixels);
+
+  for(int i=0; i < WIDTH; i++){
+    for(int j=0; j < HEIGHT; j++){
+      for(int channel =0; channel < 3; channel++) {
+        const int idx = (j * WIDTH + i) * 4 + channel;
+        float lum = log(highres_pixels[idx]) * gamma;
+        lum = glm::clamp(lum, 0.0f, 1.0f);
+        lum = pow(lum, energy);
+
+        // lum = highres_pixels[idx] > 0? 1:0;
+
+        mapped_pixels[idx] = (unsigned char) (lum * 255);
+      }
+      mapped_pixels[(j * WIDTH + i) * 4 + 3] = (unsigned char) ( 255);
+    }
+  }
+
+  int ok = stbi_write_png(filename,WIDTH, HEIGHT, 4, mapped_pixels, WIDTH*4);
+
+  printf("render Ok: %d",ok);
+
+  delete(highres_pixels);
+  delete(mapped_pixels);
+}
+
+

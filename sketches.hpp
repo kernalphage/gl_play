@@ -19,13 +19,13 @@ vector<T> chaikin(vector<T> init, float smooth, float minDist){
     vector<T> output{ seed[0] };
     bool needed_cut = false;
     for(int i=0; i < seed.size() - 1; i++){
-      if(distance(seed[i], seed[i+1]) < minDist) { //i think it's fucky here?
+      if(glm::distance(seed[i], seed[i+1]) < minDist) { //i think it's fucky here?
         output.push_back( seed[i] );
         continue;
       };
       needed_cut = true;
-      T q = mix(seed[i], seed[i+1], smooth);
-      T r = mix(seed[i], seed[i+1], 1 - smooth);
+      T q = glm::mix(seed[i], seed[i+1], smooth);
+      T r = glm::mix(seed[i], seed[i+1], 1 - smooth);
       output.push_back( q );
       output.push_back( r );
     }

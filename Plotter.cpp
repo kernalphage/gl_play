@@ -105,7 +105,7 @@ void Plotter::update(Processing * ctx, float t){
         }
         metric = std::min(std::max(metric, 0.01f), 0.99f);
         metric = pow(metric, gamma);
-        float sz = mix(rmin, rmax, metric);
+        float sz = glm::mix(rmin, rmax, metric);
         return vec2{sz * .5, sz};
       };
       Random::seed(seed + i*10 + jiggle);

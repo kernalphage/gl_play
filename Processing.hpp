@@ -20,6 +20,8 @@ public:
       line(points[i], points[i+1], middleColor);
     }
   }
+  virtual void ngon(vec2 pos, float radius, int sides, vec4 innerColor, vec4 outerColor) = 0;
+
   virtual void line(vec3 p1, vec3 p2, vec4 color) = 0;   
   virtual void flush() = 0;
   virtual void clear() = 0;
@@ -41,7 +43,9 @@ public:
   void polygon(std::vector<UI_Vertex> v, bool loop = true) override;
   void spline(std::vector<vec3> pts, vec4 middleColor, vec4 edgeColor, float thickness = .03) override ;
   void line(vec3 p1, vec3 p2, vec4 color) override;
-  
+
+  void ngon(vec2 pos, float radius, int sides, vec4 innerColor, vec4 outerColor) override;
+
   void flush() override;
   void clear() override;
   void render() override;
@@ -80,7 +84,12 @@ public:
   void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d) override;
   void polygon(std::vector<UI_Vertex> v, bool loop = true) override;
   void line(vec3 p1, vec3 p2, vec4 color) override;
-  
+
+  void ngon(vec2 pos, float radius, int sides, vec4 innerColor, vec4 outerColor) {
+    circle(pos, radius);
+  };
+
+
   void flush() override;
   void clear() override;
   void render() override;

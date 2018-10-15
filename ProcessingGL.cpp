@@ -65,7 +65,7 @@ void ProcessingGL::render() {
   glEnableVertexAttribArray(0);
   glBindBuffer(GL_ARRAY_BUFFER, m_VBO.handle);
 
-    glDrawElements(m_mode, m_indices.size(), GL_UNSIGNED_INT, 0);
+  glDrawElements(m_mode, m_indices.size(), GL_UNSIGNED_INT, 0);
   glBindVertexArray(0);
 
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -141,6 +141,10 @@ void ProcessingGL::allocate_buffers(unsigned int vbo_size,
 
 void ProcessingGL::spline(vector<vec3> pts, vec4 middleColor, vec4 edgeColor, float thickness ) {
 
+  if(pts.size() <= 3){
+    //line(pts[0], pts[1], middleColor); // todo: make line take the same parameters
+    return;
+  }
   auto perp = [](vec3 a, vec3 b){ vec3 d = normalize(a-b); return  vec3(d.y, -d.x, (a.z+b.z)*.5);};
 
   for(int i=0; i < pts.size() - 3; i++){
@@ -161,4 +165,16 @@ void ProcessingGL::spline(vector<vec3> pts, vec4 middleColor, vec4 edgeColor, fl
          UI_Vertex{pts[i+1]+endPerp, edgeColor});
   }
 
+}
+
+void ProcessingGL::ngon(vec2 pos, float r, int sides, vec4 outerColor, vec4 innerColor) {
+  const float pi = 3.1415f;
+  vec3 threepos{pos, 1};
+  float dTheta = (2 * pi) / sides;
+  auto cPos = [=](float t, float radius){ return vec3{sin(t), cos(t), 1} * radius + threepos;};
+  for (float theta = 0; theta <= (2 * pi); theta += dTheta) {
+    tri(UI_Vertex{cPos(theta, r), outerColor},
+              UI_Vertex{cPos(theta + dTheta, r), outerColor},
+              UI_Vertex{cPos(theta + dTheta, 0), innerColor});
+  }
 }

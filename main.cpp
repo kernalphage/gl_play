@@ -10,6 +10,7 @@
 #include "RenderTarget.hpp"
 #include "Flame.hpp"
 #include "Streamline.hpp"
+#include "flowmap.hpp"
 
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
@@ -17,6 +18,7 @@ using namespace std;
 #include "Streamline.hpp"
 
 #include "sketches.hpp"
+#include "proc_map.hpp"
 
 // settings
 Processing *ctx;
@@ -49,7 +51,6 @@ static void error_callback(int error, const char* description)
 
 
 int main() {
-
   Window mainWin;
   mainWin.init(1000,1000);
 
@@ -72,18 +73,29 @@ int main() {
 
   vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
 
+
+  flowmap f;
+  proc_map map;
+
+  Streamline s(1,1);
+  //s.stream_point({0.5f,0.5f});
+  for(int i=0; i < 100; i++){
+    vec2 p = Random::random_point({0,0}, {1,1});
+    s.stream_point(p);
+  }
+
   Blob b{{0,0}, .5f};
-//  RenderTarget buff(2000,2000);
- // buff.init();
+  RenderTarget buff(2000,2000);
+  buff.init();
 bool openDebug;
   vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
-  int demoNumber = 3;
+  int demoNumber = 6;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
    ImGui_ImplGlfwGL3_NewFrame();
 
-    ImGui::ShowDemoWindow(&openDebug);
+
     ImGui::ColorEdit4(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     ImGui::InputInt("DemoNumber", &demoNumber,0,4);
@@ -132,8 +144,10 @@ bool openDebug;
           ImGui::ColorEdit4("arg", (float*)&(params[i]));
           ImGui::PopID();
         }
-        if(ImGui::Checkbox("Trip out", &trippy)){
+        ImGui::Checkbox("Trip out", &trippy);
+        if(!trippy){
           flame.use();
+          glUniform4fv(glGetUniformLocation(flame.ID, "u_adj"), 4, (float*) &params[0]);
           ((ProcessingGL*) ctx)->setMode(GL_POINTS);
         }
         else{
@@ -142,6 +156,39 @@ bool openDebug;
         }
         p.update(ctx, (float) glfwGetTime());
         break;
+      case 4: {
+        basic.use();
+        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
+        ctx->clear();
+        s.render(ctx);
+        ctx->flush();
+        ctx->render();
+        break;
+      }
+      case 5: {
+        bool redraw = f.imSettings();
+        buff.begin(redraw);
+
+        if(f.needsFrame()){
+          f.render(ctx);
+          basic.use();
+          ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
+          ctx->render();
+        }
+
+        glViewport(0,0,mainWin._height, mainWin._height);
+        buff.end();
+      }
+      case 6:{
+        bool redraw = map.imSettings();
+
+        if(redraw){
+          map.render((ProcessingGL*) ctx);
+        }
+        basic.use();
+        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
+        ctx->render();
+      }
       default:
         break;
     }

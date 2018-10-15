@@ -7,3 +7,6 @@
 [submodule "ref/stb"]
 	path = ref/stb
 	url = https://github.com/nothings/stb.git
+[submodule "ref/DonerSerializer"]
+	path = ref/DonerSerializer
+	url = https://github.com/Donerkebap13/DonerSerializer.git

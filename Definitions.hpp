@@ -13,7 +13,12 @@
 #include <string>
 #include <ctime>
 
-using namespace glm;
+class Processing;
+using glm::vec2;
+using glm::vec3;
+using glm::vec4;
+using glm::mat4;
+
 
 #define SPLAT2(t) t.x, t.y
 #define SPLAT3(t) t.x, t.y, t.z
@@ -42,8 +47,17 @@ struct TEX_Vertex{
   vec2 uv;
 };
 
-struct Util{
 
+
+struct Util{
+  static float rangeMap (float t,float inStart,float inEnd,float outStart, float outEnd){
+    //if(! easing ) easing = x=>x;
+    float out = t - inStart;
+    out /= (inEnd - inStart); // [0,1]
+    //out = easing(out);
+    out *= (outEnd - outStart);
+    return out + outStart;
+  }
 static	std::string timestamp(int seed){
 	  char mbstr[150];
 	   std::time_t t = std::time(nullptr);
