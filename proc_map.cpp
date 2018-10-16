@@ -48,5 +48,24 @@ bool proc_map::imSettings() {
   redraw |= ImGui::SliderFloat("watterThreshhold", &waterThreshhld, 0,1);
   redraw |= w.imSettings("WaterColor");
   redraw |= g.imSettings("grounddColor");
+  static bool p_open = true;
+  const float DISTANCE = 10.0f;
+  static int corner = 0;
+  float mousex = ImGui::GetIO().MousePos.x, mousey = ImGui::GetIO().MousePos.y;
+  /// ImVec2 window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
+  ImVec2 window_pos = ImVec2(mousex, mousey );
+
+  ImVec2 window_pos_pivot = ImVec2(mousex > ImGui::GetIO().DisplaySize.x/2? 1 : 0,
+                                   mousey > ImGui::GetIO().DisplaySize.y/2? 1 : 0);
+  ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+  ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
+  if (ImGui::Begin("Example: Fixed Overlay", &p_open, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_NoFocusOnAppearing|ImGuiWindowFlags_NoNav))
+  {
+    ImGui::Text("Simple overlay\nin the corner of the screen.\n(right-click to change position)");
+    ImGui::Separator();
+    ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+
+    ImGui::End();
+  }
   return redraw;
 }
