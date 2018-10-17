@@ -30,8 +30,8 @@ public:
 
 struct Buffer {
   GLuint handle = 0;
-  uint size = 0;
-  uint lastUsed = 0;
+  GLuint size = 0;
+  GLuint lastUsed = 0;
 };
 
 class ProcessingGL : public Processing {

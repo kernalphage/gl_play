@@ -55,7 +55,20 @@ if(WIN32)
 
     target_link_libraries(gl_play "${GLFW_PATH}/lib-vc2015/glfw3.lib")
     # TODO: Link to png
+ELSEIF(APPLE)
+    include_directories("../glm")
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(GLFW REQUIRED glfw3)
+    include_directories(${GLFW_INCLUDE_DIRS})
+    link_directories("/opt/local/lib")
+  #  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework Cocoa -framework OpenGL -framework IOKit")
 
+  find_library(GLFW_LIBRARY glfw HINTS "/opt/local/lib")
+  target_link_libraries(gl_play  ${GLFW_LIBRARY})
+    target_link_libraries(gl_play ${LIBRARIES})
+
+    find_library(LIBPNG png)
+    target_link_libraries(gl_play ${LIBPNG})
 ELSE()
     find_package(PkgConfig REQUIRED)
     pkg_search_module(GLFW REQUIRED glfw3)
@@ -67,6 +80,8 @@ ELSE()
     target_link_libraries(gl_play ${LIBPNG})
 
 ENDIF()
+
+
 
 # yet another way to get shaders
 
