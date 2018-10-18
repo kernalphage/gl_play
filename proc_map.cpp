@@ -7,7 +7,7 @@
 #include "Processing.hpp"
 #include "hexlib.hpp"
 #include <FastNoise/FastNoise.h>
-
+#include <iostream>
 
 
 
@@ -24,14 +24,14 @@ void proc_map::render(ProcessingGL *ctx) {
       Hex pos(x-y/2, y);
       auto p = hex_to_pixel(l, pos);
       float ic = noise.GetPerlinFractal(p.x, p.y) * .5f + .5f;
-      if( ic < waterThreshhld){
+      if( ic < waterThreshhld) { // water 
         auto color= w.sample(Util::rangeMap(ic, 0, waterThreshhld, 0,1) );
         ctx->ngon(p, dx/2, 6, color,color);
 
-      } else {
+      } else { // ground
         auto color= g.sample(Util::rangeMap(ic, waterThreshhld,1 , 0,1) );
         ctx->ngon(p, dx/2, 6, color,color);
-
+        
       }
     }
   }
@@ -51,21 +51,40 @@ bool proc_map::imSettings() {
   static bool p_open = true;
   const float DISTANCE = 10.0f;
   static int corner = 0;
-  float mousex = ImGui::GetIO().MousePos.x, mousey = ImGui::GetIO().MousePos.y;
+  float mousex = (ImGui::GetIO().MousePos.x), mousey = (ImGui::GetIO().MousePos.y);
+  if(mousex > ImGui::GetIO().DisplaySize.x/2){
+    mousex -= 5;
+  }
+  else{
+  mousex -= 5;
+  }
   /// ImVec2 window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
   ImVec2 window_pos = ImVec2(mousex, mousey );
 
   ImVec2 window_pos_pivot = ImVec2(mousex > ImGui::GetIO().DisplaySize.x/2? 1 : 0,
                                    mousey > ImGui::GetIO().DisplaySize.y/2? 1 : 0);
+
   ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
   ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
   if (ImGui::Begin("Example: Fixed Overlay", &p_open, ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_NoFocusOnAppearing|ImGuiWindowFlags_NoNav))
   {
-    ImGui::Text("Simple overlay\nin the corner of the screen.\n(right-click to change position)");
+    ImGui::Text("Simple overlay\nin the corner of the screen");
     ImGui::Separator();
     ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
 
     ImGui::End();
   }
+
+  redraw |= do_serialize();
   return redraw;
+}
+
+bool  proc_map::do_serialize(){
+  if(ImGui::Button("Save JSON")){
+    DonerSerializer::CJsonSerializer serializer;
+    serializer.Serialize(*this);
+    std::string result = serializer.GetJsonString();
+    std::cout<<result <<std::endl;
+  }
+  return false;
 }
