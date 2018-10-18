@@ -47,7 +47,6 @@ bool Streamline::isvalid(vec2 pt)
 
 Streamline::Node *Streamline::stream_point(vec2 startPos) {
 
-  cout<<"start"<<startPos.x <<", " <<startPos.y<<endl;
 
     Node* start = new Node{nullptr, startPos, false};
     Node* cur = start;
@@ -67,7 +66,6 @@ Streamline::Node *Streamline::stream_point(vec2 startPos) {
         }
       }
 
-      cout<<"Valid: " << nextp.x <<", " <<nextp.y<<endl;
       Node* nextNode = new Node{nullptr, nextp, false};
       p.add(nextNode);
 
