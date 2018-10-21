@@ -8,33 +8,41 @@
 #include "hexlib.hpp"
 #include <FastNoise/FastNoise.h>
 #include <iostream>
+#include "Window.hpp"
 
-
+Hex m_curHex{0,0};
 
 void proc_map::render(ProcessingGL *ctx) {
-  float dx = 2.0/ m_chunksize;
-  Layout l(layout_pointy, vec2{dx/2, dx/2}, vec2{-1,-1});
+  float dx = 1.0f/ m_chunksize;
+  Layout l = Layout(layout_pointy, vec2{dx, dx}, vec2{-1, -1});
   FastNoise noise;
   noise.SetSeed(m_seed );
   noise.SetFrequency(m_frequency);
   ctx->clear();
 
-  for(int x=0; x < m_chunksize; x++){
-    for(int y = 0; y < m_chunksize; y++){
+  for(int x=0; x < m_chunksize * 1.5; x++){
+    for(int y = 0; y < m_chunksize * 1.5; y++){
       Hex pos(x-y/2, y);
       auto p = hex_to_pixel(l, pos);
+
+      if(m_curHex == pos || x==0 && y == 0){
+        ctx->ngon(p, dx, 6, {1,0,0,1}, {1,0,0,0});
+        continue;
+      }
+
       float ic = noise.GetPerlinFractal(p.x, p.y) * .5f + .5f;
       if( ic < waterThreshhld) { // water 
         auto color= w.sample(Util::rangeMap(ic, 0, waterThreshhld, 0,1) );
-        ctx->ngon(p, dx/2, 6, color,color);
+        ctx->ngon(p, dx, 6, color,color);
 
       } else { // ground
         auto color= g.sample(Util::rangeMap(ic, waterThreshhld,1 , 0,1) );
-        ctx->ngon(p, dx/2, 6, color,color);
-        
+        ctx->ngon(p, dx, 6, color,color);
       }
     }
   }
+  vec4 c{1,0,1,.4};
+  ctx->quad({{-.99,-.99,0},c}, {{-.99,.99,0},c}, {{.99,.99,0},c}, {{.99,-.99,0},c});
   ctx->flush();
 }
 
@@ -48,6 +56,12 @@ bool proc_map::imSettings() {
   redraw |= ImGui::SliderFloat("watterThreshhold", &waterThreshhld, 0,1);
   redraw |= w.imSettings("WaterColor");
   redraw |= g.imSettings("grounddColor");
+
+
+  // calculate member variables
+  float dx = 1.0f/ m_chunksize;
+  Layout l = Layout(layout_pointy, vec2{dx, dx}, vec2{-1,-1});
+
   static bool p_open = true;
   const float DISTANCE = 10.0f;
   static int corner = 0;
@@ -58,6 +72,11 @@ bool proc_map::imSettings() {
   else{
   mousex -= 5;
   }
+  vec2 calcPos{mousex/ImGui::GetIO().DisplaySize.y, (ImGui::GetIO().DisplaySize.y - mousey) / ImGui::GetIO().DisplaySize.y};
+  calcPos = calcPos * 2 - vec2{ 1,1};
+
+  auto hexPix = hex_round(pixel_to_hex(l, calcPos));
+  m_curHex = hexPix;
   /// ImVec2 window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
   ImVec2 window_pos = ImVec2(mousex, mousey );
 
@@ -70,7 +89,8 @@ bool proc_map::imSettings() {
   {
     ImGui::Text("Simple overlay\nin the corner of the screen");
     ImGui::Separator();
-    ImGui::Text("Mouse Position: (%.1f,%.1f)", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+    ImGui::Text("hex  Position: (%d,%d)", hexPix.q, hexPix.r);
+    ImGui::Text("Mouse Position: (%f,%f)", calcPos.x, calcPos.y);
 
     ImGui::End();
   }

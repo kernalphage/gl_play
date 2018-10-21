@@ -3,7 +3,7 @@ project(gl_play)
 
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-Wall -g -O2" )
+set(CMAKE_CXX_FLAGS "-Wall -g " )
 
 set(SOURCE_FILES
     main.cpp

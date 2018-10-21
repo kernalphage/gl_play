@@ -47,6 +47,7 @@ int Window::init(int width, int height) {
                   self.resize(w, h);});
 
   glViewport(0, 0, _width, _height);
+
   return 0;
 }
 
@@ -94,4 +95,8 @@ void Window::resize(int width, int height) {
   png_write_image(png, *png_rows);
   png_write_end(png, NULL);
   fclose(f);
+}
+
+void Window::cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
+
 }

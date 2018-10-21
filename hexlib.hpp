@@ -1,4 +1,6 @@
 // Generated code -- http://www.redblobgames.com/grids/hexagons/
+#ifndef HEXLIB_HPP
+#define HEXLIB_HPP
 
 #include <cmath>
 #include <cstdlib>
@@ -14,17 +16,25 @@ using Point = vec2;
 
 struct Hex
 {
-    const int q;
-    const int r;
-    const int s;
+  int q=0;
+  int r=0;
+  int s=0;
   Hex(int q_, int r_): q(q_), r(r_), s(-q_ - r_){
 
   }
   Hex(int q_, int r_, int s_): q(q_), r(r_), s(s_) {
         if (q + r + s != 0) throw "q + r + s must be 0";
     }
+
 };
 
+bool operator == (Hex a, Hex b) {
+    return a.q == b.q && a.r == b.r && a.s == b.s;
+}
+
+bool operator != (Hex a, Hex b) {
+    return !(a == b);
+}
 
 struct FractionalHex
 {
@@ -32,7 +42,7 @@ struct FractionalHex
     const double r;
     const double s;
     FractionalHex(double q_, double r_, double s_): q(q_), r(r_), s(-q_ - r_) {
-        if (round(q + r + s) != 0) throw "q + r + s must be 0";
+
     }
 };
 
@@ -310,4 +320,4 @@ vector<Point> polygon_corners(Layout layout, Hex h)
 }
 
 
-
+#endif

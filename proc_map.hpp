@@ -35,12 +35,14 @@ public:
   bool imSettings();
   void render(ProcessingGL* ctx);
 
-  int m_chunksize = 10;
+  // calculated
+  // cerealized
+  int m_chunksize = 20;
   int m_seed =0;
-  float m_frequency = .5;
-  float waterThreshhld = .3;
-  ColorWheel g;
-  ColorWheel w;
+  float m_frequency = 1.25;
+  float waterThreshhld = .5;
+  ColorWheel g{{0,1,0,1}, {.21,1,0,1}};
+  ColorWheel w{{0,0,1,1}, {0,.5,1,1}};
 private:
   bool do_serialize();
 };

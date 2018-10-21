@@ -179,7 +179,7 @@ bool openDebug;
         glViewport(0,0,mainWin._height, mainWin._height);
         buff.end();
       }
-      case 6:{
+      case 6:{ // procmap
         bool redraw = map.imSettings();
 
         if(redraw){
