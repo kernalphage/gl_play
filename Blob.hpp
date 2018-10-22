@@ -11,7 +11,6 @@
 
 using namespace std;
 
-class Processing;
 
 struct Blob{
   Blob(vec2 _pos, float _r): pos(_pos), r(_r){ }

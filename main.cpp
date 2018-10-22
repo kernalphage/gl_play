@@ -61,7 +61,7 @@ int main() {
   // build and compile our shader program
   Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
   Material flame{"shaders/basic.vert", "shaders/basic.frag", true, "shaders/flame.geom"};
-  ctx = new ProcessingGL{};
+  ctx = new ProcessingGL_t<UI_Vertex, vec4>{};
 
   // Setup ImGui binding
   ImGui::CreateContext();

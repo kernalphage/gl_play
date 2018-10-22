@@ -8,21 +8,21 @@
 #include <vector>
 #include <string>
 
-
-class Processing {
+template<typename Vertex_Type, typename Extra_Data>
+class Processing_t {
 public:
 
-  virtual void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c)= 0;
-  virtual void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d)= 0;
-  virtual void polygon(std::vector<UI_Vertex> v, bool loop = true)= 0;
-  virtual void spline(std::vector<vec3> points, vec4 middleColor, vec4 edgeColor, float thickness ) {
+  virtual void tri(Vertex_Type a, Vertex_Type b, Vertex_Type c)= 0;
+  virtual void quad(Vertex_Type a, Vertex_Type b, Vertex_Type c, Vertex_Type d)= 0;
+  virtual void polygon(std::vector<Vertex_Type> v, bool loop = true)= 0;
+  virtual void spline(std::vector<vec3> points, Extra_Data middleColor, Extra_Data edgeColor, float thickness ) {
     for(int i =0; i < points.size() - 1; i++){
       line(points[i], points[i+1], middleColor);
     }
   }
-  virtual void ngon(vec2 pos, float radius, int sides, vec4 innerColor, vec4 outerColor) = 0;
+  virtual void ngon(vec2 pos, float radius, int sides, Extra_Data innerColor, Extra_Data outerColor) = 0;
 
-  virtual void line(vec3 p1, vec3 p2, vec4 color) = 0;   
+  virtual void line(vec3 p1, vec3 p2, Extra_Data color) = 0;   
   virtual void flush() = 0;
   virtual void clear() = 0;
   virtual void render() = 0;
@@ -34,17 +34,19 @@ struct Buffer {
   GLuint lastUsed = 0;
 };
 
-class ProcessingGL : public Processing {
-public: 
-  ProcessingGL();
-  ~ProcessingGL();
-  void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c) override;
-  void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d) override;
-  void polygon(std::vector<UI_Vertex> v, bool loop = true) override;
-  void spline(std::vector<vec3> pts, vec4 middleColor, vec4 edgeColor, float thickness = .03) override ;
-  void line(vec3 p1, vec3 p2, vec4 color) override;
 
-  void ngon(vec2 pos, float radius, int sides, vec4 innerColor, vec4 outerColor) override;
+template<typename Vertex_Type, typename Extra_Data>
+class ProcessingGL_t : public Processing_t<Vertex_Type, Extra_Data> {
+public: 
+  ProcessingGL_t();
+  ~ProcessingGL_t();
+  void tri(Vertex_Type a, Vertex_Type b, Vertex_Type c) override;
+  void quad(Vertex_Type a, Vertex_Type b, Vertex_Type c, Vertex_Type d) override;
+  void polygon(std::vector<Vertex_Type> v, bool loop = true) override;
+  void spline(std::vector<vec3> pts, Extra_Data middleColor, Extra_Data edgeColor, float thickness = .03) override ;
+  void line(vec3 p1, vec3 p2, Extra_Data color) override;
+
+  void ngon(vec2 pos, float radius, int sides, Extra_Data innerColor, Extra_Data outerColor) override;
 
   void flush() override;
   void clear() override;
@@ -52,13 +54,13 @@ public:
   void setMode(GLenum mode){ m_mode = mode;}
 
 private:
-
+  void define_vertex_attributes();
   void allocate_buffers(unsigned int vbo_size, unsigned int ebo_size);
   GLenum m_mode;
   mat4 view;
-  std::vector<UI_Vertex> m_verts;
+  std::vector<Vertex_Type> m_verts;
   std::vector<unsigned int> m_indices;
-  int indexVert(UI_Vertex p);
+  int indexVert(Vertex_Type p);
 
   mat4 m_cur;
   std::vector<mat4> viewStack;
@@ -73,19 +75,20 @@ struct circ{
   float r;
 };
 
-class ProcessingSVG : public Processing {
+template <typename Vertex_Type, typename Extra_Data>
+class ProcessingSVG_t : public Processing_t<Vertex_Type, Extra_Data> {
 public:
 
   void setFilename(std::string filename) { m_filename = filename;};
   void setStrokeColor(vec3 color){m_color =color;};
   void circle(vec2 pos, float radius);
 
-  void tri(UI_Vertex a, UI_Vertex b, UI_Vertex c) override;
-  void quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d) override;
-  void polygon(std::vector<UI_Vertex> v, bool loop = true) override;
-  void line(vec3 p1, vec3 p2, vec4 color) override;
+  void tri(Vertex_Type a, Vertex_Type b, Vertex_Type c) override;
+  void quad(Vertex_Type a, Vertex_Type b, Vertex_Type c, Vertex_Type d) override;
+  void polygon(std::vector<Vertex_Type> v, bool loop = true) override;
+  void line(vec3 p1, vec3 p2, Extra_Data color) override;
 
-  void ngon(vec2 pos, float radius, int sides, vec4 innerColor, vec4 outerColor) {
+  void ngon(vec2 pos, float radius, int sides, Extra_Data innerColor, Extra_Data outerColor) {
     circle(pos, radius);
   };
 
@@ -103,5 +106,9 @@ private:
   std::vector<circ> m_pts;
   std::vector<vec3> m_lines;
 };
+
+using Processing = Processing_t<UI_Vertex, vec4>;
+using ProcessingGL = ProcessingGL_t<UI_Vertex, vec4>;
+using ProcessingSVG = ProcessingSVG_t<UI_Vertex, vec4>;
 
 #endif // PROCESSING_HPP

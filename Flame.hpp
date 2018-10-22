@@ -6,7 +6,6 @@
 #define GL_PLAY_FLAME_HPP
 #include "Definitions.hpp"
 
-class Processing;
 
 class Flame {
 public:

@@ -12,7 +12,6 @@
 #include "Partition.hpp"
 
 using namespace std;
-class Processing;
 
 class Streamline {
   struct Node{

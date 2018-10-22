@@ -18,8 +18,6 @@ struct LayerSettings
   bool imSettings(int id);
 };
 
-class Processing;
-
 class Plotter {
 public:
   void update(Processing* ctx, float t);

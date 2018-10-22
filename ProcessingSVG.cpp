@@ -3,26 +3,33 @@
 #include <fstream>
 using namespace std;
 
-  void ProcessingSVG::tri(UI_Vertex a, UI_Vertex b, UI_Vertex c) {
+template<typename Vertex_Type, typename Extra_Data>
+  void ProcessingSVG_t<Vertex_Type, Extra_Data>::tri(Vertex_Type a, Vertex_Type b, Vertex_Type c) {
 
   };
-  void ProcessingSVG::quad(UI_Vertex a, UI_Vertex b, UI_Vertex c, UI_Vertex d) {
+template<typename Vertex_Type, typename Extra_Data>
+  void ProcessingSVG_t<Vertex_Type, Extra_Data>::quad(Vertex_Type a, Vertex_Type b, Vertex_Type c, Vertex_Type d) {
 
   };
-  void ProcessingSVG::polygon(std::vector<UI_Vertex> v, bool loop) {
+template<typename Vertex_Type, typename Extra_Data>
+  void ProcessingSVG_t<Vertex_Type, Extra_Data>::polygon(std::vector<Vertex_Type> v, bool loop) {
 
   };
-  void ProcessingSVG::line(vec3 p1, vec3 p2, vec4 color) {
+template<typename Vertex_Type, typename Extra_Data>
+  void ProcessingSVG_t<Vertex_Type, Extra_Data>::line(vec3 p1, vec3 p2, Extra_Data color) {
     m_lines.push_back(p1);
     m_lines.push_back(p2);
   };
-  void ProcessingSVG::flush() {
+template<typename Vertex_Type, typename Extra_Data>
+  void ProcessingSVG_t<Vertex_Type, Extra_Data>::flush() {
 
   };
-  void ProcessingSVG::clear() {
+template<typename Vertex_Type, typename Extra_Data>
+  void ProcessingSVG_t<Vertex_Type, Extra_Data>::clear() {
     m_pts.clear();
   };
-  void ProcessingSVG::render(){
+template<typename Vertex_Type, typename Extra_Data>
+  void ProcessingSVG_t<Vertex_Type, Extra_Data>::render(){
     std::ofstream file;
     file.open(m_filename, ios::out);
 
@@ -46,6 +53,9 @@ using namespace std;
     system(cmd.c_str());
 }
 
-void ProcessingSVG::circle(vec2 pos, float radius) {
+template<typename Vertex_Type, typename Extra_Data>
+void ProcessingSVG_t<Vertex_Type, Extra_Data>::circle(vec2 pos, float radius) {
   m_pts.emplace_back(pos, radius);
 };
+
+template class ProcessingSVG_t<UI_Vertex, vec4>;

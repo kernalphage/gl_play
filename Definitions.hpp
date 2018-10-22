@@ -18,7 +18,6 @@
 #include <sstream>
 #include <iostream>
 
-class Processing;
 using glm::vec2;
 using glm::vec3;
 using glm::vec4;
@@ -102,5 +101,6 @@ static	std::string timestamp(int seed){
 	}
 };
 
+#include "Processing.hpp"
 
 #endif // DEFINITIONS_HPP
