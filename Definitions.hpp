@@ -5,6 +5,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <fstream>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -12,6 +13,10 @@
 #include <glm/ext.hpp>
 #include <string>
 #include <ctime>
+#include <donerserializer/DonerSerialize.h>
+#include <donerserializer/DonerDeserialize.h>
+#include <sstream>
+#include <iostream>
 
 class Processing;
 using glm::vec2;
@@ -64,6 +69,36 @@ static	std::string timestamp(int seed){
 	  std::strftime(mbstr, sizeof(mbstr), "%m_%d_%s_%%d.txt", std::localtime(&t));
 	  sprintf(mbstr, mbstr, seed);
 	  return std::string(mbstr);
+	}
+
+
+	template<typename T>
+	static bool load_json(T& obj, const char* filename, bool doSave, bool doLoad){
+		if(doSave){
+			std::ofstream settings(filename);
+
+			DonerSerializer::CJsonSerializer serializer;
+			serializer.Serialize(obj);
+			std::string result = serializer.GetJsonString();
+			settings<<result;
+		}
+
+		if(doLoad){
+			std::ifstream sFile(filename);
+			std::stringstream vShaderStream;
+
+			if(!sFile.is_open()){
+				return false;
+			}
+			vShaderStream << sFile.rdbuf();
+			sFile.close();
+			// catch
+
+			std::string jsonContents=vShaderStream.str();
+			std::cout<<jsonContents<<std::endl;
+			DonerSerializer::CJsonDeserializer::Deserialize(obj, jsonContents.c_str());
+		}
+		return doSave || doLoad;
 	}
 };
 

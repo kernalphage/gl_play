@@ -7,6 +7,7 @@
 #include "Definitions.hpp"
 #include <donerserializer/DonerSerialize.h>
 #include <donerserializer/DonerDeserialize.h>
+#include <donerserializer/ISerializable.h>
 #include "Processing.hpp"
 
 struct ColorWheel{
@@ -30,6 +31,7 @@ struct ColorWheel{
 
 class proc_map {
 
+		DONER_DECLARE_OBJECT_AS_REFLECTABLE(proc_map)
 public:
 
   bool imSettings();
@@ -43,8 +45,7 @@ public:
   float waterThreshhld = .5;
   ColorWheel g{{0,1,0,1}, {.21,1,0,1}};
   ColorWheel w{{0,0,1,1}, {0,.5,1,1}};
-private:
-  bool do_serialize();
+
 };
 
 

@@ -181,6 +181,7 @@ bool openDebug;
       }
       case 6:{ // procmap
         bool redraw = map.imSettings();
+        redraw |= Util::load_json(map, "procgen_map.json", ImGui::Button("SaveMap"), ImGui::Button("LoadMap"));
 
         if(redraw){
           map.render((ProcessingGL*) ctx);
