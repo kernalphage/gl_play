@@ -61,7 +61,9 @@ int main() {
   // build and compile our shader program
   Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
   Material flame{"shaders/basic.vert", "shaders/basic.frag", true, "shaders/flame.geom"};
+  Material particle{"shaders/particle.vert", "shaders/textured.frag", true, "shaders/particle.geom"};
   ctx = new ProcessingGL_t<UI_Vertex, vec4>{};
+  auto* part_ctx = new ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>{};
 
   // Setup ImGui binding
   ImGui::CreateContext();
@@ -87,7 +89,6 @@ int main() {
   Blob b{{0,0}, .5f};
   RenderTarget buff(2000,2000);
   buff.init();
-bool openDebug;
   vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
   int demoNumber = 6;
   bool trippy = false;
@@ -189,6 +190,14 @@ bool openDebug;
         basic.use();
         ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
         ctx->render();
+      }
+      case 7:{ // particle demo
+
+        part_ctx->clear();
+        part_ctx->indexVert( { {0,0,0}, {{3,3}, 1,1}});
+        part_ctx->flush();
+        part_ctx->setMode(GL_POINTS);
+        part_ctx->render();
       }
       default:
         break;

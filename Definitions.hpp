@@ -45,12 +45,15 @@ struct UI_Vertex {
   vec3 pos;
   vec4 color = {1.0f, 0.0f, 1.0f, 1.0f};
 };
-struct TEX_Vertex{
+struct Particle_Vertex{
   vec3 pos;
-  vec4 color;
-  vec2 uv;
+	struct particle_data{
+	  	vec2 uv;
+	  	float texSize;
+	  	float worldSize;
+	};
+	particle_data m_data;
 };
-
 
 
 struct Util{

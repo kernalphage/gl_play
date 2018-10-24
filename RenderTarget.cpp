@@ -156,8 +156,8 @@ void RenderTarget::save(const char *const filename) {
 
   printf("render Ok: %d",ok);
 
-  delete(highres_pixels);
-  delete(mapped_pixels);
+  delete[](highres_pixels);
+  delete[](mapped_pixels);
 }
 
 

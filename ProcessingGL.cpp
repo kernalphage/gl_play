@@ -194,7 +194,8 @@ void ProcessingGL_t<Vertex_Type, Extra_Data>::ngon(vec2 pos, float r, int sides,
 
 // To define a specialization of a vertex type, add a template class decleration and 
 // provide an impmentation of define_vertex_attributes();
-template class ProcessingGL_t<UI_Vertex, vec4>;
+
+/// UI_Vertex 
 template <>
 void ProcessingGL_t<UI_Vertex, vec4>::define_vertex_attributes(){
   
@@ -204,3 +205,22 @@ void ProcessingGL_t<UI_Vertex, vec4>::define_vertex_attributes(){
                         (void *)(sizeof(vec3)));
   glEnableVertexAttribArray(1);
 }
+template class ProcessingGL_t<UI_Vertex, vec4>;
+
+
+// Textured particles
+template <>
+void ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>::define_vertex_attributes(){
+  
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Particle_Vertex), (void *)0);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Particle_Vertex),
+                        (void *)(sizeof(vec3)));
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_Vertex),
+                        (void *)(sizeof(vec3) + sizeof(vec2)));
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_Vertex),
+                        (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(float)));
+}
+
+template class ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>;

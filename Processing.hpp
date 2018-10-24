@@ -53,6 +53,8 @@ public:
   void render() override;
   void setMode(GLenum mode){ m_mode = mode;}
 
+  int indexVert(Vertex_Type p);
+
 private:
   void define_vertex_attributes();
   void allocate_buffers(unsigned int vbo_size, unsigned int ebo_size);
@@ -60,7 +62,6 @@ private:
   mat4 view;
   std::vector<Vertex_Type> m_verts;
   std::vector<unsigned int> m_indices;
-  int indexVert(Vertex_Type p);
 
   mat4 m_cur;
   std::vector<mat4> viewStack;
@@ -88,7 +89,7 @@ public:
   void polygon(std::vector<Vertex_Type> v, bool loop = true) override;
   void line(vec3 p1, vec3 p2, Extra_Data color) override;
 
-  void ngon(vec2 pos, float radius, int sides, Extra_Data innerColor, Extra_Data outerColor) {
+  void ngon(vec2 pos, float radius, int sides, Extra_Data innerColor, Extra_Data outerColor) override {
     circle(pos, radius);
   };
 
