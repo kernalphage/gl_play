@@ -26,7 +26,7 @@ void proc_map::render(ProcessingGL *ctx) {
       Hex pos(x-y/2, y);
       auto p = hex_to_pixel(l, pos);
 
-      if(m_curHex == pos || x==0 && y == 0){
+      if(m_curHex == pos || (x==0 && y == 0) ){
         ctx->ngon(p, dx, 6, {1,0,0,1}, {1,0,0,0});
         continue;
       }
@@ -58,30 +58,27 @@ bool proc_map::imSettings() {
   redraw |= g.imSettings("grounddColor");
 
 
-  // calculate member variables
   float dx = 1.0f / m_chunksize;
   Layout l = Layout(layout_pointy, vec2{dx, dx}, vec2{-1, -1});
 
   static bool p_open = true;
-  const float DISTANCE = 10.0f;
-  static int corner = 0;
+  vec2 winSize{ImGui::GetIO().DisplaySize.x,ImGui::GetIO().DisplaySize.y };
   float mousex = (ImGui::GetIO().MousePos.x), mousey = (ImGui::GetIO().MousePos.y);
-  if (mousex > ImGui::GetIO().DisplaySize.x / 2) {
+  if (mousex > winSize.x / 2) {
     mousex -= 5;
   } else {
     mousex -= 5;
   }
-  vec2 calcPos{mousex / ImGui::GetIO().DisplaySize.y,
-               (ImGui::GetIO().DisplaySize.y - mousey) / ImGui::GetIO().DisplaySize.y};
+  vec2 calcPos{mousex / winSize.y,
+               (winSize.y - mousey) / winSize.y};
   calcPos = calcPos * 2 - vec2{1, 1};
 
   auto hexPix = hex_round(pixel_to_hex(l, calcPos));
   m_curHex = hexPix;
-  /// ImVec2 window_pos = ImVec2((corner & 1) ? ImGui::GetIO().DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? ImGui::GetIO().DisplaySize.y - DISTANCE : DISTANCE);
   ImVec2 window_pos = ImVec2(mousex, mousey);
 
-  ImVec2 window_pos_pivot = ImVec2(mousex > ImGui::GetIO().DisplaySize.x / 2 ? 1 : 0,
-                                   mousey > ImGui::GetIO().DisplaySize.y / 2 ? 1 : 0);
+  ImVec2 window_pos_pivot = ImVec2(mousex > winSize.x / 2 ? 1 : 0,
+                                   mousey > winSize.y / 2 ? 1 : 0);
 
   ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
   ImGui::SetNextWindowBgAlpha(0.3f); // Transparent background
