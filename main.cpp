@@ -130,14 +130,14 @@ int main() {
 
         ((ProcessingGL*) ctx)->setMode(GL_POINTS);
         Flame::do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
-        //buff.begin(clear);
+        buff.begin(clear);
         if(redraw) {
           flame.use();
           glUniform4fv(glGetUniformLocation(flame.ID, "u_adj"), 4, (float*) &params[0]);
           ctx->render();
         }
         glViewport(0,0,mainWin._height, mainWin._height);
-       // buff.end();
+        buff.end();
         break;
       case 3:
         for(int i=0; i < 4; i++){

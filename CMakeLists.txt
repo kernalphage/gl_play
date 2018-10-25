@@ -15,6 +15,7 @@ set(SOURCE_FILES
     Random.hpp
     Triangulate.cpp
     Triangulate.hpp
+    Texture.hpp
     Window.cpp
     Window.hpp
     Definitions.hpp

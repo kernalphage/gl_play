@@ -3,6 +3,7 @@
 
 #include <stb/stb_image.h>
 #include "Material.hpp"
+#include "Texture.hpp"
 
 class RenderTarget {
 public:
@@ -19,7 +20,6 @@ private:
   GLuint m_texture;
   GLuint m_vao;
   GLuint m_vbo;
-  GLuint m_tonemap;
   Material* m_twotri;
 
 	float gamma = .5f;
@@ -27,8 +27,7 @@ private:
    unsigned int HEIGHT = 100;
  unsigned int WIDTH = 100;
 
-  int texWidth, texHeight, texChannels;
-  stbi_uc* pixels = nullptr;
+   Texture m_tonemap;
 
 };
 

@@ -196,6 +196,7 @@ void ProcessingGL_t<Vertex_Type, Extra_Data>::ngon(vec2 pos, float r, int sides,
 // provide an impmentation of define_vertex_attributes();
 
 /// UI_Vertex 
+
 template <>
 void ProcessingGL_t<UI_Vertex, vec4>::define_vertex_attributes(){
   
@@ -222,5 +223,4 @@ void ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>::define_ver
     glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_Vertex),
                         (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(float)));
 }
-
 template class ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>;

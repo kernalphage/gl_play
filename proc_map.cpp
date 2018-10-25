@@ -63,6 +63,7 @@ bool proc_map::imSettings() {
 
   static bool p_open = true;
   vec2 winSize{ImGui::GetIO().DisplaySize.x,ImGui::GetIO().DisplaySize.y };
+
   float mousex = (ImGui::GetIO().MousePos.x), mousey = (ImGui::GetIO().MousePos.y);
   if (mousex > winSize.x / 2) {
     mousex -= 5;

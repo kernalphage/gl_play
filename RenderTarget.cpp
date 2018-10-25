@@ -92,7 +92,8 @@ void RenderTarget::begin(bool clear) {
 
 void RenderTarget::end() {
   if(ImGui::Button("Save")){
-    save("tmp.png");
+    std::string filename = "Render_capture" + Util::timestamp(0) + ".png";
+    save(filename.c_str());
   }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -100,8 +101,7 @@ void RenderTarget::end() {
   m_twotri->use();
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, m_texture);
-  glActiveTexture(GL_TEXTURE1);
-  glBindTexture(GL_TEXTURE_2D, m_tonemap);
+  m_tonemap.use(GL_TEXTURE1);
 
   
   glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
@@ -118,14 +118,7 @@ RenderTarget::RenderTarget(int _w, int _h) {
 
 
   // Start texture load
-  pixels = stbi_load("tonemap.png", &texWidth, &texHeight, &texChannels, 0);
-  glGenTextures(1, &m_tonemap);
-  glBindTexture(GL_TEXTURE_2D, m_tonemap);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+  m_tonemap.load("tonemap.png");
 }
 
 void RenderTarget::save(const char *const filename) {
