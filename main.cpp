@@ -61,7 +61,11 @@ int main() {
   // build and compile our shader program
   Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
   Material flame{"shaders/basic.vert", "shaders/basic.frag", true, "shaders/flame.geom"};
-  Material particle{"shaders/particle.vert", "shaders/textured.frag", true, "shaders/particle.geom"};
+  Material particle{"shaders/particle.vert", "shaders/textured.frag", false, "shaders/particle.geom"};
+  Texture m_tonemap;
+  m_tonemap.load("tonemap.png");
+  particle.setInt("textured.frag", 0);
+
   ctx = new ProcessingGL_t<UI_Vertex, vec4>{};
   auto* part_ctx = new ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>{};
 
@@ -90,7 +94,7 @@ int main() {
   RenderTarget buff(2000,2000);
   buff.init();
   vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
-  int demoNumber = 6;
+  int demoNumber = 7;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -194,9 +198,18 @@ int main() {
       case 7:{ // particle demo
 
         part_ctx->clear();
-        part_ctx->indexVert( { {0,0,0}, {{3,3}, 1,1}});
+        static vec3 pos{.4,.3,0};
+        static float size = .3;
+        static float texsize = .4;
+        ImGui::DragFloat3("Position", (float*)&pos, 0, 1);
+        ImGui::DragFloat("size", &size, 0,1);
+        ImGui::DragFloat("texsize", &texsize, 0,1);
+
+        part_ctx->indexVert( { pos, {{.1,.1}, size, texsize}});
         part_ctx->flush();
         part_ctx->setMode(GL_POINTS);
+        particle.use();
+        m_tonemap.use(GL_TEXTURE0);
         part_ctx->render();
       }
       default:
