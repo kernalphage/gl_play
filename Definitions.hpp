@@ -36,6 +36,50 @@ using glm::mat4;
 #define STATIC_DO_ONCE(x) impl_STATIC_DO_ONCE(x, __LINE__);
 
 
+
+namespace DonerSerializer
+{
+
+	template <>
+	class CDeserializationResolver::CDeserializationResolverType<glm::vec4>
+	{
+	public:
+		static void Apply(glm::vec4& value, const rapidjson::Value& att)
+		{
+			if (att.IsArray())
+			{
+				value = glm::vec4{att[0].GetFloat(), att[1].GetFloat(), att[2].GetFloat(),att[3].GetFloat()};
+			}
+		}
+	};
+
+	template <>
+	class CSerializationResolver::CSerializationResolverType<glm::vec4>
+	{
+	public:
+		static void Apply(const char* name, const glm::vec4& value, rapidjson::Document& root)
+		{
+			rapidjson::Value array(rapidjson::kArrayType);
+			CSerializationResolver::CSerializationResolverType<float>::SerializeToJsonArray(array, value.x, root.GetAllocator());
+			CSerializationResolver::CSerializationResolverType<float>::SerializeToJsonArray(array, value.y, root.GetAllocator());
+			CSerializationResolver::CSerializationResolverType<float>::SerializeToJsonArray(array, value.z, root.GetAllocator());
+			CSerializationResolver::CSerializationResolverType<float>::SerializeToJsonArray(array, value.w, root.GetAllocator());
+			root.AddMember(rapidjson::GenericStringRef<char>(name), array, root.GetAllocator());
+		}
+
+		static void SerializeToJsonArray(rapidjson::Value& root, const glm::vec4& value, rapidjson::Document::AllocatorType& allocator)
+		{
+			rapidjson::Value array(rapidjson::kArrayType);
+			CSerializationResolver::CSerializationResolverType<float>::SerializeToJsonArray(array, value.x, allocator);
+			CSerializationResolver::CSerializationResolverType<float>::SerializeToJsonArray(array, value.y, allocator);
+			CSerializationResolver::CSerializationResolverType<float>::SerializeToJsonArray(array, value.z, allocator);
+			CSerializationResolver::CSerializationResolverType<float>::SerializeToJsonArray(array, value.w, allocator);
+			root.PushBack(array, allocator);
+		}
+	};
+}
+
+
 struct rect{
   vec2 tl;
   vec2 br;

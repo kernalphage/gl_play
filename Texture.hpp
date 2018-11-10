@@ -7,13 +7,13 @@
 class Texture {
 public:
     void use(GLuint location){
-        glActiveTexture(location);
         glBindTexture(GL_TEXTURE_2D, m_id);
+        glActiveTexture(location);
     }
     void load(const char* filename){
         int texWidth, texHeight, texChannels;
 
-        stbi_uc* pixels = stbi_load("tonemap.png", &texWidth, &texHeight, &texChannels, 0);
+        stbi_uc* pixels = stbi_load(filename, &texWidth, &texHeight, &texChannels, 0);
         // TODO: only gen if needed 
         glGenTextures(1, &m_id);
         glBindTexture(GL_TEXTURE_2D, m_id);
@@ -23,6 +23,7 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texWidth, texHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
         stbi_image_free(pixels);
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 private: 
     GLuint m_type;

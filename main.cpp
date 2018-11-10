@@ -61,9 +61,9 @@ int main() {
   // build and compile our shader program
   Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
   Material flame{"shaders/basic.vert", "shaders/basic.frag", true, "shaders/flame.geom"};
-  Material particle{"shaders/particle.vert", "shaders/textured.frag", false, "shaders/particle.geom"};
+  Material particle{"shaders/particle.vert", "shaders/textured.frag", true, "shaders/particle.geom"};
   Texture m_tonemap;
-  m_tonemap.load("tonemap.png");
+  m_tonemap.load("particle.png");
   particle.setInt("textured.frag", 0);
 
   ctx = new ProcessingGL_t<UI_Vertex, vec4>{};
@@ -94,7 +94,12 @@ int main() {
   RenderTarget buff(2000,2000);
   buff.init();
   vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
-  int demoNumber = 7;
+  float times[400];
+  FastNoise noise;
+  for(int i=0; i < 400; i++){
+    times[i] = Random::range(0.f,10.f);
+  }
+  int demoNumber = 6;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -103,6 +108,7 @@ int main() {
 
     ImGui::ColorEdit4(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
     ImGui::InputInt("DemoNumber", &demoNumber,0,4);
 
     glClearColor(SPLAT4(clear_color));
@@ -188,6 +194,7 @@ int main() {
         bool redraw = map.imSettings();
         redraw |= Util::load_json(map, "procgen_map.json", ImGui::Button("SaveMap"), ImGui::Button("LoadMap"));
 
+
         if(redraw){
           map.render((ProcessingGL*) ctx);
         }
@@ -198,14 +205,35 @@ int main() {
       case 7:{ // particle demo
 
         part_ctx->clear();
-        static vec3 pos{.4,.3,0};
-        static float size = .3;
+        static vec3 pos{0,0,0};
+        static float size = .03;
         static float texsize = .4;
+        static int numpts = 0;
+        float ySkew = .3;
+        static vec3 vel{.2,.1, 0};
         ImGui::DragFloat3("Position", (float*)&pos, 0, 1);
+        ImGui::DragFloat3("vel", (float*)&vel, 0, 0.1);
         ImGui::DragFloat("size", &size, 0,1);
         ImGui::DragFloat("texsize", &texsize, 0,1);
+        ImGui::DragInt("numpts", &numpts, 1, 400);
 
-        part_ctx->indexVert( { pos, {{.1,.1}, size, texsize}});
+        auto fibonacci = [](int k, const int n){
+          // https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
+          float offset = 2.0f/n;
+          float golden_angle = 3.1415f * (3 - sqrt(5.f));
+
+          float r = sqrt(1.0f * k) / sqrt(1.0f * n);
+          float phi = k * golden_angle;  // = ((i + rnd) % samples) * increment
+          float x = cos(phi)*r;
+          float y = sin(phi)*r;
+          return vec3{x,y,0};
+        };
+        Particle_Vertex::particle_data dat = {{.5,.5}, texsize, size};
+
+        for(int i=0; i < numpts; i++){
+          vec3 spewpos = fibonacci(i, numpts);
+          part_ctx->indexVert({pos + spewpos, dat});
+        }
         part_ctx->flush();
         part_ctx->setMode(GL_POINTS);
         particle.use();
@@ -219,7 +247,7 @@ int main() {
 
     processInput(mainWin.window);
 
-    t += .05f; // TODO: real deltatime
+    t += .01f; // TODO: real deltatime
 
     ImGui::Render();
     ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());

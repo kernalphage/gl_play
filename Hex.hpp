@@ -16,7 +16,7 @@
 
 #include "glm/ext.hpp"
 using namespace std;
-using namespace glm;
+using glm::ivec3;
 
 class Hex : public ivec3{
 public:

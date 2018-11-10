@@ -9,6 +9,7 @@
 #include <FastNoise/FastNoise.h>
 #include <iostream>
 #include "Window.hpp"
+#include "Random.hpp"
 #include <fstream>
 
 Hex m_curHex{0,0};
@@ -17,7 +18,8 @@ void proc_map::render(ProcessingGL *ctx) {
   float dx = 1.0f/ m_chunksize;
   Layout l = Layout(layout_pointy, vec2{dx, dx}, vec2{-1, -1});
   FastNoise noise;
-  noise.SetSeed(m_seed );
+  Random::seed(m_seed);
+  noise.SetSeed(m_seed);
   noise.SetFrequency(m_frequency);
   ctx->clear();
 
@@ -26,22 +28,25 @@ void proc_map::render(ProcessingGL *ctx) {
       Hex pos(x-y/2, y);
       auto p = hex_to_pixel(l, pos);
 
-      if(m_curHex == pos || (x==0 && y == 0) ){
-        ctx->ngon(p, dx, 6, {1,0,0,1}, {1,0,0,0});
-        continue;
-      }
-
       float ic = noise.GetPerlinFractal(p.x, p.y) * .5f + .5f;
       if( ic < waterThreshhld) { // water 
         auto color= w.sample(Util::rangeMap(ic, 0, waterThreshhld, 0,1) );
         ctx->ngon(p, dx, 6, color,color);
 
       } else { // ground
-        auto color= g.sample(Util::rangeMap(ic, waterThreshhld,1 , 0,1) );
+        float groundHeight = Util::rangeMap(ic, waterThreshhld,1 , 0,1);
+        auto color= g.sample(groundHeight );
+
+        if(Random::f() * groundHeight > m_treeThreshhold){
+          color =tree;
+        }
         ctx->ngon(p, dx, 6, color,color);
       }
     }
   }
+  auto curPos  =  hex_to_pixel(l,m_curHex );
+    ctx->ngon(curPos, dx, 6, {1,0,0,1}, {1,0,0,0});
+
   vec4 c{1,0,1,.4};
   ctx->flush();
 }
@@ -54,6 +59,7 @@ bool proc_map::imSettings() {
   redraw |= ImGui::SliderInt("chunksize", &m_chunksize, 2, 100);
   redraw |= ImGui::SliderFloat("frequency", &m_frequency, .01, 5);
   redraw |= ImGui::SliderFloat("watterThreshhold", &waterThreshhld, 0, 1);
+  redraw |= ImGui::SliderFloat("treeThreshhold", &m_treeThreshhold, 0, 1);
   redraw |= w.imSettings("WaterColor");
   redraw |= g.imSettings("grounddColor");
 
@@ -94,7 +100,9 @@ bool proc_map::imSettings() {
 
     ImGui::End();
   }
-  return true;
+  return redraw;
 
 }
+
+
 

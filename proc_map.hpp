@@ -10,7 +10,9 @@
 #include <donerserializer/ISerializable.h>
 #include "Processing.hpp"
 
+
 struct ColorWheel{
+public:
   vec4 a{0,0,0,1};
   vec4 b{0,0,0,1};
   bool imSettings(const char* str_id){
@@ -24,7 +26,6 @@ struct ColorWheel{
   vec4 sample(float t){
     float x = sin(t*6.28f);
     return lerp(a,b,x/2+.5f);
-
   };
 };
 
@@ -42,18 +43,21 @@ public:
   int m_chunksize = 20;
   int m_seed =0;
   float m_frequency = 1.25;
-  float waterThreshhld = .5;
+  float waterThreshhld = .5f;
+  float m_treeThreshhold = .2f;
   ColorWheel g{{0,1,0,1}, {.21,1,0,1}};
   ColorWheel w{{0,0,1,1}, {0,.5,1,1}};
-
+  vec4 tree{.1,.4,.3, 1};
 };
 
 
 DONER_DEFINE_REFLECTION_DATA(proc_map,
-  DONER_ADD_NAMED_VAR_INFO( m_chunksize, "m_chunksize"),
-  DONER_ADD_NAMED_VAR_INFO( m_seed, "m_seed" ),
-  DONER_ADD_NAMED_VAR_INFO( m_frequency, "m_frequency"),
-  DONER_ADD_NAMED_VAR_INFO( waterThreshhld, "waterThreshhld")
-)
+DONER_ADD_NAMED_VAR_INFO( m_chunksize, "m_chunksize"),
+DONER_ADD_NAMED_VAR_INFO( m_seed, "m_seed" ),
+                             DONER_ADD_NAMED_VAR_INFO( m_frequency, "m_frequency"),
+                             DONER_ADD_NAMED_VAR_INFO( tree, "tree"),
+                             DONER_ADD_NAMED_VAR_INFO( waterThreshhld, "waterThreshhld"),
+                             DONER_ADD_NAMED_VAR_INFO( m_treeThreshhold, "treethreshhld")
+);
 
 #endif //GL_PLAY_PROC_MAP_HPP

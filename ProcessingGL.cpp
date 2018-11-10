@@ -220,7 +220,11 @@ void ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>::define_ver
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_Vertex),
                         (void *)(sizeof(vec3) + sizeof(vec2)));
+
+  glEnableVertexAttribArray(2);
     glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(Particle_Vertex),
                         (void *)(sizeof(vec3) + sizeof(vec2) + sizeof(float)));
+
+  glEnableVertexAttribArray(3);
 }
 template class ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>;

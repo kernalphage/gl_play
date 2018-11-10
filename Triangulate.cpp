@@ -9,7 +9,6 @@
 
 #include "ref/FastNoise/FastNoise.h"
 using namespace std;
-using namespace glm;
 
 std::vector<Tri> TriBuilder::triangulate(float zoom,
                                          Processing *ctx) {
