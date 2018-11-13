@@ -1,0 +1,21 @@
+{
+  "materials":[
+  { "name": "basic", 
+    "vert": "basic",
+    "frag": "basic",
+    "transparent": true
+  },
+  { "name": "flame", 
+    "vert": "basic",
+    "frag": "basic",
+    "geom": "flame",
+    "transparent": true
+  },
+  { "name": "particle", 
+    "vert": "basic",
+    "frag": "textured",
+    "geom": "particle",
+    "transparent": true
+  }
+    ]
+}
