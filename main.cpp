@@ -11,6 +11,8 @@
 #include "Flame.hpp"
 #include "Streamline.hpp"
 #include "flowmap.hpp"
+#include <rapidjson/rapidjson.h>
+
 
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
@@ -49,6 +51,44 @@ static void error_callback(int error, const char* description)
   fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
+void drawPendulum(Processing* ctx, bool& redraw, bool& clear){
+  redraw = true;
+  clear = false;
+  STATIC_DO_ONCE(clear = true;);
+
+  static float time = 0;
+  static int numIterations = 2;
+
+  static float dAngle = .001;
+  static float ratio = 1;
+  static float radius_ratio = 1;
+  static int cutoff = 0;
+  ImGui::SliderInt("num interations", &numIterations, 1, 1000);
+  clear |= ImGui::SliderInt("cutoff", &cutoff, 0, 10);
+  clear |= ImGui::DragFloat("angleSpeed", &dAngle, .001, 0.1);
+  clear |= ImGui::DragFloat("ratio", &ratio, .001, 21);
+  clear |= ImGui::DragFloat("radius_ratio", &radius_ratio, .001, 1);
+
+  static float curAngle = 0;
+  for(int iter = 0; iter < numIterations; iter++) {
+    curAngle += dAngle;
+    vec3 cur{0,0,0};
+    vector<vec3> points{};
+    for (int i = 0; i < 10; i++) {
+      //float nextAngle = curAngle / (i + 1);
+      float nextAngle = curAngle  * pow(ratio, i);
+      if(i%2 ==0) nextAngle *= -1;
+      vec3 next{sin(nextAngle), cos(nextAngle), 0};
+      next = (next * ((10 - i) * radius_ratio)/10) + cur;
+      if(i > cutoff) {
+        points.push_back(next);
+      }
+      cur = next;
+//      ctx->line(cur, next);
+    }
+    ctx->spline(points, vec4{1, 1, 1, 1}, vec4{1, 1, 1, .0}, .001);
+  }
+}
 
 int main() {
   Window mainWin;
@@ -59,6 +99,7 @@ int main() {
   glEnable(GL_DEBUG_OUTPUT);
 
   // build and compile our shader program
+
   Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
   Material flame{"shaders/basic.vert", "shaders/basic.frag", true, "shaders/flame.geom"};
   Material particle{"shaders/particle.vert", "shaders/textured.frag", true, "shaders/particle.geom"};
@@ -99,7 +140,7 @@ int main() {
   for(int i=0; i < 400; i++){
     times[i] = Random::range(0.f,10.f);
   }
-  int demoNumber = 6;
+  int demoNumber = 8;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -177,7 +218,7 @@ int main() {
         break;
       }
       case 5: {
-        bool redraw = f.imSettings();
+        bool  redraw = f.imSettings();
         buff.begin(redraw);
 
         if(f.needsFrame()){
@@ -189,6 +230,7 @@ int main() {
 
         glViewport(0,0,mainWin._height, mainWin._height);
         buff.end();
+        break;
       }
       case 6:{ // procmap
         bool redraw = map.imSettings();
@@ -201,6 +243,7 @@ int main() {
         basic.use();
         ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
         ctx->render();
+        break;
       }
       case 7:{ // particle demo
 
@@ -239,6 +282,22 @@ int main() {
         particle.use();
         m_tonemap.use(GL_TEXTURE0);
         part_ctx->render();
+        break;
+      }
+      case 8: { // pendulum
+        ctx->clear();
+        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
+        drawPendulum(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
+        buff.begin(clear);
+        if(redraw) {
+          basic.use();
+          ctx->flush();
+          ctx->render();
+        }
+        glViewport(0,0,mainWin._height, mainWin._height);
+        buff.end();
+
+        break;
       }
       default:
         break;

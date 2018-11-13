@@ -22,7 +22,7 @@ set(SOURCE_FILES
         Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp RenderTarget.cpp RenderTarget.hpp
         hexlib.hpp
         Flame.hpp
-        Flame.cpp Streamline.cpp Streamline.hpp sketches.hpp flowmap.cpp flowmap.hpp proc_map.cpp proc_map.hpp)
+        Flame.cpp Streamline.cpp Streamline.hpp sketches.hpp flowmap.cpp flowmap.hpp proc_map.cpp proc_map.hpp Material.cpp)
 set(REF_SOURCE_FILES
     imgui_impl/glfw_gl3.cpp
     imgui_impl/glfw_gl3.h
@@ -33,7 +33,10 @@ set(REF_SOURCE_FILES
     ref/FastNoise/FastNoise.cpp
 	ref/FastNoise/FastNoise.h
 	ref/glad/src/glad.c
+        ref/fmt/src/format.cc
 	)
+
+include_directories("ref/fmt/include")
 
 include_directories("ref/DonerSerializer/DonerSerializer/include")
 include_directories("ref/DonerSerializer/DonerSerializer/thirdparty/DonerReflection/DonerReflection/include")
