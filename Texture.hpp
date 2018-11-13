@@ -7,8 +7,8 @@
 class Texture {
 public:
     void use(GLuint location){
-        glBindTexture(GL_TEXTURE_2D, m_id);
         glActiveTexture(location);
+        glBindTexture(GL_TEXTURE_2D, m_id);
     }
     void load(const char* filename){
         int texWidth, texHeight, texChannels;

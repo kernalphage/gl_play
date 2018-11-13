@@ -10,3 +10,6 @@
 [submodule "ref/DonerSerializer"]
 	path = ref/DonerSerializer
 	url = https://github.com/Donerkebap13/DonerSerializer.git
+[submodule "ref/fmt"]
+	path = ref/fmt
+	url = https://github.com/fmtlib/fmt.git
