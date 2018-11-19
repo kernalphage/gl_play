@@ -101,11 +101,13 @@ struct Particle_Vertex{
 
 
 struct Util{
-  static float rangeMap (float t,float inStart,float inEnd,float outStart, float outEnd){
-    //if(! easing ) easing = x=>x;
+  static float rangeMap (float t,float inStart,float inEnd,float outStart, float outEnd, bool doClamp = false){
     float out = t - inStart;
     out /= (inEnd - inStart); // [0,1]
-    //out = easing(out);
+		// TODO: clamp/warp/reflect enum?
+		if(doClamp){
+			out = glm::clamp(out, 0.0f,1.0f);
+		}
     out *= (outEnd - outStart);
     return out + outStart;
   }

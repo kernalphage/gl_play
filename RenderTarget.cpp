@@ -140,6 +140,17 @@ void RenderTarget::save(const char *const filename) {
         // lum = highres_pixels[idx] > 0? 1:0;
 
         mapped_pixels[idx] = (unsigned char) (lum * 255);
+/*
+        const int idx = (j * WIDTH + i) * 4;
+        float numHits = highres_pixels[idx + 3];
+        float lum = log(numHits) * gamma;
+        lum = glm::clamp(lum, 0.0f, 1.0f);
+        lum = pow(lum, energy);
+        mapped_pixels[idx + 0] = (unsigned char) (glm::clamp(highres_pixels[idx + 0] / numHits, 0.0f, 1.0f) * 255);
+        mapped_pixels[idx + 1] = (unsigned char) (glm::clamp(highres_pixels[idx + 1] / numHits,0.0f, 1.0f) * 255);
+        mapped_pixels[idx + 2] = (unsigned char) (glm::clamp(highres_pixels[idx + 2] / numHits,0.0f,1.0f) * 255);
+        mapped_pixels[idx + 3] = (unsigned char) (lum * 255);
+        */
       }
       mapped_pixels[(j * WIDTH + i) * 4 + 3] = (unsigned char) ( 255);
     }

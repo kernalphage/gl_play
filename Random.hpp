@@ -6,6 +6,7 @@
 class Random {
   static std::default_random_engine generator;
   static std::uniform_real_distribution<float> distribution;
+  static std::normal_distribution<float> gauss_dist;
 
 public:
   static void seed(int s = 0) {
@@ -14,6 +15,7 @@ public:
     distribution = std::uniform_real_distribution<float>{0.0f, 1.0f};
   }
   static float f() { return distribution(generator); }
+  static float nextGaussian(){return gauss_dist(generator); }
   static int range(int a, int b) {
     return (int)(a + (b - a) * distribution(generator));
   }

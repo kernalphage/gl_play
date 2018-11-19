@@ -12,6 +12,7 @@
 #include "Streamline.hpp"
 #include "flowmap.hpp"
 #include <rapidjson/rapidjson.h>
+#include "RandomCache.hpp"
 
 
 using namespace std;
@@ -51,42 +52,115 @@ static void error_callback(int error, const char* description)
   fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
+void drawNoise(Processing* ctx, bool& redraw, bool& clear){
+  STATIC_DO_ONCE(clear = true);
+  static FastNoise n;
+  static RandomCache rx{500, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 0);}};
+  static RandomCache ry{500, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 100);}};
+  static float noisefreq = 2.31511;
+  static int numpts = 300;
+  static float maxVel = .005;
+  static vector<vec4> pts;
+  static float angleVel = .1;
+  static int numIterations = 1;
+  static float totalTime = 0;
+
+  bool reNoise = ImGui::SliderFloat("frequency", &noisefreq, .01, 15);
+  reNoise = true;
+  if(reNoise){
+    totalTime += .01;
+    n.SetFrequency(noisefreq);
+    rx.reseed(1, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sin(totalTime), cos(totalTime));});
+    ry.reseed(1, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sin(totalTime),100+ cos(totalTime));});
+    clear = true;
+  }
+
+  clear |= ImGui::SliderInt("numPts", &numpts, 10, 5000);
+  clear |= ImGui::SliderFloat("velocity", &maxVel, 0,.1);
+  clear |= ImGui::SliderFloat("angleVel", &angleVel, 0,20);
+  ImGui::SliderInt("num iterations", &numIterations, 1, 100);
+
+  if(clear){
+    pts.clear();
+
+    // init points
+    for(int i=0; i < numpts; i++) {
+      float ex = Random::nextGaussian() * .5f;
+      float wy = Random::nextGaussian() * .5f;
+      auto pt = Random::random_point({-1, -1, -1, -1}, {1,1, 1, 1});
+      pt.x = ex;
+      pt.y = wy;
+      pts.push_back(pt);
+    }
+  }
+  redraw = true;
+  for(int iter = 0; iter < numIterations; iter++) {
+    for (int i = 0; i < numpts; i++) {
+
+      /*
+      auto pt = vec2(pts[i].x, pts[i].y);
+      auto vel = vec2(pts[i].z, pts[i].w);
+      float noisePt = r.sample((pt * .5) + vec2(.5, .5));
+
+      pts[i].x += cos(vel.x) * maxVel*.1;
+      pts[i].y += sin(vel.x) * maxVel*.1;
+      pts[i].z = (noisePt)* angleVel * glm::length(pt);
+      */
+
+      float ex = Random::nextGaussian() * .5f;
+      float wy = Random::nextGaussian() * .5f;
+      float radius = angleVel * sqrt(ex*ex +wy*wy);
+      vec2 pos {ex,wy};
+      pos = pos * .5 + vec2{.5,.5};
+      pos = radius * vec2{rx.sample(pos), ry.sample(pos)};
+      vec4 color = lerp(vec4{.5,.9, .1, 1}, vec4{.2,.6,.9,1}, abs(ex));
+      ctx->ngon(pos, maxVel, 6, vec4{SPLAT3(color), 0}, color);
+    }
+  }
+}
+
 void drawPendulum(Processing* ctx, bool& redraw, bool& clear){
   redraw = true;
   clear = false;
   STATIC_DO_ONCE(clear = true;);
 
   static float time = 0;
+  static float deltaTime = .001;
   static int numIterations = 2;
 
-  static float dAngle = .001;
+  static float dAngle = .0001;
   static float ratio = 1;
   static float radius_ratio = 1;
   static int cutoff = 0;
   ImGui::SliderInt("num interations", &numIterations, 1, 1000);
   clear |= ImGui::SliderInt("cutoff", &cutoff, 0, 10);
-  clear |= ImGui::DragFloat("angleSpeed", &dAngle, .001, 0.1);
+  clear |= ImGui::DragFloat("angleSpeed", &dAngle, .001, 0.01);
   clear |= ImGui::DragFloat("ratio", &ratio, .001, 21);
   clear |= ImGui::DragFloat("radius_ratio", &radius_ratio, .001, 1);
+  clear |= ImGui::DragFloat("DeltaTime", &deltaTime, 0.001, 1);
 
   static float curAngle = 0;
   for(int iter = 0; iter < numIterations; iter++) {
-    curAngle += dAngle;
+    curAngle += dAngle * .1;
+    time += deltaTime;
     vec3 cur{0,0,0};
     vector<vec3> points{};
     for (int i = 0; i < 10; i++) {
       //float nextAngle = curAngle / (i + 1);
       float nextAngle = curAngle  * pow(ratio, i);
       if(i%2 ==0) nextAngle *= -1;
-      vec3 next{sin(nextAngle), cos(nextAngle), 0};
+      vec3 next{sin(nextAngle), cos(nextAngle),0};
       next = (next * ((10 - i) * radius_ratio)/10) + cur;
       if(i > cutoff) {
         points.push_back(next);
+        //ctx->ngon(next, .004,8, vec4{1,1,1,0}, vec4{1,1,1,1} );
       }
       cur = next;
 //      ctx->line(cur, next);
     }
-    ctx->spline(points, vec4{1, 1, 1, 1}, vec4{1, 1, 1, .0}, .001);
+    float r = abs(cos(time));
+    float g = 1-r;
+    ctx->spline(points, vec4{r,.1, .5, 1}, vec4{r,.1,.5, .0}, .001);
   }
 }
 
@@ -118,7 +192,7 @@ int main() {
   // Controls
   ImGui_ImplGlfwGL3_Init(mainWin.window, true);
 
-  vec4 clear_color{0.05f, 0.15f, 0.16f, 1.00f};
+  vec4 clear_color{0.00f, 0.0f, 0.0f, 1.00f};
 
 
   flowmap f;
@@ -140,7 +214,7 @@ int main() {
   for(int i=0; i < 400; i++){
     times[i] = Random::range(0.f,10.f);
   }
-  int demoNumber = 8;
+  int demoNumber = 9;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -288,6 +362,21 @@ int main() {
         ctx->clear();
         ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
         drawPendulum(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
+        buff.begin(clear);
+        if(redraw) {
+          basic.use();
+          ctx->flush();
+          ctx->render();
+        }
+        glViewport(0,0,mainWin._height, mainWin._height);
+        buff.end();
+
+        break;
+      }
+      case 9: { // pendulum
+        ctx->clear();
+        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
+        drawNoise(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
         buff.begin(clear);
         if(redraw) {
           basic.use();
