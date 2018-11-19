@@ -55,8 +55,8 @@ static void error_callback(int error, const char* description)
 void drawNoise(Processing* ctx, bool& redraw, bool& clear){
   STATIC_DO_ONCE(clear = true);
   static FastNoise n;
-  static RandomCache rx{500, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 0);}};
-  static RandomCache ry{500, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 100);}};
+  static RandomCache rx{1500, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 0);}};
+  static RandomCache ry{1500, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 100);}};
   static float noisefreq = 2.31511;
   static int numpts = 300;
   static float maxVel = .005;
@@ -64,17 +64,20 @@ void drawNoise(Processing* ctx, bool& redraw, bool& clear){
   static float angleVel = .1;
   static int numIterations = 1;
   static float totalTime = 0;
+  static int totalIterations;
 
   bool reNoise = ImGui::SliderFloat("frequency", &noisefreq, .01, 15);
-  reNoise = true;
+  //reNoise = true;
   if(reNoise){
-    totalTime += .01;
+    //totalTime += .01;
+    totalIterations= 0;
     n.SetFrequency(noisefreq);
     rx.reseed(1, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sin(totalTime), cos(totalTime));});
     ry.reseed(1, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sin(totalTime),100+ cos(totalTime));});
     clear = true;
   }
 
+  ImGui::LabelText("totalTime", "Total iterations %d", totalIterations);
   clear |= ImGui::SliderInt("numPts", &numpts, 10, 5000);
   clear |= ImGui::SliderFloat("velocity", &maxVel, 0,.1);
   clear |= ImGui::SliderFloat("angleVel", &angleVel, 0,20);
@@ -94,6 +97,7 @@ void drawNoise(Processing* ctx, bool& redraw, bool& clear){
     }
   }
   redraw = true;
+  totalIterations += numIterations * numpts;
   for(int iter = 0; iter < numIterations; iter++) {
     for (int i = 0; i < numpts; i++) {
 
@@ -113,7 +117,9 @@ void drawNoise(Processing* ctx, bool& redraw, bool& clear){
       vec2 pos {ex,wy};
       pos = pos * .5 + vec2{.5,.5};
       pos = radius * vec2{rx.sample(pos), ry.sample(pos)};
-      vec4 color = lerp(vec4{.5,.9, .1, 1}, vec4{.2,.6,.9,1}, abs(ex));
+      vec4 color = lerp(vec4{.5,.9, 0, 1}, vec4{.2,.6,.1,1}, abs(ex));
+      color.x =abs(ex);
+      color.y =abs(wy);
       ctx->ngon(pos, maxVel, 6, vec4{SPLAT3(color), 0}, color);
     }
   }
