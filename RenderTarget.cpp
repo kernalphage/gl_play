@@ -92,7 +92,7 @@ void RenderTarget::begin(bool clear) {
 
 void RenderTarget::end() {
   if(ImGui::Button("Save")){
-    std::string filename = "Render_capture" + Util::timestamp(0) + ".png";
+    std::string filename = "output/Render_capture" + Util::timestamp(0) + ".png";
     save(filename.c_str());
   }
 
