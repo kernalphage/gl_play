@@ -18,6 +18,8 @@
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <fmt/format.h>
+#include <langinfo.h>
 #include "Streamline.hpp"
 
 #include "sketches.hpp"
@@ -52,52 +54,52 @@ static void error_callback(int error, const char* description)
   fprintf(stderr, "Error %d: %s\n", error, description);
 }
 
-void drawNoise(Processing* ctx, bool& redraw, bool& clear){
+void drawNoise(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
   STATIC_DO_ONCE(clear = true);
   static FastNoise n;
-  static RandomCache rx{1500, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 0);}};
-  static RandomCache ry{1500, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 100);}};
-  static float noisefreq = 2.31511;
-  static int numpts = 300;
+  static RandomCache rx{1000, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 0);}};
+  static RandomCache ry{1000, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 100);}};
+  static float noisefreq = 8.31511;
+  static int numpts = 900;
   static float maxVel = .005;
   static vector<vec4> pts;
-  static float angleVel = .1;
+  static float angleVel = 1.451;
+  static float noiseScale = .2f;
   static int numIterations = 1;
-  static float totalTime = 0;
-  static int totalIterations;
-
+  static int curIterations = 0;
+  static int totalIterations = 1000;
+  ImGui::ProgressBar((float) curIterations / totalIterations, ImVec2(0.0f,0.0f));
+  ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+  ImGui::Text("frame progress");
   bool reNoise = ImGui::SliderFloat("frequency", &noisefreq, .01, 15);
+  STATIC_DO_ONCE(reNoise = true);
+  reNoise|= ImGui::SliderFloat("timeScale", &noiseScale, 0.01, 1);
+
   //reNoise = true;
-  if(reNoise){
+  if(reNoise || curIterations >= totalIterations){
     //totalTime += .01;
-    totalIterations= 0;
+    const float totalTime = (float) 6.28f * curFrame / maxFrames;
+    const float sT = sin(totalTime)*noiseScale;
+    const float cT = cos(totalTime)*noiseScale;
     n.SetFrequency(noisefreq);
-    rx.reseed(1, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sin(totalTime), cos(totalTime));});
-    ry.reseed(1, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sin(totalTime),100+ cos(totalTime));});
+
+    rx.reseed(1, [=](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sT, cT);});
+    ry.reseed(1, [=](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sT,100+ cT);});
     clear = true;
   }
-
-  ImGui::LabelText("totalTime", "Total iterations %d", totalIterations);
+  ImGui::LabelText("cur iterations", "cur iterations %d", curIterations);
   clear |= ImGui::SliderInt("numPts", &numpts, 10, 5000);
   clear |= ImGui::SliderFloat("velocity", &maxVel, 0,.1);
   clear |= ImGui::SliderFloat("angleVel", &angleVel, 0,20);
   ImGui::SliderInt("num iterations", &numIterations, 1, 100);
+  ImGui::SliderInt("total Iterations" , &totalIterations, 100, 100000);
 
   if(clear){
     pts.clear();
-
-    // init points
-    for(int i=0; i < numpts; i++) {
-      float ex = Random::nextGaussian() * .5f;
-      float wy = Random::nextGaussian() * .5f;
-      auto pt = Random::random_point({-1, -1, -1, -1}, {1,1, 1, 1});
-      pt.x = ex;
-      pt.y = wy;
-      pts.push_back(pt);
-    }
+    curIterations= 0;
   }
   redraw = true;
-  totalIterations += numIterations * numpts;
+  curIterations += numIterations;
   for(int iter = 0; iter < numIterations; iter++) {
     for (int i = 0; i < numpts; i++) {
 
@@ -212,7 +214,7 @@ int main() {
   }
 
   Blob b{{0,0}, .5f};
-  RenderTarget buff(2000,2000);
+  RenderTarget buff(1000,1000);
   buff.init();
   vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
   float times[400];
@@ -220,7 +222,7 @@ int main() {
   for(int i=0; i < 400; i++){
     times[i] = Random::range(0.f,10.f);
   }
-  int demoNumber = 9;
+  int demoNumber = 8;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -364,7 +366,46 @@ int main() {
         part_ctx->render();
         break;
       }
-      case 8: { // pendulum
+      case 8: { // noise
+        static bool animating = false;
+        static string animTimestamp;
+        static int curFrame = 0;
+        static int maxFrames = 20;
+        ImGui::ProgressBar((float) curFrame / maxFrames, ImVec2(0.0f,0.0f));
+        ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+        ImGui::Text("animation progress");
+        ImGui::SliderInt("frame count", &maxFrames, 1, 100);
+        if(ImGui::Button("Start Animation")){
+          animating = true;
+          animTimestamp = Util::timestamp(0);
+          curFrame = 0;
+        }
+        ctx->clear();
+        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
+        drawNoise(ctx, redraw, clear, curFrame, maxFrames); // todo: maek it a return value, or put buffer inside of this function
+        if(animating && clear && curFrame < maxFrames){
+          auto filename = fmt::format("anim/frame{0}_{1:04d}.png", animTimestamp, curFrame);
+
+          curFrame ++;
+          buff.save(filename.c_str());
+          buff.begin(true);
+          buff.end();
+        } else {
+          buff.begin(clear);
+          if (redraw) {
+            basic.use();
+            ctx->flush();
+            ctx->render();
+          }
+          glViewport(0, 0, mainWin._height, mainWin._height);
+          buff.end();
+          if(clear){
+            curFrame = (curFrame + 1 ) % maxFrames;
+          }
+        }
+        break;
+      }
+      case 9: { // pendulum
         ctx->clear();
         ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
         drawPendulum(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
@@ -376,22 +417,6 @@ int main() {
         }
         glViewport(0,0,mainWin._height, mainWin._height);
         buff.end();
-
-        break;
-      }
-      case 9: { // pendulum
-        ctx->clear();
-        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
-        drawNoise(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
-        buff.begin(clear);
-        if(redraw) {
-          basic.use();
-          ctx->flush();
-          ctx->render();
-        }
-        glViewport(0,0,mainWin._height, mainWin._height);
-        buff.end();
-
         break;
       }
       default:

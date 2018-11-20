@@ -126,7 +126,8 @@ void RenderTarget::save(const char *const filename) {
 
   float* highres_pixels = new float[WIDTH*HEIGHT*4];
   unsigned char* mapped_pixels = new unsigned char[WIDTH*HEIGHT*4];
-
+  glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+  glViewport(0,0,WIDTH,HEIGHT);
   glReadPixels(0,0,WIDTH, HEIGHT, GL_RGBA, GL_FLOAT, highres_pixels);
 
   for(int i=0; i < WIDTH; i++){
