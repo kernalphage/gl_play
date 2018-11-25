@@ -16,5 +16,6 @@ void main(){
     lum = pow(lum, vec4(energy) );
 
     //lum.y =1 - lum.y;
-    color = texture(tonemap, vec2(1, lum.x) );
+
+    color = vec4(lum);// texture(tonemap,  );
 }
