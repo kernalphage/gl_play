@@ -3,7 +3,7 @@ project(gl_play)
 
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-Wall -g -O3" )
+set(CMAKE_CXX_FLAGS "-Wall -g " )
 
 set(SOURCE_FILES
     main.cpp
@@ -22,7 +22,7 @@ set(SOURCE_FILES
         Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp RenderTarget.cpp RenderTarget.hpp
         hexlib.hpp
         Flame.hpp
-        Flame.cpp Streamline.cpp Streamline.hpp sketches.hpp flowmap.cpp flowmap.hpp proc_map.cpp proc_map.hpp Material.cpp RandomCache.cpp RandomCache.hpp)
+        Flame.cpp Streamline.cpp Streamline.hpp sketches.hpp flowmap.cpp flowmap.hpp proc_map.cpp proc_map.hpp Material.cpp RandomCache.cpp RandomCache.hpp proc/Cellular.cpp proc/Cellular.hpp)
 set(REF_SOURCE_FILES
     imgui_impl/glfw_gl3.cpp
     imgui_impl/glfw_gl3.h

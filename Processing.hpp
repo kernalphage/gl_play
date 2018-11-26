@@ -45,7 +45,7 @@ public:
   void polygon(std::vector<Vertex_Type> v, bool loop = true) override;
   void spline(std::vector<vec3> pts, Extra_Data middleColor, Extra_Data edgeColor, float thickness = .03) override ;
   void line(vec3 p1, vec3 p2, Extra_Data color) override;
-
+  void line(vec3 p1, vec3 p2, Extra_Data color, float thickness);
   void ngon(vec2 pos, float radius, int sides, Extra_Data innerColor, Extra_Data outerColor) override;
 
   void flush() override;

@@ -13,6 +13,7 @@
 #include "flowmap.hpp"
 #include <rapidjson/rapidjson.h>
 #include "RandomCache.hpp"
+#include "proc/Cellular.hpp"
 
 
 using namespace std;
@@ -212,7 +213,7 @@ int main() {
     vec2 p = Random::random_point({0,0}, {1,1});
     s.stream_point(p);
   }
-
+  Cellular cells;
   Blob b{{0,0}, .5f};
   RenderTarget buff(1000,1000);
   buff.init();
@@ -222,7 +223,7 @@ int main() {
   for(int i=0; i < 400; i++){
     times[i] = Random::range(0.f,10.f);
   }
-  int demoNumber = 8;
+  int demoNumber = 10;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -409,6 +410,21 @@ int main() {
         ctx->clear();
         ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
         drawPendulum(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
+        buff.begin(clear);
+        if(redraw) {
+          basic.use();
+          ctx->flush();
+          ctx->render();
+        }
+        glViewport(0,0,mainWin._height, mainWin._height);
+        buff.end();
+        break;
+      }
+      case 10: {
+
+        ctx->clear();
+        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
+        cells.render(ctx, redraw, clear,0,0);
         buff.begin(clear);
         if(redraw) {
           basic.use();

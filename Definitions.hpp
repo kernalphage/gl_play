@@ -17,6 +17,7 @@
 #include <donerserializer/DonerDeserialize.h>
 #include <sstream>
 #include <iostream>
+#include <optional>
 
 using glm::vec2;
 using glm::vec3;
@@ -99,6 +100,30 @@ struct Particle_Vertex{
 	particle_data m_data;
 };
 
+struct Geo{
+
+	// T should be a vec2, but i do a lot with vec3s just in case
+	template<typename T>
+	static float TriSign(T a, T b, T c) {
+		return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
+	};
+  // TODO: make bool
+	template<typename T>
+	static float line_intersect(T a, T b, T c, T d){
+		float a1 = TriSign(a,b,d);
+		float a2 = TriSign(a,b,c);
+		if (a1*a2 < 0.0){
+			float a3 = TriSign(c,d,a);
+			float a4 = a3+a2-a1;
+			if(a3*a4 < 0.0){
+				float t = a3 / (a3 - a4);
+				return t;
+			}
+		}
+		return -1;
+
+	}
+};
 
 struct Util{
   static float rangeMap (float t,float inStart,float inEnd,float outStart, float outEnd, bool doClamp = false){

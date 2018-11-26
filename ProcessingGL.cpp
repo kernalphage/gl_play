@@ -57,12 +57,18 @@ void ProcessingGL_t<Vertex_Type, Extra_Data>::quad(Vertex_Type a, Vertex_Type b,
 
 template<typename Vertex_Type, typename Extra_Data>
 void ProcessingGL_t<Vertex_Type, Extra_Data>::line(vec3 p1, vec3 p2, Extra_Data color) {
-  auto perp = normalize(rotateZ((p1-p2), 3.14f/2)) * .02;
-  quad({p1 + perp, color}, 
-       {p2 + perp, color}, 
-       {p2 - perp, color},
-       {p1 - perp, color}); 
+  line(p1, p2, color, .02);
 }
+
+template<typename Vertex_Type, typename Extra_Data>
+void ProcessingGL_t<Vertex_Type, Extra_Data>::line(vec3 p1, vec3 p2, Extra_Data color, float thickness) {
+  auto perp = normalize(rotateZ((p1-p2), 3.14f/2)) * thickness;
+  quad({p1 + perp, color},
+       {p2 + perp, color},
+       {p2 - perp, color},
+       {p1 - perp, color});
+}
+
 
 template<typename Vertex_Type, typename Extra_Data>
 void ProcessingGL_t<Vertex_Type, Extra_Data>::render() {
@@ -206,6 +212,7 @@ void ProcessingGL_t<UI_Vertex, vec4>::define_vertex_attributes(){
                         (void *)(sizeof(vec3)));
   glEnableVertexAttribArray(1);
 }
+
 template class ProcessingGL_t<UI_Vertex, vec4>;
 
 
