@@ -19,7 +19,7 @@ void Cellular::genPts() {
       CellNode newcell{};
       newcell.pos = vec3{x,y,0} * 2.0f/m_numpts - vec3{.8,.8,0};
       newcell.outside = (y == 0) || (x == 0) || (x == m_numpts-1) || (y == m_numpts - 1);
-      newcell.color = vec4{0,.41f,.3f,1};
+      newcell.color = vec4{0,.41f,.3f,100};
 
       size_t curIdx = pts.size();
       pts.push_back(newcell);
@@ -59,7 +59,7 @@ void Cellular::render(Processing *ctx, bool &redraw, bool &clear, int curFrame, 
     add_edge(pos, dir);
   }
   settle();
-
+  clear = true;
   redraw = true;
   // todo: add warmup
   for(std::pair<int, int> edge : edges){

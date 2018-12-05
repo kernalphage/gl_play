@@ -135,7 +135,6 @@ void Flame::do_flame(Processing * ctx, bool& _r, bool& _c){
         pp *= endScale;
         pp += vec3(endOffset.x, endOffset.y, 0);
         float r = sampleSize;
-        float thickness = r;
         const float tau = 6.282;
         float dTheta = (tau) / 4;
 

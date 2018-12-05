@@ -91,12 +91,13 @@ void RenderTarget::begin(bool clear) {
 }
 
 void RenderTarget::end() {
+  glFinish();
   if(ImGui::Button("Save")){
     std::string filename = "output/Render_capture" + Util::timestamp(0) + ".png";
     save(filename.c_str());
   }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   m_twotri->use();
   glActiveTexture(GL_TEXTURE0);

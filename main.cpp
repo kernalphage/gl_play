@@ -1,31 +1,37 @@
 #include "Definitions.hpp"
-#include "Material.hpp"
-#include "Processing.hpp"
-#include "Triangulate.hpp"
-#include "Window.hpp"
 #include "imgui.h"
 #include "imgui_impl/glfw_gl3.h"
-#include "Blob.hpp"
+#include "Material.hpp"
 #include "Plotter.hpp"
-#include "RenderTarget.hpp"
-#include "Flame.hpp"
-#include "Streamline.hpp"
-#include "flowmap.hpp"
-#include <rapidjson/rapidjson.h>
-#include "RandomCache.hpp"
+#include "proc/Blob.hpp"
 #include "proc/Cellular.hpp"
-
+#include "proc/Flame.hpp"
+#include "proc/flowmap.hpp"
+#include "proc/proc_map.hpp"
+#include "proc/Streamline.hpp"
+#include "proc/Streamline.hpp"
+#include "proc/Triangulate.hpp"
+#include "Processing.hpp"
+#include "RandomCache.hpp"
+#include "RenderTarget.hpp"
+#include "sketches.hpp"
+#include "Window.hpp"
+#include <fmt/format.h>
+#include <langinfo.h>
+#include <rapidjson/rapidjson.h>
 
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#include <fmt/format.h>
-#include <langinfo.h>
-#include "Streamline.hpp"
 
-#include "sketches.hpp"
-#include "proc_map.hpp"
-
+using ProcUpdate = void (*)(Processing*, bool&, bool&, int, int);
+struct procFunction{ 
+  string name;
+  ProcUpdate update;
+  GLuint mode;
+  Material* mat;
+};
+//#define PROC_FORWARD(fn) [&](Processing_t<UI_Vertex, vec4 >* p, bool& redraw, bool& clear, int frame, int totalFrames ){return fn(p,redraw,clear,frame,totalFrames);}
 // settings
 Processing *ctx;
 TriBuilder tri;
@@ -168,7 +174,6 @@ void drawPendulum(Processing* ctx, bool& redraw, bool& clear){
 //      ctx->line(cur, next);
     }
     float r = abs(cos(time));
-    float g = 1-r;
     ctx->spline(points, vec4{r,.1, .5, 1}, vec4{r,.1,.5, .0}, .001);
   }
 }
@@ -218,11 +223,8 @@ int main() {
   RenderTarget buff(1000,1000);
   buff.init();
   vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
-  float times[400];
   FastNoise noise;
-  for(int i=0; i < 400; i++){
-    times[i] = Random::range(0.f,10.f);
-  }
+
   int demoNumber = 10;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
@@ -335,7 +337,6 @@ int main() {
         static float size = .03;
         static float texsize = .4;
         static int numpts = 0;
-        float ySkew = .3;
         static vec3 vel{.2,.1, 0};
         ImGui::DragFloat3("Position", (float*)&pos, 0, 1);
         ImGui::DragFloat3("vel", (float*)&vel, 0, 0.1);
@@ -343,21 +344,10 @@ int main() {
         ImGui::DragFloat("texsize", &texsize, 0,1);
         ImGui::DragInt("numpts", &numpts, 1, 400);
 
-        auto fibonacci = [](int k, const int n){
-          // https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
-          float offset = 2.0f/n;
-          float golden_angle = 3.1415f * (3 - sqrt(5.f));
-
-          float r = sqrt(1.0f * k) / sqrt(1.0f * n);
-          float phi = k * golden_angle;  // = ((i + rnd) % samples) * increment
-          float x = cos(phi)*r;
-          float y = sin(phi)*r;
-          return vec3{x,y,0};
-        };
         Particle_Vertex::particle_data dat = {{.5,.5}, texsize, size};
 
         for(int i=0; i < numpts; i++){
-          vec3 spewpos = fibonacci(i, numpts);
+          vec3 spewpos = Geo::fibonacci(i, numpts);
           part_ctx->indexVert({pos + spewpos, dat});
         }
         part_ctx->flush();
@@ -368,81 +358,68 @@ int main() {
         break;
       }
       case 8: { // noise
-        static bool animating = false;
-        static string animTimestamp;
-        static int curFrame = 0;
-        static int maxFrames = 20;
-        ImGui::ProgressBar((float) curFrame / maxFrames, ImVec2(0.0f,0.0f));
-        ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
-        ImGui::Text("animation progress");
-        ImGui::SliderInt("frame count", &maxFrames, 1, 100);
-        if(ImGui::Button("Start Animation")){
-          animating = true;
-          animTimestamp = Util::timestamp(0);
-          curFrame = 0;
-        }
-        ctx->clear();
-        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
-        drawNoise(ctx, redraw, clear, curFrame, maxFrames); // todo: maek it a return value, or put buffer inside of this function
-        if(animating && clear && curFrame < maxFrames){
-          auto filename = fmt::format("anim/frame{0}_{1:04d}.png", animTimestamp, curFrame);
+  
 
-          curFrame ++;
-          buff.save(filename.c_str());
-          buff.begin(true);
-          buff.end();
-        } else {
-          buff.begin(clear);
-          if (redraw) {
-            basic.use();
-            ctx->flush();
-            ctx->render();
-          }
-          glViewport(0, 0, mainWin._height, mainWin._height);
-          buff.end();
-          if(clear){
-            curFrame = (curFrame + 1 ) % maxFrames;
-          }
-        }
-        break;
       }
-      case 9: { // pendulum
-        ctx->clear();
-        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
-        drawPendulum(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
-        buff.begin(clear);
-        if(redraw) {
-          basic.use();
-          ctx->flush();
-          ctx->render();
-        }
-        glViewport(0,0,mainWin._height, mainWin._height);
-        buff.end();
-        break;
-      }
-      case 10: {
 
-        ctx->clear();
-        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
-        cells.render(ctx, redraw, clear,0,0);
-        buff.begin(clear);
-        if(redraw) {
-          basic.use();
-          ctx->flush();
-          ctx->render();
-        }
-        glViewport(0,0,mainWin._height, mainWin._height);
-        buff.end();
-        break;
-      }
+
       default:
         break;
     }
 
+    procFunction functions[]= {
+      //{"triangles", genTriangle, GL_TRIANGLES, &basic},
+      //{"flame", Flame::do_flame, GL_POINTS, &basic},
+      //{"flame", }
+      //{"shape" , PROC_FORWARD(s.render), GL_TRIANGLES, &basic},
+      //{"flowmap", PROC_FORWARD(f.render), GL_TRIANGLES, &basic},
+      //{"procmap", PROC_FORWARD(map.render) ,GL_TRIANGLES, &basic },
+      //{"Pendulum", drawPendulum, GL_TRIANGLES, &basic},
+      {"noise", drawNoise, GL_TRIANGLES, &basic},
+    // {"cells", PROC_FORWARD(cells.render), GL_TRIANGLES, &basic}
+    };
 
-    processInput(mainWin.window);
+    {
+      auto curfn = functions[0];
+      static bool animating = false;
+      static string animTimestamp;
+      static int curFrame = 0;
+      static int maxFrames = 20;
+      ImGui::ProgressBar((float) curFrame / maxFrames, ImVec2(0.0f,0.0f));
+      ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
+      ImGui::Text("animation progress");
+      ImGui::SliderInt("frame count", &maxFrames, 1, 100);
+      if(ImGui::Button("Start Animation")){
+        animating = true;
+        animTimestamp = Util::timestam(0);
+        curFrame = 0;
+      }
 
-    t += .01f; // TODO: real deltatime
+      ctx->clear();
+      ((ProcessingGL*) ctx)->setMode(curfn.mode);
+      curfn.update(ctx, redraw, clear, curFrame, maxFrames);
+      if(animating && clear && curFrame < maxFrames){
+        auto filename = fmt::format("anim/frame{0}{1}_{2:04d}.png", curfn.name,  animTimestamp, curFrame);
+
+        curFrame ++;
+        buff.save(filename.c_str());
+        buff.begin(true);
+        buff.end();
+      } else {
+        buff.begin(clear);
+        if (redraw) {
+          curfn.mat->use();
+          ctx->flush();
+          ctx->render();
+        }
+        glViewport(0, 0, mainWin._height, mainWin._height);
+        buff.end();
+        if(clear){
+          curFrame = (curFrame + 1 ) % maxFrames;
+        }
+      }
+      processInput(mainWin.window);
+    }
 
     ImGui::Render();
     ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());

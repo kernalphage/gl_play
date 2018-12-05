@@ -20,7 +20,7 @@ private:
   struct CellNode{
     vec3 pos;
     bool outside=false;
-    vec4 color{1,0,0,1};
+    vec4 color{1,0,0,100};
   };
 
   void genPts();

@@ -121,8 +121,18 @@ struct Geo{
 			}
 		}
 		return -1;
-
 	}
+
+	static vec3 fibonacci(const int k, const int n){
+      // https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
+      float golden_angle = 3.1415f * (3 - sqrt(5.f));
+
+      float r = sqrt(1.0f * k) / sqrt(1.0f * n);
+      float phi = k * golden_angle;  // = ((i + rnd) % samples) * increment
+      float x = cos(phi)*r;
+      float y = sin(phi)*r;
+      return vec3{x,y,0};
+    };
 };
 
 struct Util{

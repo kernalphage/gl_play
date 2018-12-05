@@ -5,7 +5,7 @@
 #ifndef GL_PLAY_PLOTTER_HPP
 #define GL_PLAY_PLOTTER_HPP
 #include "Definitions.hpp"
-#include "Blob.hpp"
+#include "proc/Blob.hpp"
 #include "Random.hpp"
 #include "imguifilesystem.h"
 #include <stb_image.h>

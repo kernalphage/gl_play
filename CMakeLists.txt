@@ -5,24 +5,43 @@ project(gl_play)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS "-Wall -g " )
 
-set(SOURCE_FILES
+set(PROC_SOURCE_FILES
+    proc/Blob.cpp
+    proc/Blob.hpp
+    proc/Flame.cpp
+    proc/Flame.hpp
+    proc/flowmap.cpp
+    proc/flowmap.hpp
+    proc/Cellular.cpp proc/Cellular.hpp
+    proc/proc_map.cpp 
+    proc/proc_map.hpp
+    proc/Streamline.cpp
+    proc/Streamline.hpp
+    proc/Triangulate.cpp
+    proc/Triangulate.hpp
+)
+set(ENGINE_SOURCE_FILES
+    Definitions.hpp
+    hexlib.hpp
     main.cpp
+    Material.cpp
     Material.hpp
-    ProcessingSVG.cpp
-    ProcessingGL.cpp
+    Plotter.cpp 
+    Plotter.hpp
     Processing.hpp
+    ProcessingGL.cpp
+    ProcessingSVG.cpp
     Random.cpp
     Random.hpp
-    Triangulate.cpp
-    Triangulate.hpp
+    RandomCache.cpp
+    RandomCache.hpp 
+    RenderTarget.cpp
+    RenderTarget.hpp
+    sketches.hpp
     Texture.hpp
     Window.cpp
     Window.hpp
-    Definitions.hpp
-        Blob.cpp Blob.hpp Plotter.cpp Plotter.hpp RenderTarget.cpp RenderTarget.hpp
-        hexlib.hpp
-        Flame.hpp
-        Flame.cpp Streamline.cpp Streamline.hpp sketches.hpp flowmap.cpp flowmap.hpp proc_map.cpp proc_map.hpp Material.cpp RandomCache.cpp RandomCache.hpp proc/Cellular.cpp proc/Cellular.hpp)
+    )
 set(REF_SOURCE_FILES
     imgui_impl/glfw_gl3.cpp
     imgui_impl/glfw_gl3.h
@@ -37,10 +56,11 @@ set(REF_SOURCE_FILES
 	)
 
 include_directories("ref/fmt/include")
+include_directories(".")
 
 include_directories("ref/DonerSerializer/DonerSerializer/include")
 include_directories("ref/DonerSerializer/DonerSerializer/thirdparty/DonerReflection/DonerReflection/include")
-add_executable(gl_play ${SOURCE_FILES} ${REF_SOURCE_FILES})
+add_executable(gl_play ${PROC_SOURCE_FILES} ${ENGINE_SOURCE_FILES} ${REF_SOURCE_FILES})
 include_directories("ref/glad/include")
 include_directories("ref")
 include_directories("imgui_impl")

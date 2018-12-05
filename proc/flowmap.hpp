@@ -30,7 +30,6 @@ private:
 
   float curl_epsilon = 0.001;
 
-  float layerNoiseScale = 0.01;
   float sampleSize = .003;
   float speed = 0.002;
   float windSpeed = 0.001;
