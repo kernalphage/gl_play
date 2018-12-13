@@ -123,6 +123,23 @@ struct Geo{
 		return -1;
 	}
 
+	struct ray{
+		vec2 p;
+		vec2 d;
+	};
+	static std::optional<ray> rayBounce(ray r, vec2 wa, vec2 wb){
+		float collide = line_intersect(r.p, r.p + r.d * 1000, wa, wb);
+		if(collide < 0){
+			return {};
+		}
+		vec2 normal = (wb - wa);
+		normal = vec2{-normal.y, normal.x};
+		ray ret;
+		ret.p = r.p + r.d * 1000 * collide;
+		ret.d = glm::reflect(normalize(r.d), normalize(normal));
+		return {ret};
+	}
+
 	static vec3 fibonacci(const int k, const int n){
       // https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
       float golden_angle = 3.1415f * (3 - sqrt(5.f));

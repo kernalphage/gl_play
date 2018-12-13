@@ -60,6 +60,34 @@ static void error_callback(int error, const char* description)
 {
   fprintf(stderr, "Error %d: %s\n", error, description);
 }
+void drawLight(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
+  static float angle = 0;
+  static float spread = .2;
+  static int numrays = 500;
+  angle = curFrame  * 6.282 / maxFrames;
+
+  ImGui::SliderFloat("spread", &spread, 0, 1);
+  ImGui::SliderInt("numrays", &numrays, 0, 10240);
+
+  ctx->line(vec3{.5,1,0}, vec3{1,.5, 0}, {1000,1,1,numrays});
+  for(int i=0; i < numrays; i++){
+  float rayAngle = angle + (spread/numrays) * i;
+  vec2 raydir{sin(rayAngle), cos(rayAngle)};
+  auto r = Geo::rayBounce({{0,0}, raydir}, {.5, 1}, {1,.5});
+  if(r){
+    auto ray = *r;
+    auto newdir = ray.p + normalize(ray.d);
+     ((ProcessingGL*) ctx)->line({ray.p.x, ray.p.y, 0}, {newdir.x, newdir.y, 0}, {1, 0, 0, 1}, 0.001);
+     ((ProcessingGL*) ctx)->line(vec3{0,0,0}, {SPLAT2(ray.p), 0}, {1,0,0,1}, 0.001);
+  
+  }
+  else{
+     ((ProcessingGL*) ctx)->line(vec3{0,0,0}, 20 * vec3(SPLAT2(raydir), 0), {1,0,0,1}, 0.001);
+  }
+}
+  redraw = true;
+  clear = true;
+}
 
 void drawNoise(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
   STATIC_DO_ONCE(clear = true);
@@ -208,7 +236,6 @@ int main() {
 
   vec4 clear_color{0.00f, 0.0f, 0.0f, 1.00f};
 
-
   flowmap f;
   proc_map map;
 
@@ -231,11 +258,10 @@ int main() {
     glfwPollEvents();
    ImGui_ImplGlfwGL3_NewFrame();
 
-
     ImGui::ColorEdit4(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-    ImGui::InputInt("DemoNumber", &demoNumber,0,4);
+    ImGui::InputInt("DemoNumber", &demoNumber,0,10);
 
     glClearColor(SPLAT4(clear_color));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -357,11 +383,6 @@ int main() {
         part_ctx->render();
         break;
       }
-      case 8: { // noise
-  
-
-      }
-
 
       default:
         break;
@@ -376,22 +397,23 @@ int main() {
       //{"procmap", PROC_FORWARD(map.render) ,GL_TRIANGLES, &basic },
       //{"Pendulum", drawPendulum, GL_TRIANGLES, &basic},
       {"noise", drawNoise, GL_TRIANGLES, &basic},
+      {"light", drawLight, GL_TRIANGLES, &basic},
     // {"cells", PROC_FORWARD(cells.render), GL_TRIANGLES, &basic}
     };
 
     {
-      auto curfn = functions[0];
+      auto curfn = functions[1];
       static bool animating = false;
       static string animTimestamp;
       static int curFrame = 0;
-      static int maxFrames = 20;
+      static int maxFrames = 200;
       ImGui::ProgressBar((float) curFrame / maxFrames, ImVec2(0.0f,0.0f));
       ImGui::SameLine(0.0f, ImGui::GetStyle().ItemInnerSpacing.x);
       ImGui::Text("animation progress");
-      ImGui::SliderInt("frame count", &maxFrames, 1, 100);
+      ImGui::SliderInt("frame count", &maxFrames, 1, 1000);
       if(ImGui::Button("Start Animation")){
         animating = true;
-        animTimestamp = Util::timestam(0);
+        animTimestamp = Util::timestamp(0);
         curFrame = 0;
       }
 
