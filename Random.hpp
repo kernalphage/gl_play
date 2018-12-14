@@ -13,9 +13,12 @@ public:
     generator = std::default_random_engine{};
     generator.seed(s);
     distribution = std::uniform_real_distribution<float>{0.0f, 1.0f};
+    gauss_dist = std::normal_distribution<float>{0.0f, 1.0f};
+    
   }
   static float f() { return distribution(generator); }
   static float nextGaussian(){return gauss_dist(generator); }
+  static vec2 gaussPoint(){return vec2{gauss_dist(generator), gauss_dist(generator)}; }
   static int range(int a, int b) {
     return (int)(a + (b - a) * distribution(generator));
   }

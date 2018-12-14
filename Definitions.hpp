@@ -127,17 +127,17 @@ struct Geo{
 		vec2 p;
 		vec2 d;
 	};
-	static std::optional<ray> rayBounce(ray r, vec2 wa, vec2 wb){
+	static std::tuple<float, ray> rayBounce(ray r, vec2 wa, vec2 wb){
 		float collide = line_intersect(r.p, r.p + r.d * 1000, wa, wb);
 		if(collide < 0){
-			return {};
+			return {10245.0f, {}}; // sue me 
 		}
 		vec2 normal = (wb - wa);
 		normal = vec2{-normal.y, normal.x};
 		ray ret;
 		ret.p = r.p + r.d * 1000 * collide;
 		ret.d = glm::reflect(normalize(r.d), normalize(normal));
-		return {ret};
+		return {collide, ret};
 	}
 
 	static vec3 fibonacci(const int k, const int n){

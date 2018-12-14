@@ -64,29 +64,72 @@ void drawLight(Processing* ctx, bool& redraw, bool& clear, int curFrame, int max
   static float angle = 0;
   static float spread = .2;
   static int numrays = 500;
-  angle = curFrame  * 6.282 / maxFrames;
+  static int seed =0;
+  static int numMirrors = 32;
+  static float minDist = .2;
+  static float thickness = 0.001;
 
-  ImGui::SliderFloat("spread", &spread, 0, 1);
-  ImGui::SliderInt("numrays", &numrays, 0, 10240);
+  redraw |= ImGui::InputInt("seed", &seed);
+  redraw |= ImGui::SliderFloat("spread", &spread, 0, 6.28);
+  redraw |= ImGui::SliderFloat("angle", &angle, 0, 6.28);
+  redraw |= ImGui::SliderInt("numrays", &numrays, 0, 10240);
+  redraw |= ImGui::SliderInt("numMirrors", &numMirrors, 2, 19);
+  redraw |= ImGui::SliderFloat("minDist", &minDist, 0, 1);
 
-  ctx->line(vec3{.5,1,0}, vec3{1,.5, 0}, {1000,1,1,numrays});
+
+if(!redraw) return;
+  Random::seed(seed);
+  vector<vec2> mirrorPts;
+
+  for(int i=0; i < numMirrors; i++){
+    mirrorPts.push_back(Random::gaussPoint() * .4f) ;
+  }
+
+  std::sort(mirrorPts.begin(), mirrorPts.end(), [](vec2 a, vec2 b){ return glm::length(a) < glm::length(b);});
+/*
+// Connect close points
+    for(int mirror = 0; mirror < mirrorPts.size() - 1; mirror+=2){
+      auto pta = mirrorPts[mirror];
+      for(int b = mirror+1; b < mirrorPts.size() - 1; b++){
+        auto ptb = mirrorPts[b];
+        if(glm::distance(pta, ptb) < minDist){
+       ((ProcessingGL*) ctx)->line(vec3{SPLAT2(pta),0}, vec3{SPLAT2(ptb), 0}, {1,.4,0,numrays}, thickness);
+      }
+    }
+  }
+  */
+   for(int mirror = 0; mirror < mirrorPts.size() - 1; mirror+=2){
+      auto pta = mirrorPts[mirror];
+      auto ptb = mirrorPts[mirror + 1];  
+      ((ProcessingGL*) ctx)->line(vec3{SPLAT2(pta),0}, vec3{SPLAT2(ptb), 0}, {1,.4,0,numrays}, thickness);
+    
+    }
   for(int i=0; i < numrays; i++){
-  float rayAngle = angle + (spread/numrays) * i;
-  vec2 raydir{sin(rayAngle), cos(rayAngle)};
-  auto r = Geo::rayBounce({{0,0}, raydir}, {.5, 1}, {1,.5});
-  if(r){
-    auto ray = *r;
-    auto newdir = ray.p + normalize(ray.d);
-     ((ProcessingGL*) ctx)->line({ray.p.x, ray.p.y, 0}, {newdir.x, newdir.y, 0}, {1, 0, 0, 1}, 0.001);
-     ((ProcessingGL*) ctx)->line(vec3{0,0,0}, {SPLAT2(ray.p), 0}, {1,0,0,1}, 0.001);
+
+    float min_dist = 1000;
+    Geo::ray minray;
+    float rayAngle = angle + Random::nextGaussian() * spread;
+    vec2 raydir{sin(rayAngle), cos(rayAngle)};
+    
+    for(int mirror = 0; mirror < mirrorPts.size() - 1; mirror+=2){
+      auto r = Geo::rayBounce({{0,0}, raydir}, mirrorPts[mirror], mirrorPts[mirror+1]);
+      if(std::get<0>(r) < min_dist){
+        min_dist = std::get<0>(r);
+        minray = std::get<1>(r);
+      }
+    }
+    if(min_dist < 1000){
+       auto newdir = minray.p + normalize(minray.d);
+       ((ProcessingGL*) ctx)->line({minray.p.x, minray.p.y, 0}, {newdir.x, newdir.y, 0}, {0, 1, 0, 1}, thickness);
+       ((ProcessingGL*) ctx)->line(vec3{0,0,0}, {SPLAT2(minray.p), 0}, {0,0,1,1}, 0.001);
+    }
+    else{
+       ((ProcessingGL*) ctx)->line(vec3{0,0,0}, 20 * vec3(SPLAT2(raydir), 0), {1,0,0,1}, thickness);
+    } 
+  }
   
-  }
-  else{
-     ((ProcessingGL*) ctx)->line(vec3{0,0,0}, 20 * vec3(SPLAT2(raydir), 0), {1,0,0,1}, 0.001);
-  }
-}
-  redraw = true;
-  clear = true;
+ 
+  clear = redraw;
 }
 
 void drawNoise(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
