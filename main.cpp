@@ -68,24 +68,25 @@ void drawLight(Processing* ctx, bool& redraw, bool& clear, int curFrame, int max
   static int numMirrors = 32;
   static float minDist = .2;
   static float thickness = 0.001;
+static vector<vec2> mirrorPts;
 
-  redraw |= ImGui::InputInt("seed", &seed);
-  redraw |= ImGui::SliderFloat("spread", &spread, 0, 6.28);
-  redraw |= ImGui::SliderFloat("angle", &angle, 0, 6.28);
-  redraw |= ImGui::SliderInt("numrays", &numrays, 0, 10240);
-  redraw |= ImGui::SliderInt("numMirrors", &numMirrors, 2, 19);
-  redraw |= ImGui::SliderFloat("minDist", &minDist, 0, 1);
+STATIC_DO_ONCE(clear = true;);
+  clear |= ImGui::InputInt("seed", &seed);
+  clear |= ImGui::SliderFloat("spread", &spread, 0, 6.28);
+  clear |= ImGui::SliderFloat("angle", &angle, 0, 6.28);
+  clear |= ImGui::SliderInt("numrays", &numrays, 0, 10240);
+  clear |= ImGui::SliderInt("numMirrors", &numMirrors, 2, 19);
+  clear |= ImGui::SliderFloat("minDist", &minDist, 0, 1);
 
-
-if(!redraw) return;
+  if(clear){
   Random::seed(seed);
-  vector<vec2> mirrorPts;
-
+  mirrorPts.clear();
   for(int i=0; i < numMirrors; i++){
     mirrorPts.push_back(Random::gaussPoint() * .4f) ;
   }
 
   std::sort(mirrorPts.begin(), mirrorPts.end(), [](vec2 a, vec2 b){ return glm::length(a) < glm::length(b);});
+}
 /*
 // Connect close points
     for(int mirror = 0; mirror < mirrorPts.size() - 1; mirror+=2){
@@ -104,11 +105,13 @@ if(!redraw) return;
       ((ProcessingGL*) ctx)->line(vec3{SPLAT2(pta),0}, vec3{SPLAT2(ptb), 0}, {1,.4,0,numrays}, thickness);
     
     }
+
+    float fudge =  Random::nextGaussian() * .001;
   for(int i=0; i < numrays; i++){
 
     float min_dist = 1000;
     Geo::ray minray;
-    float rayAngle = angle + Random::nextGaussian() * spread;
+    float rayAngle = fudge+  angle +  i / (numrays * spread);
     vec2 raydir{sin(rayAngle), cos(rayAngle)};
     
     for(int mirror = 0; mirror < mirrorPts.size() - 1; mirror+=2){
@@ -127,9 +130,7 @@ if(!redraw) return;
        ((ProcessingGL*) ctx)->line(vec3{0,0,0}, 20 * vec3(SPLAT2(raydir), 0), {1,0,0,1}, thickness);
     } 
   }
-  
- 
-  clear = redraw;
+  redraw = true;
 }
 
 void drawNoise(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
