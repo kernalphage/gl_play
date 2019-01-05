@@ -37,7 +37,9 @@ public:
   void setVec(const std::string &name, glm::vec4 value) const {
     glUniform4fv(glGetUniformLocation(ID, name.c_str()),1, (float*) &value);
   }
-
+  void setMat4x4(const std::string &name, glm::mat4 mat) const {
+    glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), GL_TRUE, 1, glm::value_ptr(mat));
+  }
 private:
 
   static std::map<std::string, std::shared_ptr<Material>> s_materials;

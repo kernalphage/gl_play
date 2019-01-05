@@ -107,6 +107,7 @@ STATIC_DO_ONCE(clear = true;);
     }
 
     float fudge =  Random::nextGaussian() * .001;
+    float di = 1.0f / numrays;
   for(int i=0; i < numrays; i++){
 
     float min_dist = 1000;
@@ -123,11 +124,11 @@ STATIC_DO_ONCE(clear = true;);
     }
     if(min_dist < 1000){
        auto newdir = minray.p + normalize(minray.d);
-       ((ProcessingGL*) ctx)->line({minray.p.x, minray.p.y, 0}, {newdir.x, newdir.y, 0}, {0, 1, 0, 1}, thickness);
-       ((ProcessingGL*) ctx)->line(vec3{0,0,0}, {SPLAT2(minray.p), 0}, {0,0,1,1}, 0.001);
+       ((ProcessingGL*) ctx)->line({minray.p.x, minray.p.y, i * di}, {newdir.x, newdir.y, i * di}, {0, 1, 0, 1}, thickness);
+       ((ProcessingGL*) ctx)->line(vec3{0,0,0}, {SPLAT2(minray.p), i * di}, {0,0,1,1}, 0.001);
     }
     else{
-       ((ProcessingGL*) ctx)->line(vec3{0,0,0}, 20 * vec3(SPLAT2(raydir), 0), {1,0,0,1}, thickness);
+       ((ProcessingGL*) ctx)->line(vec3{0,0,0}, 20 * vec3(SPLAT2(raydir), i * di), {1,0,0,1}, thickness);
     } 
   }
   redraw = true;
@@ -461,6 +462,12 @@ int main() {
         curFrame = 0;
       }
 
+      static glm::vec3 rotation;
+      ImGui::SliderFloat3("rotation", (float*)(&rotation.x), 0, 6.28);
+      clear |= ImGui::Button("Clear");
+      glm::mat4 worldTransform = glm::mat4(1.0f);
+      worldTransform *= glm::orientate4(rotation);
+
       ctx->clear();
       ((ProcessingGL*) ctx)->setMode(curfn.mode);
       curfn.update(ctx, redraw, clear, curFrame, maxFrames);
@@ -475,6 +482,7 @@ int main() {
         buff.begin(clear);
         if (redraw) {
           curfn.mat->use();
+          curfn.mat->setMat4x4("worldTransform", worldTransform);
           ctx->flush();
           ctx->render();
         }

@@ -73,7 +73,6 @@ void ProcessingGL_t<Vertex_Type, Extra_Data>::line(vec3 p1, vec3 p2, Extra_Data 
 template<typename Vertex_Type, typename Extra_Data>
 void ProcessingGL_t<Vertex_Type, Extra_Data>::render() {
   // convert to gl buffer
-
   glBindVertexArray(m_VAO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_EBO.handle);
   glEnableVertexAttribArray(0);
@@ -89,7 +88,7 @@ void ProcessingGL_t<Vertex_Type, Extra_Data>::render() {
 template<typename Vertex_Type, typename Extra_Data>
 int ProcessingGL_t<Vertex_Type, Extra_Data>::indexVert(Vertex_Type p) {
   unsigned int idx = m_verts.size();
-  vec4 pos = m_cur* vec4(p.pos, 1);
+  vec4 pos = m_cur * vec4(p.pos, 1);
   p.pos = vec3(SPLAT3(pos));
   m_verts.push_back(p);
   m_indices.push_back(idx);
