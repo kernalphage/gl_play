@@ -79,11 +79,6 @@ void processInput(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
 }
 
-void keyCallback(GLFWwindow *window, int key, int scancode, int action,
-                 int mods) {
-  return;
-}
-
 static void error_callback(int error, const char* description)
 {
   fprintf(stderr, "Error %d: %s\n", error, description);
@@ -269,13 +264,13 @@ void drawPendulum(Processing* ctx, bool& redraw, bool& clear, int curFrame, int 
       next = (next * ((10 - i) * radius_ratio)/10) + cur;
       if(i > cutoff) {
         points.push_back(next);
-        //ctx->ngon(next, .004,8, vec4{1,1,1,0}, vec4{1,1,1,1} );
+        ctx->ngon(next, .004,8, vec4{1,1,1,0}, vec4{1,1,1,1} );
       }
       cur = next;
 //      ctx->line(cur, next);
     }
     float r = abs(cos(time));
-    ctx->spline(points, vec4{r,.1, .5, 1}, vec4{r,.1,.5, .0}, .001);
+   // ctx->spline(points, vec4{r,.1, .5, 1}, vec4{r,.1,.5, .0}, .001);
   }
 }
 
@@ -284,7 +279,6 @@ int main() {
   mainWin.init(1000,1000);
 
   glfwSetErrorCallback(error_callback);
-  glfwSetKeyCallback(mainWin.window, keyCallback);
   glEnable(GL_DEBUG_OUTPUT);
 
   // build and compile our shader program
@@ -314,14 +308,13 @@ int main() {
     vec2 p = Random::random_point({0,0}, {1,1});
     s.stream_point(p);
   }
+
   Cellular cells;
   Blob b{{0,0}, .5f};
   RenderTarget buff(1000,1000);
   buff.init();
   vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
-  FastNoise noise;
 
-  int demoNumber = 10;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
@@ -330,24 +323,18 @@ int main() {
     ImGui::ColorEdit4("clear_color", (float *)&clear_color);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-    ImGui::InputInt("DemoNumber", &demoNumber,0,10);
 
     glClearColor(SPLAT4(clear_color));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    glViewport(0,0,mainWin._height, mainWin._height);
 
     bool redraw = false, clear = false;
-
+    const int demoNumber = 0;
     switch(demoNumber){
       case 0:
-       
         break;
       case 1:
-        do_curve(ctx, redraw, clear);
-        if(redraw){
-          ctx->render();
-        }
-        break;
+      break;
       case 2:
         for(int i=0; i < 4; i++){
           ImGui::PushID(i);
@@ -430,17 +417,19 @@ int main() {
       //{"flame", Flame::do_flame, GL_POINTS, &basic},
       //{"flame", }
       //{"stream" , drawStream, GL_TRIANGLES, &basic, false},
+      {"curve", do_curve, GL_TRIANGLES, &basic, true},
       {"flowmap", drawFlowmap, GL_TRIANGLES, &basic, true},
       {"procmap", drawProcmap ,GL_TRIANGLES, &basic, false },
       {"Pendulum", drawPendulum, GL_TRIANGLES, &basic, true},
       {"noise", drawNoise, GL_TRIANGLES, &basic, true},
       {"light", drawLight, GL_TRIANGLES, &basic, true},
+
     // {"cells", PROC_FORWARD(cells.render), GL_TRIANGLES, &basic}
     };
-    const int numFunctions = 3;
+    const int numFunctions = 5;
 
     {
-      static int curfn_idx = 1; 
+      static int curfn_idx = 0; 
       auto curfn = functions[curfn_idx];
       ImGui::LabelText("curfn", "%s", curfn.name.c_str());
       ImGui::SliderInt("function", &curfn_idx, 0, numFunctions);
