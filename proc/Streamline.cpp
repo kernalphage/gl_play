@@ -43,10 +43,9 @@ bool Streamline::isvalid(vec2 pt)
 
     return nodeDist > minDist;
 */
-  }
+}
 
 Streamline::Node *Streamline::stream_point(vec2 startPos) {
-
 
     Node* start = new Node{nullptr, startPos, false};
     Node* cur = start;

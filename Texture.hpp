@@ -25,8 +25,7 @@ public:
         stbi_image_free(pixels);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-private: 
-    GLuint m_type;
+private:
     GLuint m_id;
 };
 

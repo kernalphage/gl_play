@@ -16,7 +16,7 @@ bool flowmap::imSettings() {
 
   redraw |= ImGui::SliderFloat("noiseFrequency", &noise_frequency, .2, 10);
   redraw |= ImGui::SliderInt("numPoints", &numpoints, 1,100);
-  ImGui::SliderInt("numLayers", &numlayers, 1,1000);
+  ImGui::SliderInt("numLayers", &numlayers, 1,10000);
   redraw |= ImGui::SliderFloat("sampleSize", &sampleSize, .001,.1);
 
   redraw |= ImGui::SliderFloat("speed", &speed, 0.001, .05);
