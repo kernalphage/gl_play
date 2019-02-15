@@ -84,10 +84,12 @@ void RenderTarget::begin(bool clear) {
 
   ImGui::SliderFloat("Gamma", &gamma, 0,1.0);
   ImGui::SliderFloat("Energy", &energy, 1, 30);
+  ImGui::SliderFloat("texAmt", &texAmt, 0.0f, 1.0f);
 
   m_twotri->setFloat("gamma", gamma);
   m_twotri->setFloat("energy", energy);
 
+  m_twotri->setFloat("texAmt", texAmt);
 }
 
 void RenderTarget::end() {
@@ -130,18 +132,26 @@ void RenderTarget::save(const char *const filename) {
   glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
   glViewport(0,0,WIDTH,HEIGHT);
   glReadPixels(0,0,WIDTH, HEIGHT, GL_RGBA, GL_FLOAT, highres_pixels);
-
+  int dirty_pixels = 0;
   for(int i=0; i < WIDTH; i++){
     for(int j=0; j < HEIGHT; j++){
-      for(int channel =0; channel < 3; channel++) {
-        const int idx = (j * WIDTH + i) * 4 + channel;
-        float lum = log(highres_pixels[idx]) * gamma;
+        const int idx = (j * WIDTH + i) * 4 ;
+
+        vec4 lum = vec4(highres_pixels[idx], highres_pixels[idx+1], highres_pixels[idx+2], highres_pixels[idx+3]);
+        lum = log(lum) * gamma;
         lum = glm::clamp(lum, 0.0f, 1.0f);
-        lum = pow(lum, energy);
+        for(int i=0; i < 4; i++)
+        {
+          lum[i] = pow(lum[i], energy);
+        }
+        auto toneSample = vec4(m_tonemap.sample(lum.x, lum.y,0), m_tonemap.sample(lum.x, lum.y,1), m_tonemap.sample(lum.x, lum.y,2), m_tonemap.sample(lum.x, lum.y,3));
 
-        // lum = highres_pixels[idx] > 0? 1:0;
-
-        mapped_pixels[idx] = (unsigned char) (lum * 255);
+        lum = glm::lerp(lum * 255, toneSample, texAmt);
+//        mapped_pixels[idx] = (unsigned char) (lum * 255);
+      mapped_pixels[idx+0] = (unsigned char)(lum.x);
+      mapped_pixels[idx+1] = (unsigned char)(lum.y);
+      mapped_pixels[idx+2] = (unsigned char)(lum.z);
+      mapped_pixels[idx+3] = (unsigned char)(lum.w);
 /*
         const int idx = (j * WIDTH + i) * 4;
         float numHits = highres_pixels[idx + 3];
@@ -153,14 +163,13 @@ void RenderTarget::save(const char *const filename) {
         mapped_pixels[idx + 2] = (unsigned char) (glm::clamp(highres_pixels[idx + 2] / numHits,0.0f,1.0f) * 255);
         mapped_pixels[idx + 3] = (unsigned char) (lum * 255);
         */
-      }
       mapped_pixels[(j * WIDTH + i) * 4 + 3] = (unsigned char) ( 255);
     }
   }
 
   int ok = stbi_write_png(filename,WIDTH, HEIGHT, 4, mapped_pixels, WIDTH*4);
 
-  printf("render Ok: %d",ok);
+  printf("render %s Ok: %d with %d dirty pixels \n", filename, ok, dirty_pixels);
 
   delete[](highres_pixels);
   delete[](mapped_pixels);

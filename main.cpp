@@ -19,6 +19,9 @@
 #include <fmt/format.h>
 #include <langinfo.h>
 #include <rapidjson/rapidjson.h>
+#include "proc/cached_flowmap.hpp"
+#include "proc/Superformula.hpp"
+
 
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
@@ -31,13 +34,14 @@ struct procFunction{
   GLuint mode;
   Material* mat;
 };
-//#define PROC_FORWARD(fn) [&](Processing_t<UI_Vertex, vec4 >* p, bool& redraw, bool& clear, int frame, int totalFrames ){return fn(p,redraw,clear,frame,totalFrames);}
+//#define PROC_FORWARD(fn) [&](Processinfg_t<UI_Vertex, vec4 >* p, bool& redraw, bool& clear, int frame, int totalFrames ){return fn(p,redraw,clear,frame,totalFrames);}
 // settings
 Processing *ctx;
 TriBuilder tri;
 Plotter p;
 float t = 0;
 
+flowmap f;
 void genTriangle() {
     if(tri.imSettings()){
     ctx->clear();
@@ -60,33 +64,44 @@ static void error_callback(int error, const char* description)
 {
   fprintf(stderr, "Error %d: %s\n", error, description);
 }
+void drawFlowmap(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames) {
+  f.render(ctx);
+}
 void drawLight(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
+
+  ctx->ngon({0,0}, .5, 40, {1,0,0,2.7}, {0,1, 0, 2.7});
+  redraw = true;
+  clear = true;
+  return;
+
   static float angle = 0;
   static float spread = .2;
-  static int numrays = 500;
+  static int numrays = 2;
+  static int numBounces = 5;
   static int seed =0;
-  static int numMirrors = 32;
+  static int numMirrors = 12;
   static float minDist = .2;
   static float thickness = 0.001;
-static vector<vec2> mirrorPts;
+  static vector<vec2> mirrorPts;
 
-STATIC_DO_ONCE(clear = true;);
+  STATIC_DO_ONCE(clear = true;);
   clear |= ImGui::InputInt("seed", &seed);
   clear |= ImGui::SliderFloat("spread", &spread, 0, 6.28);
   clear |= ImGui::SliderFloat("angle", &angle, 0, 6.28);
   clear |= ImGui::SliderInt("numrays", &numrays, 0, 10240);
+  clear |= ImGui::SliderInt("numbounces", &numBounces, 1, 10);
   clear |= ImGui::SliderInt("numMirrors", &numMirrors, 2, 19);
   clear |= ImGui::SliderFloat("minDist", &minDist, 0, 1);
 
   if(clear){
-  Random::seed(seed);
-  mirrorPts.clear();
-  for(int i=0; i < numMirrors; i++){
-    mirrorPts.push_back(Random::gaussPoint() * .4f) ;
-  }
+    Random::seed(seed);
+    mirrorPts.clear();
+    for(int i=0; i < numMirrors; i++){
+      mirrorPts.push_back(Random::gaussPoint() * .4f) ;
+    }
 
-  std::sort(mirrorPts.begin(), mirrorPts.end(), [](vec2 a, vec2 b){ return glm::length(a) < glm::length(b);});
-}
+    std::sort(mirrorPts.begin(), mirrorPts.end(), [](vec2 a, vec2 b){ return glm::length(a) < glm::length(b);});
+  }
 /*
 // Connect close points
     for(int mirror = 0; mirror < mirrorPts.size() - 1; mirror+=2){
@@ -102,43 +117,56 @@ STATIC_DO_ONCE(clear = true;);
    for(int mirror = 0; mirror < mirrorPts.size() - 1; mirror+=2){
       auto pta = mirrorPts[mirror];
       auto ptb = mirrorPts[mirror + 1];  
-      ((ProcessingGL*) ctx)->line(vec3{SPLAT2(pta),0}, vec3{SPLAT2(ptb), 0}, {1,.4,0,numrays}, thickness);
-    
+      ((ProcessingGL*) ctx)->line(vec3{SPLAT2(pta),0}, vec3{SPLAT2(ptb), 0}, {1,.4,0,1000}, thickness);
     }
 
     float fudge =  Random::nextGaussian() * .001;
     float di = 1.0f / numrays;
   for(int i=0; i < numrays; i++){
-
-    float min_dist = 1000;
-    Geo::ray minray;
     float rayAngle = fudge+  angle +  i / (numrays * spread);
     vec2 raydir{sin(rayAngle), cos(rayAngle)};
-    
-    for(int mirror = 0; mirror < mirrorPts.size() - 1; mirror+=2){
-      auto r = Geo::rayBounce({{0,0}, raydir}, mirrorPts[mirror], mirrorPts[mirror+1]);
-      if(std::get<0>(r) < min_dist){
-        min_dist = std::get<0>(r);
-        minray = std::get<1>(r);
+    Geo::ray curray{{0,0}, raydir};
+
+    vector<vec2> ray_pts{{0,0}};
+    for(int bounce =0; bounce < numBounces; bounce++) {
+      float min_dist = 1000;
+      Geo::ray minray;
+      for (int mirror = 0; mirror < mirrorPts.size() - 1; mirror += 2) {
+        auto r = Geo::rayCircleBounce(curray, mirrorPts[mirror], 0.09);
+        if (std::get<0>(r) < min_dist) {
+          min_dist = std::get<0>(r);
+          minray = std::get<1>(r);
+        }
+      } // end mirrors
+
+      if (min_dist < 1000) {
+        auto leak = Geo::ray(minray);
+        
+        ray_pts.push_back(minray.p);
+
+       // push spline
+        minray.p -= normalize(curray.d) * thickness * 2;
+
+        curray = minray;
+      } else {
+        ray_pts.push_back(curray.p + curray.d * 20);
+        break;
       }
+
+    } // end bounces
+    for(int p = 0; p < ray_pts.size()-1; p++){
+      ((ProcessingGL *) ctx)->line(vec3(ray_pts[p].x, ray_pts[p].y, 0), vec3(ray_pts[p+1].x, ray_pts[p+1].y, 0), {0, 1, 0, 1000}, thickness);
     }
-    if(min_dist < 1000){
-       auto newdir = minray.p + normalize(minray.d);
-       ((ProcessingGL*) ctx)->line({minray.p.x, minray.p.y, i * di}, {newdir.x, newdir.y, i * di}, {0, 1, 0, 1}, thickness);
-       ((ProcessingGL*) ctx)->line(vec3{0,0,0}, {SPLAT2(minray.p), i * di}, {0,0,1,1}, 0.001);
-    }
-    else{
-       ((ProcessingGL*) ctx)->line(vec3{0,0,0}, 20 * vec3(SPLAT2(raydir), i * di), {1,0,0,1}, thickness);
-    } 
-  }
-  redraw = true;
+  }// end rays
+
+  redraw = clear;
 }
 
 void drawNoise(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
   STATIC_DO_ONCE(clear = true);
   static FastNoise n;
-  static RandomCache rx{1000, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 0);}};
-  static RandomCache ry{1000, 2, [](vec2 pos){return n.GetValueFractal(pos.x, pos.y, 100);}};
+  static RandomCache<vec2> randMap{1000, 2, [](vec2 pos){return vec2(n.GetValueFractal(pos.x, pos.y, 0),
+      n.GetValueFractal(pos.x, pos.y, 100));}};
   static float noisefreq = 8.31511;
   static int numpts = 900;
   static float maxVel = .005;
@@ -163,8 +191,9 @@ void drawNoise(Processing* ctx, bool& redraw, bool& clear, int curFrame, int max
     const float cT = cos(totalTime)*noiseScale;
     n.SetFrequency(noisefreq);
 
-    rx.reseed(1, [=](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sT, cT);});
-    ry.reseed(1, [=](vec2 pos){return n.GetValueFractal(pos.x, pos.y + sT,100+ cT);});
+    auto wireframe = [=](vec2 f){ return f;};// }; vec2 norm = glm::normalize(f); return vec2(glm::round(norm.x), glm::round(norm.y)) * glm::length(f);};
+    randMap.reseed(1, [=](vec2 pos){return wireframe(vec2(n.GetValueFractal(pos.x, pos.y + sT, cT),
+                                           n.GetValueFractal(pos.x, pos.y + sT, cT + 100)));});
     clear = true;
   }
   ImGui::LabelText("cur iterations", "cur iterations %d", curIterations);
@@ -180,8 +209,11 @@ void drawNoise(Processing* ctx, bool& redraw, bool& clear, int curFrame, int max
   }
   redraw = true;
   curIterations += numIterations;
-  for(int iter = 0; iter < numIterations; iter++) {
-    for (int i = 0; i < numpts; i++) {
+  for (int i = 0; i < numpts; i++) {
+    float ex = Random::nextGaussian() * .5f;
+    float wy = Random::nextGaussian() * .5f;
+
+    for(int iter = 0; iter < numIterations; iter++) {
 
       /*
       auto pt = vec2(pts[i].x, pts[i].y);
@@ -193,21 +225,21 @@ void drawNoise(Processing* ctx, bool& redraw, bool& clear, int curFrame, int max
       pts[i].z = (noisePt)* angleVel * glm::length(pt);
       */
 
-      float ex = Random::nextGaussian() * .5f;
-      float wy = Random::nextGaussian() * .5f;
       float radius = angleVel * sqrt(ex*ex +wy*wy);
       vec2 pos {ex,wy};
       pos = pos * .5 + vec2{.5,.5};
-      pos = radius * vec2{rx.sample(pos), ry.sample(pos)};
+      pos = radius * randMap.sample(pos);
       vec4 color = lerp(vec4{.5,.9, 0, 1}, vec4{.2,.6,.1,1}, abs(ex));
       color.x =abs(ex);
       color.y =abs(wy);
+      ex = pos.x;
+      wy = pos.y;
       ctx->ngon(pos, maxVel, 6, vec4{SPLAT3(color), 0}, color);
     }
   }
 }
 
-void drawPendulum(Processing* ctx, bool& redraw, bool& clear){
+void drawPendulum(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
   redraw = true;
   clear = false;
   STATIC_DO_ONCE(clear = true;);
@@ -281,7 +313,6 @@ int main() {
 
   vec4 clear_color{0.00f, 0.0f, 0.0f, 1.00f};
 
-  flowmap f;
   proc_map map;
 
   Streamline s(1,1);
@@ -313,9 +344,9 @@ int main() {
    glViewport(0,0,mainWin._height, mainWin._height);
 
     bool redraw = false, clear = false;
-
+/*
 // interlace a secondary buffer to save the final image?
-    switch(demoNumber){
+    switch(999){
       case 0:
         genTriangle();
         basic.use();
@@ -433,21 +464,25 @@ int main() {
         break;
     }
 
+ */
+
     procFunction functions[]= {
       //{"triangles", genTriangle, GL_TRIANGLES, &basic},
       //{"flame", Flame::do_flame, GL_POINTS, &basic},
       //{"flame", }
       //{"shape" , PROC_FORWARD(s.render), GL_TRIANGLES, &basic},
-      //{"flowmap", PROC_FORWARD(f.render), GL_TRIANGLES, &basic},
+      {"flowmap", drawFlowmap, GL_TRIANGLES, &basic},
       //{"procmap", PROC_FORWARD(map.render) ,GL_TRIANGLES, &basic },
-      //{"Pendulum", drawPendulum, GL_TRIANGLES, &basic},
+      {"Pendulum", drawPendulum, GL_TRIANGLES, &basic},
       {"noise", drawNoise, GL_TRIANGLES, &basic},
       {"light", drawLight, GL_TRIANGLES, &basic},
+      {"vortex", cached_flowmap::drawVortex, GL_TRIANGLES, &basic},
+      {"Superformula", Superformula::drawVortex, GL_TRIANGLES, &basic}
     // {"cells", PROC_FORWARD(cells.render), GL_TRIANGLES, &basic}
     };
 
     {
-      auto curfn = functions[1];
+      auto curfn = functions[3];
       static bool animating = false;
       static string animTimestamp;
       static int curFrame = 0;

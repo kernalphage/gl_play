@@ -3,7 +3,7 @@ project(gl_play)
 
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-Wall -g " )
+set(CMAKE_CXX_FLAGS "-Wall -g -O3" )
 
 set(PROC_SOURCE_FILES
     proc/Blob.cpp
@@ -19,7 +19,7 @@ set(PROC_SOURCE_FILES
     proc/Streamline.hpp
     proc/Triangulate.cpp
     proc/Triangulate.hpp
-)
+        proc/fuzzy_net.hpp proc/Superformula.hpp)
 set(ENGINE_SOURCE_FILES
     Definitions.hpp
     hexlib.hpp
@@ -53,7 +53,7 @@ set(REF_SOURCE_FILES
 	ref/FastNoise/FastNoise.h
 	ref/glad/src/glad.c
         ref/fmt/src/format.cc
-	)
+        proc/cached_flowmap.cpp proc/cached_flowmap.hpp)
 
 include_directories("ref/fmt/include")
 include_directories(".")
@@ -94,11 +94,13 @@ ELSEIF(APPLE)
     find_library(LIBPNG png)
     target_link_libraries(gl_play ${LIBPNG})
 ELSE()
-    find_package(PkgConfig REQUIRED)
-    pkg_search_module(GLFW REQUIRED glfw3)
-    include_directories(${GLFW_INCLUDE_DIRS})
-    target_link_libraries(gl_play glfw ${GLFW_LIBRARIES})
-    target_link_libraries(gl_play ${LIBRARIES})
+    find_package(glfw3)
+    target_link_libraries(gl_play glfw)
+    get_cmake_property(_variableNames VARIABLES)
+    foreach (_variableName ${_variableNames})
+        message(STATUS "${_variableName}=${${_variableName}}")
+    endforeach()
+
 
     find_library(LIBPNG png)
     target_link_libraries(gl_play ${LIBPNG})

@@ -123,10 +123,29 @@ struct Geo{
 		return -1;
 	}
 
-	struct ray{
-		vec2 p;
-		vec2 d;
-	};
+  struct ray{
+    vec2 p;
+    vec2 d;
+  };
+  static constexpr std::tuple<float, ray> nulR =  {10245.0f, {}};
+
+  static std::tuple<float, ray> rayCircleBounce(ray r, vec2 pos, float radius){
+    vec2 m = r.p - pos;
+    float b = dot(m, r.d);
+    float c = dot(m, m) - radius * radius;
+    if(c > 0.0f && b > 0.0f) return nulR;
+    float discr = b*b - c;
+    if(discr < 0.0f) return nulR;
+    float t = -b - sqrt(discr);
+    if(t < 0.0f) t = 0.0f;
+    ray rayOut;
+    rayOut.p = r.p + t * r.d;
+
+    m = rayOut.p - pos; // Normal at intersection
+    rayOut.d = glm::reflect(normalize(r.d), normalize(m));
+    return {t, rayOut};
+  };
+
 	static std::tuple<float, ray> rayBounce(ray r, vec2 wa, vec2 wb){
 		float collide = line_intersect(r.p, r.p + r.d * 1000, wa, wb);
 		if(collide < 0){

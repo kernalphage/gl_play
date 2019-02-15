@@ -23,6 +23,7 @@ private:
   Material* m_twotri;
 
 	float gamma = .5f;
+	float texAmt = .6f;
 	float energy = 2.f;
    unsigned int HEIGHT = 100;
  unsigned int WIDTH = 100;

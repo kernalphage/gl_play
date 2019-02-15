@@ -8,14 +8,16 @@ uniform sampler2D renderedTexture;
 uniform sampler2D tonemap;
 uniform float gamma;
 uniform float energy;
+uniform float texAmt;
 
 void main(){
     vec4 val = texture( renderedTexture, UV );
     vec4 lum =  log(val) * gamma;
-    lum = clamp(lum, 0., 1.);
+   lum = max(lum, vec4(0));
     lum = pow(lum, vec4(energy) );
+    lum = clamp(lum, 0., 1.);
 
     //lum.y =1 - lum.y;
 
-    color = vec4(lum);// texture(tonemap,  );
+    color = mix(lum, texture(tonemap,  lum.rg), texAmt);
 }
