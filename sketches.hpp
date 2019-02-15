@@ -91,7 +91,7 @@ void do_curve(Processing* ctx, bool &_r, bool &_c, int curframe, int maxFrames){
   if(redraw){
     line.clear();
     //Generate base line
-    float di = 6.0f / (numPts - 1) ;
+    float di = 6.28f / (numPts - 1) ;
     for (int i = 0; i < numPts; i++) {
       vec3 newpt{sin(i*di) * radius, cos(i * di) * radius, 0};
       line.push_back(newpt);

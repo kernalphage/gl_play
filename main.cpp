@@ -24,13 +24,16 @@ using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+Material* currentMaterial;
+
+enum class PostMode{Buffer, NoBuffer};
 using ProcUpdate = void (*)(Processing*, bool&, bool&, int, int);
 struct procFunction{ 
   string name;
   ProcUpdate update;
   GLuint mode;
   Material* mat;
-  bool postProcessing = false;
+  PostMode postProcessing = PostMode::NoBuffer;
 };
 
 
@@ -40,8 +43,8 @@ void drawTriangle(Processing* ctx, bool&redraw, bool&clear, int curFrame, int ma
   redraw = true;
    if(tri.imSettings()){
     clear = true;
-    tri.triangulate(t, ctx);
   }
+    tri.triangulate(t, ctx);
 }
 
  Streamline s(1,1);
@@ -69,15 +72,63 @@ void drawProcmap(Processing* ctx, bool& redraw, bool& clear, int curFrame, int m
     procmap.render((ProcessingGL*) ctx); 
   }
 }
+
+vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
+void drawFlame(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
+  for(int i=0; i < 4; i++){
+    ImGui::PushID(i);
+    ImGui::ColorEdit4("arg", (float*)&(params[i]));
+    ImGui::PopID();
+  }
+  Flame::do_flame(ctx, redraw, clear);
+  glUniform4fv(glGetUniformLocation(currentMaterial->ID, "u_adj"), 4, (float*) &params[0]);
+}
+
+Plotter p;
+void drawParticles(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
+  for(int i=0; i < 4; i++){
+    ImGui::PushID(i);
+    ImGui::ColorEdit4("arg", (float*)&(params[i]));
+    ImGui::PopID();
+  }
+  glUniform4fv(glGetUniformLocation(currentMaterial->ID, "u_adj"), 4, (float*) &params[0]);
+  redraw = true;
+  p.update(ctx, (float) glfwGetTime());
+}
+void drawParticles2(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
+  redraw = true;
+  p.update(ctx, (float) glfwGetTime());
+}
+
+/*
+// geometryshaded  particles
+// TODO: allow Processing* ctx to be of whatever type part_ctx is 
+void drawParticles3(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
+  part_ctx->clear();
+  static vec3 pos{0,0,0};
+  static float size = .03;
+  static float texsize = .4;
+  static int numpts = 0;
+  static vec3 vel{.2,.1, 0};
+  ImGui::DragFloat3("Position", (float*)&pos, 0, 1);
+  ImGui::DragFloat3("vel", (float*)&vel, 0, 0.1);
+  ImGui::DragFloat("size", &size, 0,1);
+  ImGui::DragFloat("texsize", &texsize, 0,1);
+  ImGui::DragInt("numpts", &numpts, 1, 400);
+
+  Particle_Vertex::particle_data dat = {{.5,.5}, texsize, size};
+
+  for(int i=0; i < numpts; i++){
+  vec3 spewpos = Geo::fibonacci(i, numpts);
+  part_ctx->indexVert({pos + spewpos, dat});
+  }
+  m_tonemap.use(GL_TEXTURE0);
+}
+*/
+
+
 // settings
 Processing *ctx;
-Plotter p;
-
-
-void processInput(GLFWwindow *window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, true);
-}
 
 static void error_callback(int error, const char* description)
 {
@@ -313,9 +364,7 @@ int main() {
   Blob b{{0,0}, .5f};
   RenderTarget buff(1000,1000);
   buff.init();
-  vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
 
-  bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
    ImGui_ImplGlfwGL3_NewFrame();
@@ -328,112 +377,31 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    glViewport(0,0,mainWin._height, mainWin._height);
 
-    bool redraw = false, clear = false;
-    const int demoNumber = 0;
-    switch(demoNumber){
-      case 0:
-        break;
-      case 1:
-      break;
-      case 2:
-        for(int i=0; i < 4; i++){
-          ImGui::PushID(i);
-          ImGui::ColorEdit4("arg", (float*)&(params[i]));
-          ImGui::PopID();
-        }
-
-        ((ProcessingGL*) ctx)->setMode(GL_POINTS);
-        Flame::do_flame(ctx, redraw, clear); // todo: maek it a return value, or put buffer inside of this function
-        buff.begin(clear);
-        if(redraw) {
-          flame.use();
-          glUniform4fv(glGetUniformLocation(flame.ID, "u_adj"), 4, (float*) &params[0]);
-          ctx->render();
-        }
-        glViewport(0,0,mainWin._height, mainWin._height);
-        buff.end();
-        break;
-      case 3:
-        for(int i=0; i < 4; i++){
-          ImGui::PushID(i);
-          ImGui::ColorEdit4("arg", (float*)&(params[i]));
-          ImGui::PopID();
-        }
-        ImGui::Checkbox("Trip out", &trippy);
-        if(!trippy){
-          flame.use();
-          glUniform4fv(glGetUniformLocation(flame.ID, "u_adj"), 4, (float*) &params[0]);
-          ((ProcessingGL*) ctx)->setMode(GL_POINTS);
-        }
-        else{
-          basic.use();
-          ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
-        }
-        p.update(ctx, (float) glfwGetTime());
-        break;
-      case 4: {
-        break;
-      }
-      case 5: {
-        break;
-      }
-      case 6:{ // procmap
-        break;
-        }
-      case 7:{ // particle demo
-
-        part_ctx->clear();
-        static vec3 pos{0,0,0};
-        static float size = .03;
-        static float texsize = .4;
-        static int numpts = 0;
-        static vec3 vel{.2,.1, 0};
-        ImGui::DragFloat3("Position", (float*)&pos, 0, 1);
-        ImGui::DragFloat3("vel", (float*)&vel, 0, 0.1);
-        ImGui::DragFloat("size", &size, 0,1);
-        ImGui::DragFloat("texsize", &texsize, 0,1);
-        ImGui::DragInt("numpts", &numpts, 1, 400);
-
-        Particle_Vertex::particle_data dat = {{.5,.5}, texsize, size};
-
-        for(int i=0; i < numpts; i++){
-          vec3 spewpos = Geo::fibonacci(i, numpts);
-          part_ctx->indexVert({pos + spewpos, dat});
-        }
-        part_ctx->flush();
-        part_ctx->setMode(GL_POINTS);
-        particle.use();
-        m_tonemap.use(GL_TEXTURE0);
-        part_ctx->render();
-        break;
-      }
-
-      default:
-        break;
-    }
 
     procFunction functions[]= {
-      //{"triangles", genTriangle, GL_TRIANGLES, &basic},
-      //{"flame", Flame::do_flame, GL_POINTS, &basic},
+      //{"triangles", drawTriangle, GL_TRIANGLES, &basic, PostMode::NoBuffer},
       //{"flame", }
       //{"stream" , drawStream, GL_TRIANGLES, &basic, false},
-      {"curve", do_curve, GL_TRIANGLES, &basic, true},
-      {"flowmap", drawFlowmap, GL_TRIANGLES, &basic, true},
-      {"procmap", drawProcmap ,GL_TRIANGLES, &basic, false },
-      {"Pendulum", drawPendulum, GL_TRIANGLES, &basic, true},
-      {"noise", drawNoise, GL_TRIANGLES, &basic, true},
-      {"light", drawLight, GL_TRIANGLES, &basic, true},
-
+      {"flame", drawFlame, GL_POINTS, &flame, PostMode::Buffer},
+      {"flameplotter", drawParticles, GL_POINTS, &flame, PostMode::NoBuffer},
+      {"plotter", drawParticles2, GL_TRIANGLES, &basic, PostMode::NoBuffer},
+      {"curve", do_curve, GL_TRIANGLES, &basic, PostMode::Buffer},
+      {"flowmap", drawFlowmap, GL_TRIANGLES, &basic, PostMode::Buffer},
+      {"procmap", drawProcmap ,GL_TRIANGLES, &basic, PostMode::NoBuffer},
+      {"Pendulum", drawPendulum, GL_TRIANGLES, &basic, PostMode::Buffer},
+      {"noise", drawNoise, GL_TRIANGLES, &basic, PostMode::Buffer},
+      {"light", drawLight, GL_TRIANGLES, &basic, PostMode::Buffer},
     // {"cells", PROC_FORWARD(cells.render), GL_TRIANGLES, &basic}
     };
-    const int numFunctions = 5;
-
+    const int numFunctions = 8;
     {
+      bool redraw = false, clear = false;
       static int curfn_idx = 0; 
       auto curfn = functions[curfn_idx];
       ImGui::LabelText("curfn", "%s", curfn.name.c_str());
       ImGui::SliderInt("function", &curfn_idx, 0, numFunctions);
       curfn_idx = glm::min(curfn_idx, numFunctions);
+      currentMaterial = curfn.mat;    
 
       static bool animating = false;
       static string animTimestamp;
@@ -470,7 +438,7 @@ int main() {
         buff.begin(true);
         buff.end();
       } else {
-        if(curfn.postProcessing){
+        if(curfn.postProcessing == PostMode::Buffer){
           buff.begin(clear);
         }
         if (redraw) {
@@ -480,14 +448,17 @@ int main() {
           ctx->render();
         }
         glViewport(0, 0, mainWin._height, mainWin._height);
-        if(curfn.postProcessing){
+        if(curfn.postProcessing== PostMode::Buffer){
           buff.end();
         }
         if(clear){
           curFrame = (curFrame + 1 ) % maxFrames;
         }
       }
-      processInput(mainWin.window);
+
+      if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
+        glfwSetWindowShouldClose(window, true);
+      }
     }
 
     ImGui::Render();
