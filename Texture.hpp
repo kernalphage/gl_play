@@ -35,8 +35,7 @@ public:
         return pixels[(y * texWidth + x) * texChannels + channel];
     }
 
-private: 
-    GLuint m_type;
+private:
     GLuint m_id;
     stbi_uc* pixels;
 

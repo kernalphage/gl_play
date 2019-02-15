@@ -33,31 +33,52 @@ struct procFunction{
   ProcUpdate update;
   GLuint mode;
   Material* mat;
-};
-//#define PROC_FORWARD(fn) [&](Processinfg_t<UI_Vertex, vec4 >* p, bool& redraw, bool& clear, int frame, int totalFrames ){return fn(p,redraw,clear,frame,totalFrames);}
-// settings
-Processing *ctx;
-TriBuilder tri;
-Plotter p;
-float t = 0;
+  bool postProcessing = false;
+}; 
 
-flowmap f;
-void genTriangle() {
-    if(tri.imSettings()){
-    ctx->clear();
+TriBuilder tri;
+float t = 0;
+void drawTriangle(Processing* ctx, bool&redraw, bool&clear, int curFrame, int maxFrames){
+  redraw = true;
+   if(tri.imSettings()){
+    clear = true;
     tri.triangulate(t, ctx);
-    ctx->flush();
   }
 }
+
+ Streamline s(1,1);
+void drawStream(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
+  redraw = s.imSettings();
+  clear = redraw;        
+  s.render(ctx);
+}
+
+flowmap f;
+void drawFlowmap(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
+      clear = f.imSettings();
+      redraw = f.needsFrame();
+      if(redraw){
+        f.render(ctx);
+      }
+}
+
+proc_map procmap;
+void drawProcmap(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
+  redraw = true;
+  clear = procmap.imSettings();
+  clear |= Util::load_json(procmap, "procgen_map.json", ImGui::Button("SaveMap"), ImGui::Button("LoadMap"));
+  if(redraw){
+    procmap.render((ProcessingGL*) ctx); 
+  }
+}
+// settings
+Processing *ctx;
+Plotter p;
+
 
 void processInput(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
-}
-
-void keyCallback(GLFWwindow *window, int key, int scancode, int action,
-                 int mods) {
-  return;
 }
 
 static void error_callback(int error, const char* description)
@@ -273,13 +294,13 @@ void drawPendulum(Processing* ctx, bool& redraw, bool& clear, int curFrame, int 
       next = (next * ((10 - i) * radius_ratio)/10) + cur;
       if(i > cutoff) {
         points.push_back(next);
-        //ctx->ngon(next, .004,8, vec4{1,1,1,0}, vec4{1,1,1,1} );
+        ctx->ngon(next, .004,8, vec4{1,1,1,0}, vec4{1,1,1,1} );
       }
       cur = next;
 //      ctx->line(cur, next);
     }
     float r = abs(cos(time));
-    ctx->spline(points, vec4{r,.1, .5, 1}, vec4{r,.1,.5, .0}, .001);
+   // ctx->spline(points, vec4{r,.1, .5, 1}, vec4{r,.1,.5, .0}, .001);
   }
 }
 
@@ -288,7 +309,6 @@ int main() {
   mainWin.init(1000,1000);
 
   glfwSetErrorCallback(error_callback);
-  glfwSetKeyCallback(mainWin.window, keyCallback);
   glEnable(GL_DEBUG_OUTPUT);
 
   // build and compile our shader program
@@ -313,52 +333,38 @@ int main() {
 
   vec4 clear_color{0.00f, 0.0f, 0.0f, 1.00f};
 
-  proc_map map;
-
-  Streamline s(1,1);
   //s.stream_point({0.5f,0.5f});
   for(int i=0; i < 100; i++){
     vec2 p = Random::random_point({0,0}, {1,1});
     s.stream_point(p);
   }
+
   Cellular cells;
   Blob b{{0,0}, .5f};
   RenderTarget buff(1000,1000);
   buff.init();
   vec4 params[4]{{.2,0,0,0},{.3,0,0,0},{.1,0,0,0},{.2,0,0,0}};
-  FastNoise noise;
 
-  int demoNumber = 10;
   bool trippy = false;
   while (!glfwWindowShouldClose(mainWin.window)) {
     glfwPollEvents();
    ImGui_ImplGlfwGL3_NewFrame();
 
-    ImGui::ColorEdit4(   "clear_color", (float *)&clear_color); // Edit 3 floats representing a color
+    ImGui::ColorEdit4("clear_color", (float *)&clear_color);
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)",  1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-    ImGui::InputInt("DemoNumber", &demoNumber,0,10);
 
     glClearColor(SPLAT4(clear_color));
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
    glViewport(0,0,mainWin._height, mainWin._height);
 
     bool redraw = false, clear = false;
-/*
-// interlace a secondary buffer to save the final image?
-    switch(999){
+    const int demoNumber = 0;
+    switch(demoNumber){
       case 0:
-        genTriangle();
-        basic.use();
-        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
-        ctx->render();
         break;
       case 1:
-        do_curve(ctx, redraw, clear);
-        if(redraw){
-          ctx->render();
-        }
-        break;
+      break;
       case 2:
         for(int i=0; i < 4; i++){
           ImGui::PushID(i);
@@ -396,42 +402,14 @@ int main() {
         p.update(ctx, (float) glfwGetTime());
         break;
       case 4: {
-        basic.use();
-        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
-        ctx->clear();
-        s.render(ctx);
-        ctx->flush();
-        ctx->render();
         break;
       }
       case 5: {
-        bool  redraw = f.imSettings();
-        buff.begin(redraw);
-
-        if(f.needsFrame()){
-          f.render(ctx);
-          basic.use();
-          ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
-          ctx->render();
-        }
-
-        glViewport(0,0,mainWin._height, mainWin._height);
-        buff.end();
         break;
       }
       case 6:{ // procmap
-        bool redraw = map.imSettings();
-        redraw |= Util::load_json(map, "procgen_map.json", ImGui::Button("SaveMap"), ImGui::Button("LoadMap"));
-
-
-        if(redraw){
-          map.render((ProcessingGL*) ctx);
-        }
-        basic.use();
-        ((ProcessingGL*) ctx)->setMode(GL_TRIANGLES);
-        ctx->render();
         break;
-      }
+        }
       case 7:{ // particle demo
 
         part_ctx->clear();
@@ -464,25 +442,27 @@ int main() {
         break;
     }
 
- */
-
     procFunction functions[]= {
       //{"triangles", genTriangle, GL_TRIANGLES, &basic},
       //{"flame", Flame::do_flame, GL_POINTS, &basic},
       //{"flame", }
-      //{"shape" , PROC_FORWARD(s.render), GL_TRIANGLES, &basic},
-      {"flowmap", drawFlowmap, GL_TRIANGLES, &basic},
-      //{"procmap", PROC_FORWARD(map.render) ,GL_TRIANGLES, &basic },
-      {"Pendulum", drawPendulum, GL_TRIANGLES, &basic},
-      {"noise", drawNoise, GL_TRIANGLES, &basic},
-      {"light", drawLight, GL_TRIANGLES, &basic},
-      {"vortex", cached_flowmap::drawVortex, GL_TRIANGLES, &basic},
-      {"Superformula", Superformula::drawVortex, GL_TRIANGLES, &basic}
+      //{"stream" , drawStream, GL_TRIANGLES, &basic, false},
+      {"curve", do_curve, GL_TRIANGLES, &basic, true},
+      {"flowmap", drawFlowmap, GL_TRIANGLES, &basic, true},
+      {"procmap", drawProcmap ,GL_TRIANGLES, &basic, false },
+      {"Pendulum", drawPendulum, GL_TRIANGLES, &basic, true},
+      {"noise", drawNoise, GL_TRIANGLES, &basic, true},
+      {"light", drawLight, GL_TRIANGLES, &basic, true},
     // {"cells", PROC_FORWARD(cells.render), GL_TRIANGLES, &basic}
     };
+    const int numFunctions = 5;
 
     {
-      auto curfn = functions[3];
+      static int curfn_idx = 0; 
+      auto curfn = functions[curfn_idx];
+      ImGui::LabelText("curfn", "%s", curfn.name.c_str());
+      ImGui::SliderInt("function", &curfn_idx, 0, numFunctions);
+      curfn_idx = glm::min(curfn_idx, numFunctions);
       static bool animating = false;
       static string animTimestamp;
       static int curFrame = 0;
@@ -497,24 +477,30 @@ int main() {
         curFrame = 0;
       }
 
+      // Viewport 
       static glm::vec3 rotation;
       ImGui::SliderFloat3("rotation", (float*)(&rotation.x), 0, 6.28);
       clear |= ImGui::Button("Clear");
       glm::mat4 worldTransform = glm::mat4(1.0f);
       worldTransform *= glm::orientate4(rotation);
 
+      // update loop
       ctx->clear();
       ((ProcessingGL*) ctx)->setMode(curfn.mode);
       curfn.update(ctx, redraw, clear, curFrame, maxFrames);
       if(animating && clear && curFrame < maxFrames){
         auto filename = fmt::format("anim/frame{0}{1}_{2:04d}.png", curfn.name,  animTimestamp, curFrame);
-
         curFrame ++;
+
+        // TODO: Save out frames for procs that don't use a buffer
+        // interlace a secondary buffer to save the final image?
         buff.save(filename.c_str());
         buff.begin(true);
         buff.end();
       } else {
-        buff.begin(clear);
+        if(curfn.postProcessing){
+          buff.begin(clear);
+        }
         if (redraw) {
           curfn.mat->use();
           curfn.mat->setMat4x4("worldTransform", worldTransform);
@@ -522,7 +508,9 @@ int main() {
           ctx->render();
         }
         glViewport(0, 0, mainWin._height, mainWin._height);
-        buff.end();
+        if(curfn.postProcessing){
+          buff.end();
+        }
         if(clear){
           curFrame = (curFrame + 1 ) % maxFrames;
         }
