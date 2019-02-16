@@ -38,6 +38,7 @@ set(ENGINE_SOURCE_FILES
     RenderTarget.cpp
     RenderTarget.hpp
     sketches.hpp
+    sketches.cpp
     Texture.hpp
     Window.cpp
     Window.hpp
