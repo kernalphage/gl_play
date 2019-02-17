@@ -3,7 +3,7 @@ project(gl_play)
 
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-Wall -g -O3" )
+set(CMAKE_CXX_FLAGS "-Wall -O3" )
 
 set(PROC_SOURCE_FILES
     proc/Blob.cpp
@@ -38,6 +38,7 @@ set(ENGINE_SOURCE_FILES
     RenderTarget.cpp
     RenderTarget.hpp
     sketches.hpp
+    sketches.cpp
     Texture.hpp
     Window.cpp
     Window.hpp
