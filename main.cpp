@@ -11,6 +11,7 @@
 #include "proc/Streamline.hpp"
 #include "proc/Streamline.hpp"
 #include "proc/Triangulate.hpp"
+#include "proc/DifferentialGrowth.hpp"
 #include "Processing.hpp"
 #include "RenderTarget.hpp"
 #include "sketches.hpp"
@@ -37,6 +38,19 @@ struct procFunction{
   Material* mat;
   PostMode postProcessing = PostMode::NoBuffer;
 };
+
+
+void drawDiffGrow(Processing* ctx, bool&redraw, bool&clear, int curFrame, int maxFrames){
+  static DifferentialGrowth diffGrow;
+
+  redraw = true;
+  clear = true;
+  clear = diffGrow.imSettings();
+  diffGrow.update();
+  diffGrow.render(ctx);
+}
+
+
 
 TriBuilder tri;
 float t = 0;
@@ -168,7 +182,8 @@ int main() {
     procFunction functions[]= {
       //{"triangles", drawTriangle, GL_TRIANGLES, &basic, PostMode::NoBuffer},
       //{"stream" , drawStream, GL_TRIANGLES, &basic, false},
-      {"flame", drawFlame, GL_POINTS, &flame, PostMode::Buffer},
+        {"DiffGrowth", drawDiffGrow, GL_TRIANGLES, &basic, PostMode ::Buffer},
+        {"flame", drawFlame, GL_POINTS, &flame, PostMode::Buffer},
       {"flameplotter", drawParticles, GL_POINTS, &flame, PostMode::NoBuffer},
       {"plotter", drawParticles2, GL_TRIANGLES, &basic, PostMode::NoBuffer},
       {"curve", do_curve, GL_TRIANGLES, &basic, PostMode::Buffer},
@@ -177,6 +192,7 @@ int main() {
       {"Pendulum", drawPendulum, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"noise", drawNoise, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"light", drawLight, GL_TRIANGLES, &basic, PostMode::Buffer},
+
     // {"cells", PROC_FORWARD(cells.render), GL_TRIANGLES, &basic}
     };
 

@@ -22,8 +22,8 @@ private:
   GLuint m_vbo;
   Material* m_twotri;
 
-	float gamma = .5f;
-	float texAmt = .6f;
+	float gamma = .1f;
+	float texAmt = 0.0f;
 	float energy = 2.f;
    unsigned int HEIGHT = 100;
  unsigned int WIDTH = 100;

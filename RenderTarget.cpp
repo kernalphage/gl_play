@@ -82,6 +82,7 @@ void RenderTarget::begin(bool clear) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
 
+  ImGui::LabelText("Render Target", "Render Target");
   ImGui::SliderFloat("Gamma", &gamma, 0,1.0);
   ImGui::SliderFloat("Energy", &energy, 1, 30);
   ImGui::SliderFloat("texAmt", &texAmt, 0.0f, 1.0f);

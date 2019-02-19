@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.4)
 project(gl_play)
 
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-Wall -O3" )
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_FLAGS "-Wall -g" )
 
 set(PROC_SOURCE_FILES
     proc/Blob.cpp
@@ -19,7 +19,8 @@ set(PROC_SOURCE_FILES
     proc/Streamline.hpp
     proc/Triangulate.cpp
     proc/Triangulate.hpp
-        proc/fuzzy_net.hpp proc/Superformula.hpp)
+    proc/DifferentialGrowth.hpp
+        proc/fuzzy_net.hpp proc/Superformula.hpp proc/DifferentialGrowth.cpp)
 set(ENGINE_SOURCE_FILES
     Definitions.hpp
     hexlib.hpp

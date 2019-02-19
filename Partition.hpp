@@ -11,14 +11,36 @@ template<class T>
 class Partition{
 
   public:
+    Partition():
+        _offset({0,0}){
+
+    }
+  // TODO: I don't like duplicating resize and this constructor
     Partition(vec2 origin, vec2 extents, float maxSize):
         _offset(origin), _scale(1 / (maxSize)), _numgrids((int) ceil(extents.x / maxSize)){
         for(int i=0; i < _numgrids; i++){
             for(int j=0; j < _numgrids; j++){
                 _grid.push_back(vector<T>{});
-                _heatmap.push_back(0);
             }
         }
+    }
+    void resize(vec2 origin, vec2 extents, float maxSize){
+        _offset = origin;
+        _scale = 1/(maxSize);
+        _numgrids = (int) ceil(extents.x / maxSize);
+        _grid.clear();
+        _all.clear();
+        for(int i=0; i < _numgrids; i++){
+            for(int j=0; j < _numgrids; j++){
+                _grid.push_back(vector<T>{});
+            }
+        }
+    }
+    void clear(){
+        for(vector<T>& row : _grid){
+            row.clear();
+        }
+        _all.clear();
     }
 
     typedef std::function<vec2(vec2)> DistanceFN;
@@ -62,7 +84,6 @@ class Partition{
         ex = glm::min(glm::max(ex, 0), _numgrids-1);
         wy = glm::min(glm::max(wy, 0), _numgrids-1);
         int idx = ex + wy * _numgrids;
-        _heatmap[idx]++;
         return idx;
     }
 private:
@@ -72,7 +93,6 @@ private:
     vector<vector<T>> _grid;
     vector<T> _all;
 
-    vector<int> _heatmap;
   };
 
 #endif //WRITER_PARTITION_HPP
