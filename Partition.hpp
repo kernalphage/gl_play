@@ -87,7 +87,7 @@ class Partition{
         return idx;
     }
 private:
-    const vec2 _offset;
+    vec2 _offset;
     float _scale;
     int _numgrids;
     vector<vector<T>> _grid;

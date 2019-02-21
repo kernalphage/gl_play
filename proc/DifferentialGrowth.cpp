@@ -4,6 +4,8 @@
 
 #include <imgui.h>
 #include "DifferentialGrowth.hpp"
+#include "Random.hpp"
+
 
 void DifferentialGrowth::update(){
   // sum forces
@@ -11,7 +13,7 @@ void DifferentialGrowth::update(){
   for(int i=0; i < nodes.size(); i++){
     Node *cur = nodes[i];
     vector<Node*> neighbors;
-    //p.neighbors(cur->pos, std::back_inserter(neighbors));
+    p.neighbors(cur->pos, std::back_inserter(neighbors));
     vec2 force{0,0};
     force += keepNear(cur, cur->next);
     force += keepNear(cur, cur->prev);
@@ -20,16 +22,29 @@ void DifferentialGrowth::update(){
       if(neighbors[i] ==  cur || neighbors[i] == cur->next || neighbors[i] == cur->prev){
         continue;
       }
-      //force += repel(cur, neighbors[i]);
+      force += repel(cur, neighbors[i]);
     }
     forces.push_back(force);
   }
 
   // resolve forces
- // p.clear();
+  p.clear();
   for(int i=0; i < nodes.size(); i++){
     nodes[i]->pos += forces[i];
-    //p.add(nodes[i]);
+    p.add(nodes[i]);
+  }
+
+  // splice in a new node
+  if(Random::f() < addChance){
+    int i = Random::range(0, numNodes-1);
+    Node* n = new Node();
+    n->pos= lerp(nodes[i]->pos, nodes[i]->next->pos, .5f);
+    
+    n->prev = nodes[i];
+    n->next = nodes[i]->next;
+    nodes[i]->next->prev = n;
+    nodes[i]->next = n;
+    nodes.push_back(n);
   }
 }
 
@@ -41,7 +56,10 @@ bool DifferentialGrowth::imSettings() {
   clear |= ImGui::InputFloat("attractionForce", &attractForce, 0,.1);
   clear |= ImGui::InputFloat("radius", &radius, 0, .1);
   clear |= ImGui::InputFloat("desiredDist", &desiredDist, 0, .1);
+  clear |= ImGui::InputFloat("repelForce", &repelForce, 0, .1);
   clear |= ImGui::SliderFloat("startRadius", &startRadius, 0, 1);
+  clear |= ImGui::Checkbox("DrawPoints", &DrawPoints);
+  ImGui::SliderFloat("AddChance", &addChance, 0, 1);
 
   if (clear) {
     generateNodes();
@@ -51,12 +69,21 @@ bool DifferentialGrowth::imSettings() {
 
 void DifferentialGrowth::render(Processing* ctx){
   for(int i=0; i < nodes.size(); i++){
-    ctx->ngon(nodes[i]->pos,radius, 8, {1,1,1,0},{1,1,1,1}  );
+   
+    if(DrawPoints){
+      ctx->ngon(nodes[i]->pos,radius, 8, {1,1,1,0},{10,1,1,10}  );
+    }
+    else{
+      vec3 p1 = vec3(nodes[i]->pos.x, nodes[i]->pos.y, 0);
+      vec3 p2 = vec3(nodes[i]->next->pos.x, nodes[i]->next->pos.y, 0);
+      ((ProcessingGL*) ctx)->line(p1,p2,{1,1,1,1}, radius );
+    }
   }
 }
 
 void DifferentialGrowth::generateNodes() {
-  p.clear();
+
+  p.resize({-1,-1}, {2,2}, desiredDist * 4);
   clearNodes();
   float di = 6.28f / numNodes;
   for (int i = 0; i < numNodes; i++) {
@@ -81,5 +108,7 @@ vec2 DifferentialGrowth::keepNear(const DifferentialGrowth::Node *a, const Diffe
 
 vec2 DifferentialGrowth::repel(const DifferentialGrowth::Node *a, const DifferentialGrowth::Node *b) {
   const vec2 dir = b->pos - a->pos;
-  return -1 *  glm::normalize(dir) * repelForce;
+  float dist = glm::length(dir);
+  float force = Util::rangeMap(dist, desiredDist*2,0,0, repelForce, true);
+  return -1 *  glm::normalize(dir) * force;
 }

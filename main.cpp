@@ -43,9 +43,8 @@ struct procFunction{
 void drawDiffGrow(Processing* ctx, bool&redraw, bool&clear, int curFrame, int maxFrames){
   static DifferentialGrowth diffGrow;
 
-  redraw = true;
-  clear = true;
   clear = diffGrow.imSettings();
+  redraw = true;
   diffGrow.update();
   diffGrow.render(ctx);
 }
