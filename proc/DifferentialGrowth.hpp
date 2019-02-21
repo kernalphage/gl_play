@@ -37,12 +37,14 @@ class DifferentialGrowth{
 	vector<Node*> nodes;
 	Partition<Node*> p;
 	int numNodes = 100;
-	float attractForce = .001f;
-	float repelForce = .001f;
-	float desiredDist = .051f;
-	float radius = .01f;
-  float startRadius = 0.8f;
-  float addChance = 0.1f;
+	float attractForce = .1f;
+	float radius = .001f;
+	float desiredDist = .00831f;
+	float repelForce = .0045f;
+	float repelDist = 0.04f;
+  float startRadius = 0.155f;
+  float addChance = 0.3f;
+  int gammaGain = 1;
   bool DrawPoints = false;
 };
 

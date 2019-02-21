@@ -43,7 +43,12 @@ struct procFunction{
 void drawDiffGrow(Processing* ctx, bool&redraw, bool&clear, int curFrame, int maxFrames){
   static DifferentialGrowth diffGrow;
 
+
+  static bool alwaysClear = false;
+  ImGui::Checkbox("always clear", &alwaysClear);
   clear = diffGrow.imSettings();
+  clear = clear || alwaysClear;
+
   redraw = true;
   diffGrow.update();
   diffGrow.render(ctx);
@@ -221,12 +226,14 @@ int main() {
       }
 
       // Viewport 
-      static glm::vec3 rotation;
-      ImGui::SliderFloat3("rotation", (float*)(&rotation.x), 0, 6.28);
+      static glm::vec3 translate;
+      static float scale = 1;
+      ImGui::SliderFloat3("translate", (float*)(&translate.x), -6.28, 6.28);
+      ImGui::SliderFloat("translate", &scale, 0, 10);
       clear |= ImGui::Button("Clear");
       glm::mat4 worldTransform = glm::mat4(1.0f);
-      worldTransform *= glm::orientate4(rotation);
-
+      worldTransform *= glm::translate(translate);
+      worldTransform *= glm::scale(vec3{scale,scale,scale});
       // update loop
       ctx->clear();
       ((ProcessingGL*) ctx)->setMode(curfn.mode);

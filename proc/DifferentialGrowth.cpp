@@ -44,7 +44,7 @@ void DifferentialGrowth::update(){
     n->next = nodes[i]->next;
     nodes[i]->next->prev = n;
     nodes[i]->next = n;
-    nodes.push_back(n);
+    nodes.insert(nodes.begin() + i, n);
   }
 }
 
@@ -57,8 +57,10 @@ bool DifferentialGrowth::imSettings() {
   clear |= ImGui::InputFloat("radius", &radius, 0, .1);
   clear |= ImGui::InputFloat("desiredDist", &desiredDist, 0, .1);
   clear |= ImGui::InputFloat("repelForce", &repelForce, 0, .1);
+  clear |= ImGui::InputFloat("repelDist", &repelDist, 0, .1);
   clear |= ImGui::SliderFloat("startRadius", &startRadius, 0, 1);
   clear |= ImGui::Checkbox("DrawPoints", &DrawPoints);
+  clear |= ImGui::SliderInt("gammaGain", &gammaGain, 1, 100);
   ImGui::SliderFloat("AddChance", &addChance, 0, 1);
 
   if (clear) {
@@ -69,21 +71,21 @@ bool DifferentialGrowth::imSettings() {
 
 void DifferentialGrowth::render(Processing* ctx){
   for(int i=0; i < nodes.size(); i++){
-   
+    float color = .5 * sin((6.28 * i)/nodes.size()) + .5  ;
     if(DrawPoints){
-      ctx->ngon(nodes[i]->pos,radius, 8, {1,1,1,0},{10,1,1,10}  );
+      ctx->ngon(nodes[i]->pos,radius, 8, {color ,color ,1,0},vec4{color ,color ,1,1} * gammaGain  );
     }
     else{
       vec3 p1 = vec3(nodes[i]->pos.x, nodes[i]->pos.y, 0);
       vec3 p2 = vec3(nodes[i]->next->pos.x, nodes[i]->next->pos.y, 0);
-      ((ProcessingGL*) ctx)->line(p1,p2,{1,1,1,1}, radius );
+      ((ProcessingGL*) ctx)->line(p1,p2,vec4{color ,color ,1,1} * gammaGain, radius );
     }
   }
 }
 
 void DifferentialGrowth::generateNodes() {
 
-  p.resize({-1,-1}, {2,2}, desiredDist * 4);
+  p.resize({-1,-1}, {2,2}, repelDist);
   clearNodes();
   float di = 6.28f / numNodes;
   for (int i = 0; i < numNodes; i++) {
@@ -109,6 +111,6 @@ vec2 DifferentialGrowth::keepNear(const DifferentialGrowth::Node *a, const Diffe
 vec2 DifferentialGrowth::repel(const DifferentialGrowth::Node *a, const DifferentialGrowth::Node *b) {
   const vec2 dir = b->pos - a->pos;
   float dist = glm::length(dir);
-  float force = Util::rangeMap(dist, desiredDist*2,0,0, repelForce, true);
+  float force = Util::rangeMap(dist, repelDist,0,0, repelForce, true);
   return -1 *  glm::normalize(dir) * force;
 }
