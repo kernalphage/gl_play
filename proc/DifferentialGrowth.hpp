@@ -38,6 +38,7 @@ class DifferentialGrowth{
 	Partition<Node*> p;
 	int numNodes = 100;
 	float attractForce = .1f;
+  float edgeForce = .05f;
 	float radius = .001f;
 	float desiredDist = .00831f;
 	float repelForce = .0045f;

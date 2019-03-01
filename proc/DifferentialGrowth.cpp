@@ -14,9 +14,14 @@ void DifferentialGrowth::update(){
     Node *cur = nodes[i];
     vector<Node*> neighbors;
     p.neighbors(cur->pos, std::back_inserter(neighbors));
+    float avoidEdges = - cur->pos.x * edgeForce;
+
+
     vec2 force{0,0};
+    force += vec2(avoidEdges, 0);
     force += keepNear(cur, cur->next);
     force += keepNear(cur, cur->prev);
+
 
     for(int i=0; i < neighbors.size(); i++){
       if(neighbors[i] ==  cur || neighbors[i] == cur->next || neighbors[i] == cur->prev){
@@ -54,6 +59,7 @@ bool DifferentialGrowth::imSettings() {
 
   clear |= ImGui::SliderInt("numParticles", &numNodes, 0, 1000);
   clear |= ImGui::InputFloat("attractionForce", &attractForce, 0,.1);
+  clear |= ImGui::InputFloat("edgeForce", &edgeForce, 0,.1);
   clear |= ImGui::InputFloat("radius", &radius, 0, .1);
   clear |= ImGui::InputFloat("desiredDist", &desiredDist, 0, .1);
   clear |= ImGui::InputFloat("repelForce", &repelForce, 0, .1);

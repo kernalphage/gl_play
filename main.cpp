@@ -68,8 +68,8 @@ void drawTriangle(Processing* ctx, bool&redraw, bool&clear, int curFrame, int ma
 
 Streamline s(1,1);
 void drawStream(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
-  redraw = s.imSettings();
-  clear = redraw;        
+  clear  = s.imSettings();
+  redraw = true;    
   s.render(ctx);
 }
 
@@ -163,7 +163,7 @@ int main() {
 
   s.stream_point({0.5f,0.5f});
   for(int i=0; i < 100; i++){
-    vec2 p = Random::random_point({0,0}, {1,1});
+    vec2 p = Random::random_point({-1,-1}, {1,1});
     s.stream_point(p);
   }
 
@@ -185,7 +185,7 @@ int main() {
 
     procFunction functions[]= {
       //{"triangles", drawTriangle, GL_TRIANGLES, &basic, PostMode::NoBuffer},
-      //{"stream" , drawStream, GL_TRIANGLES, &basic, false},
+      {"stream" , drawStream, GL_TRIANGLES, &basic, PostMode::NoBuffer},
         {"DiffGrowth", drawDiffGrow, GL_TRIANGLES, &basic, PostMode ::Buffer},
         {"flame", drawFlame, GL_POINTS, &flame, PostMode::Buffer},
       {"flameplotter", drawParticles, GL_POINTS, &flame, PostMode::NoBuffer},

@@ -24,14 +24,14 @@ void Streamline::render(Processing *ctx) {
 bool Streamline::isvalid(vec2 pt)
 {
 
-    if(pt.x < 0 || pt.y < 0){
+    if(pt.x < -1 || pt.y < -1){
       return false;
     }
     if(pt.x > width || pt.y > height){
       return false;
     }
   return true;
-  /*
+  
     vector<Node *> neigh;
     p.neighbors(pt, std::back_inserter(neigh));
 
@@ -42,7 +42,7 @@ bool Streamline::isvalid(vec2 pt)
     });
 
     return nodeDist > minDist;
-*/
+
 }
 
 Streamline::Node *Streamline::stream_point(vec2 startPos) {

@@ -16,3 +16,6 @@
 [submodule "ref/Fast-BVH"]
 	path = ref/Fast-BVH
 	url = https://github.com/brandonpelfrey/Fast-BVH.git
+[submodule "ref/luajit-2.0"]
+	path = ref/luajit-2.0
+	url = http://luajit.org/git/luajit-2.0.git
