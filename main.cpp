@@ -43,7 +43,6 @@ struct procFunction{
 void drawDiffGrow(Processing* ctx, bool&redraw, bool&clear, int curFrame, int maxFrames){
   static DifferentialGrowth diffGrow;
 
-
   static bool alwaysClear = false;
   ImGui::Checkbox("always clear", &alwaysClear);
   clear = diffGrow.imSettings();
@@ -69,7 +68,13 @@ void drawTriangle(Processing* ctx, bool&redraw, bool&clear, int curFrame, int ma
 Streamline s(1,1);
 void drawStream(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
   clear  = s.imSettings();
-  redraw = true;    
+  if(clear){
+    vec2 p = Random::random_point({-1,-1}, {1,1});
+    s.stream_point(p);
+  }
+  vec2 pt = s.nextOpenPoint();
+  s.stream_point(pt);
+  redraw = true;
   s.render(ctx);
 }
 
@@ -161,12 +166,6 @@ int main() {
 
   vec4 clear_color{0.00f, 0.0f, 0.0f, 1.00f};
 
-  s.stream_point({0.5f,0.5f});
-  for(int i=0; i < 100; i++){
-    vec2 p = Random::random_point({-1,-1}, {1,1});
-    s.stream_point(p);
-  }
-
   Cellular cells;
   Blob b{{0,0}, .5f};
 
@@ -185,7 +184,7 @@ int main() {
 
     procFunction functions[]= {
       //{"triangles", drawTriangle, GL_TRIANGLES, &basic, PostMode::NoBuffer},
-      {"stream" , drawStream, GL_TRIANGLES, &basic, PostMode::NoBuffer},
+      {"stream" , drawStream, GL_TRIANGLES, &basic, PostMode::Buffer},
         {"DiffGrowth", drawDiffGrow, GL_TRIANGLES, &basic, PostMode ::Buffer},
         {"flame", drawFlame, GL_POINTS, &flame, PostMode::Buffer},
       {"flameplotter", drawParticles, GL_POINTS, &flame, PostMode::NoBuffer},

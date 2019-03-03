@@ -77,7 +77,7 @@ class Partition{
     int index_impl(std::false_type, T b){
         return index(b.pos);
     }
-    int index(const vec2 v){
+  int index(const vec2 v){
         vec2 v2 = v - _offset;
         int ex = (int) floor((v2.x) * _scale);
         int wy = (int) floor((v2.y) * _scale);
@@ -86,12 +86,12 @@ class Partition{
         int idx = ex + wy * _numgrids;
         return idx;
     }
+  vector<T> _all;
 private:
-    vec2 _offset;
-    float _scale;
-    int _numgrids;
-    vector<vector<T>> _grid;
-    vector<T> _all;
+  vec2 _offset;
+  float _scale;
+  int _numgrids;
+  vector<vector<T>> _grid;
 
   };
 

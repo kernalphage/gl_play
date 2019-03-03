@@ -164,10 +164,24 @@ void ProcessingGL_t<Vertex_Type, Extra_Data>::spline(vector<vec3> pts, Extra_Dat
   }
   auto perp = [](vec3 a, vec3 b){ vec3 d = normalize(a-b); return  vec3(d.y, -d.x, (a.z+b.z)*.5);};
 
-  for(int i=0; i < pts.size() - 3; i++){
-    auto prevPerp = perp(pts[i+0], pts[i+1])* thickness;
-    vec3 curPerp =  perp(pts[i+1], pts[i+2])* thickness;
-    auto nextPerp = perp(pts[i+2], pts[i+3])* thickness;
+  for(int i=0; i < pts.size() - 1; i++){
+    glm::highp_vec3 prevPerp;
+    vec3 curPerp;
+    glm::highp_vec3 nextPerp;
+
+    prevPerp = perp(pts[i + 0], pts[i + 1]) * thickness;
+    if(i+2 > pts.size()) {
+      curPerp = perp(pts[i + 1], pts[i + 2]) * thickness;
+    }
+    else {
+      curPerp = prevPerp;
+    }
+    if(i+3 < pts.size()){
+      nextPerp = perp(pts[i + 2], pts[i + 3]) * thickness;
+    }
+    else{
+      nextPerp = curPerp;
+    }
 
     vec3 startPerp = (curPerp + prevPerp) *.5;
     vec3 endPerp =  (curPerp + nextPerp) * .5;
