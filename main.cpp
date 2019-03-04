@@ -26,6 +26,7 @@
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <proc/SlimeMold.hpp>
 
 Material* currentMaterial;
 
@@ -138,8 +139,11 @@ int main() {
   Window mainWin;
   mainWin.init(1000,1000);
 
-  glfwSetErrorCallback(error_callback);
   glEnable(GL_DEBUG_OUTPUT);
+  glfwSetErrorCallback(error_callback);
+
+SlimeMold slime;
+  slime.setup();
 
   // build and compile our shaders
   Material basic{"shaders/basic.vert", "shaders/basic.frag", true};
@@ -200,7 +204,7 @@ int main() {
     };
 
     const int numFunctions = 8;
-    {
+    if(false){
       // setup current view 
       bool redraw = false, clear = false;
       static int curfn_idx = 0; 
@@ -271,7 +275,7 @@ int main() {
         glfwSetWindowShouldClose(mainWin.window, true);
       }
     }
-
+    slime.feedbackStep();
     ImGui::Render();
     ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(mainWin.window);

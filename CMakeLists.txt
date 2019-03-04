@@ -20,7 +20,7 @@ set(PROC_SOURCE_FILES
     proc/Triangulate.cpp
     proc/Triangulate.hpp
     proc/DifferentialGrowth.hpp
-        proc/fuzzy_net.hpp proc/Superformula.hpp proc/DifferentialGrowth.cpp)
+        proc/fuzzy_net.hpp proc/Superformula.hpp proc/DifferentialGrowth.cpp proc/SlimeMold.cpp proc/SlimeMold.hpp)
 set(ENGINE_SOURCE_FILES
     Definitions.hpp
     hexlib.hpp

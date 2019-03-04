@@ -40,11 +40,14 @@ public:
   void setMat4x4(const std::string &name, glm::mat4 mat) const {
     glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), GL_TRUE, 1, glm::value_ptr(mat));
   }
+
+  // utility function for checking shader compilation/linking errors.
+  // ------------------------------------------------------------------------
+
+  static void checkCompileErrors(unsigned int shader, std::string type, std::string  path);
+
 private:
 
   static std::map<std::string, std::shared_ptr<Material>> s_materials;
-  // utility function for checking shader compilation/linking errors.
-  // ------------------------------------------------------------------------
-  void checkCompileErrors(unsigned int shader, std::string type, std::string  path);
 };
 #endif

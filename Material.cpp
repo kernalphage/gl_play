@@ -26,32 +26,32 @@ Material::Material(std::string vertexPath, std::string fragmentPath, bool transp
     // catch
     return vShaderStream.str();;
   };
-
-
-  std::string vShader = loadCode(vertexPath);
-  std::string fShader = loadCode(fragmentPath);
-  const char *vShaderCode = vShader.c_str();
-  const char *fShaderCode = fShader.c_str();
-  // 2. compile shaders
-  unsigned int vertex, fragment;
-  // vertex shader
-  vertex = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertex, 1, &vShaderCode, NULL);
-  glCompileShader(vertex);
-  checkCompileErrors(vertex, "VERTEX", vertexPath);
-  // fragment Shader
-  fragment = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragment, 1, &fShaderCode, NULL);
-  glCompileShader(fragment);
-  checkCompileErrors(fragment, "FRAGMENT",fragmentPath);
-
-  // shader Program
+  unsigned int vertex=0, fragment=0, geom=0;
   ID = glCreateProgram();
+  if(! vertexPath.empty()) {
+    std::string vShader = loadCode(vertexPath);
+    const char *vShaderCode = vShader.c_str();
+    // vertex shader
+    vertex = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex, 1, &vShaderCode, NULL);
+    glCompileShader(vertex);
+    checkCompileErrors(vertex, "VERTEX", vertexPath);
+    glAttachShader(ID, vertex);
+  }
+
+  if(! fragmentPath.empty()) {
+    std::string fShader = loadCode(fragmentPath);
+    const char *fShaderCode = fShader.c_str();
+    fragment = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment, 1, &fShaderCode, NULL);
+    glCompileShader(fragment);
+    checkCompileErrors(fragment, "FRAGMENT", fragmentPath);
+    glAttachShader(ID, fragment);
+  }
 
   if(! geomPath.empty()){
     std::string geomCode = loadCode(geomPath);
     const char* gShaderCode = geomCode.c_str();
-    unsigned int geom;
     geom = glCreateShader(GL_GEOMETRY_SHADER);
     glShaderSource(geom, 1, &gShaderCode, NULL);
     glCompileShader(geom);
@@ -59,14 +59,13 @@ Material::Material(std::string vertexPath, std::string fragmentPath, bool transp
     glAttachShader(ID, geom);
   }
 
-  glAttachShader(ID, vertex);
-  glAttachShader(ID, fragment);
   glLinkProgram(ID);
   checkCompileErrors(ID, "PROGRAM", "Final Program");
   // delete the shaders as they're linked into our program now and no longer
   // necessary
   glDeleteShader(vertex);
   glDeleteShader(fragment);
+  glDeleteShader(geom);
 }
 
 void Material::use() {
