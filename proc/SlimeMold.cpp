@@ -6,6 +6,7 @@
 #include <iostream>
 #include <Material.hpp>
 
+#define numFeedbacks 2
 
 void SlimeMold::imSettings(bool redraw, bool clear) {
 
@@ -18,9 +19,9 @@ void SlimeMold::setup() {
   const GLchar* vertexShaderSrc = R"glsl(
   #version 330 core
 
-    in vec4 i_position;
-    in vec3 i_color;
-    in float i_angle;
+    layout (location = 0) in vec4 i_position;
+    layout (location = 1) in vec3 i_color;
+    layout (location = 2) in float i_angle;
 
     out vec4 o_position;
     out vec3 o_color;
@@ -30,7 +31,7 @@ void SlimeMold::setup() {
     {
         o_position = i_position + vec4(i_position.zw, 0,0);
         o_color = i_color;
-        o_angle = i_angle;
+        o_angle = 1;
 
         gl_Position = vec4(o_position.xy, 0.0, 1.0);
     }
@@ -76,17 +77,23 @@ void SlimeMold::setup() {
 
   // generate pinpong buffers and input data
 // input data
-  SlimeNode data[] = {{{0.0f, 0.0f, 0.01f, .0001f}, {1.0f, 0.0f, 1.0f}, .5f},
+  SlimeNode data[] = {{{0.0f, 0.0f, .01f, .0001f}, {1.0f, 0.0f, 1.0f}, .5f},
                       {{0.0f, .3f, -0.01f, -.0001f}, {0.0f, 1.0f, 1.0f}, .5f}
   };
 
-  glGenBuffers(1, &m_prev);
-  glBindBuffer(GL_ARRAY_BUFFER, m_prev);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STREAM_DRAW);
 
-  glGenBuffers(1, &m_cur);
-  glBindBuffer(GL_ARRAY_BUFFER, m_cur);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STREAM_DRAW);
+    glGenTransformFeedbacks(2,m_transformFeedback);
+    glGenBuffers(3,m_particlesBuffers);
+    for (uint32_t n = 0;n < 2;n++)
+    {
+        glBindTransformFeedback(GL_TRANSFORM_FEEDBACK,m_transformFeedback[n]);
+        glBindBuffer(GL_ARRAY_BUFFER,m_particlesBuffers[n]);
+        glBufferData(GL_ARRAY_BUFFER,sizeof(data),data,GL_DYNAMIC_DRAW);
+
+        glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER,0,m_particlesBuffers[n]);
+     //   glBindBuffer(GL_ARRAY_BUFFER,0);
+    }
+
 
   auto nodeSize= sizeof(SlimeNode);
   GLint inputAttrib = glGetAttribLocation(m_program, "i_position");
@@ -103,35 +110,72 @@ void SlimeMold::setup() {
 
 }
 void SlimeMold::feedbackStep() {
-  glUseProgram(m_program);
+  static int i = 0; 
+  i = (i+1) % 2;
+  int curVB = i;
+  int curTFB = (i+1) %2;
   glPointSize(10);
   // 'draw' the buffer
+  glUseProgram(m_program);
+
   glEnable(GL_RASTERIZER_DISCARD);
- glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, m_cur);
-  glBeginTransformFeedback(GL_POINTS);
-  // these next two line are possibly equivalent to
-  glDrawTransformFeedback(GL_POINTS, m_prev);
-  //glBindBuffer(GL_ARRAY_BUFFER, m_prev);
-  //glDrawArrays(GL_POINTS, 0, 2);
+  glBindBuffer(GL_ARRAY_BUFFER,m_particlesBuffers[curVB]);
+  glBindTransformFeedback(GL_TRANSFORM_FEEDBACK,m_transformFeedback[curTFB]);
+  
+  auto nodeSize= sizeof(SlimeNode);
+  GLint inputAttrib = glGetAttribLocation(m_program, "i_position");
+  glEnableVertexAttribArray(inputAttrib);
+  glVertexAttribPointer(inputAttrib, 4, GL_FLOAT, GL_FALSE, nodeSize,0);
 
-  glEndTransformFeedback();
-  glDisable(GL_RASTERIZER_DISCARD);
+   inputAttrib = glGetAttribLocation(m_program, "i_color");
+  glEnableVertexAttribArray(inputAttrib);
+  glVertexAttribPointer(inputAttrib, 1, GL_FLOAT, GL_FALSE, nodeSize,(void*) sizeof(vec4));
 
+   inputAttrib = glGetAttribLocation(m_program, "i_angle");
+  glEnableVertexAttribArray(inputAttrib);
+  glVertexAttribPointer(inputAttrib, 1, GL_FLOAT, GL_FALSE, nodeSize,(void*) (sizeof(vec4) + sizeof(vec3)));
+
+
+    glBeginTransformFeedback(GL_POINTS);
+static bool isFirst = true;
+if(isFirst){
+   glDrawArrays(GL_POINTS, 0, 2);
+        isFirst = false;
+  }
+    else {
+        glDrawTransformFeedback(GL_POINTS, m_transformFeedback[curVB]);
+    } 
+  // TODO: set uniforms 
+    glEndTransformFeedback();
   glFlush();
 
+  glDisable(GL_RASTERIZER_DISCARD);
   //Render particles from feedback object Current
-  glDrawTransformFeedback(GL_POINTS, m_cur);
-
-  SlimeNode feedback[2];
-  glGetBufferSubData(GL_TRANSFORM_FEEDBACK, 0, sizeof(feedback), feedback);
-  std::cout<<glm::to_string(feedback[0].position) << " , " <<glm::to_string(feedback[1].position)<<std::endl;
-
-  //Swap feedback objects
-  auto tmp = m_cur;
-  m_cur =  m_prev;
-  m_prev = tmp;
+ glBindBuffer(GL_ARRAY_BUFFER,m_particlesBuffers[curTFB]);
+//  glEnableVertexAttribArray(0);
+glDrawTransformFeedback(GL_POINTS,m_transformFeedback[curTFB]);
 }
 
 void SlimeMold::render(Processing *ctx, bool &redraw, bool &clear, int curFrame, int maxFrames) {
 
 }
+
+
+/*
+void ParticleSystem::release()
+{
+    NvSafeDelete(m_feedbackProgram);
+    NvSafeDelete(m_billboardProgram);
+    NvSafeDelete(m_emitterProgram);
+    
+    glDeleteTextures(1,&m_randomTexture);
+    glDeleteTextures(1,&m_particleTexture);
+    glDeleteTextures(1,&m_FBMTexture);
+
+    glDeleteTransformFeedbacks(countof(m_transformFeedback),m_transformFeedback);
+    glDeleteBuffers(countof(m_particlesBuffers),m_particlesBuffers);
+    glDeleteBuffers(1,&m_emittersBuffer);
+
+    glDeleteQueries(countof(m_countQuery),m_countQuery);
+}
+*/

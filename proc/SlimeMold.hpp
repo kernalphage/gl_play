@@ -19,8 +19,8 @@ public:
   void render(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames);
   void feedbackStep();
 private:
-  GLuint m_prev;
-  GLuint m_cur;
+  GLuint m_particlesBuffers[3];
+  GLuint m_transformFeedback[3];
   GLuint m_program;
 };
 
