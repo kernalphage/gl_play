@@ -61,7 +61,7 @@ private:
 
   int seed =0 ;
   float lineWidth=.004;
-  float stepDist = .01;
+  float stepDist = .0113;
   float windStrength = .2;
   int maxIterations = 100;
   FastNoise f;

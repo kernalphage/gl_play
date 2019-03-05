@@ -6,11 +6,18 @@
 #define GL_PLAY_SLIMEMOLD_HPP
 #include <Definitions.hpp>
 
+
+
+class Material; 
 struct SlimeNode{
-  vec4 position;
-  vec3 color;
+  vec3 position;
+  vec4 color;
   float angle;
 };
+
+#define SLIME_ROWS 300
+#define SLIME_NODES  SLIME_ROWS * SLIME_ROWS
+#define SLIME_TOTAL_SIZE SLIME_NODES * 6
 
 class SlimeMold {
 public:
@@ -19,9 +26,18 @@ public:
   void render(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames);
   void feedbackStep();
 private:
+  void setVertexArrays();
+  void setDrawArrays();
   GLuint m_particlesBuffers[3];
   GLuint m_transformFeedback[3];
-  GLuint m_program;
+  GLuint program;
+  GLint uniTime;
+  GLuint vbo, tbo;
+GLint uniMousePos;
+
+  GLfloat data[SLIME_TOTAL_SIZE] = {};
+
+  Material* basic;
 };
 
 

@@ -8,6 +8,7 @@
 #include <Random.hpp>
 #include "imgui.h"
 #include <FastNoise/FastNoise.h>
+
 using namespace std;
 
 void Streamline::render(Processing *ctx) {
@@ -21,14 +22,17 @@ void Streamline::render(Processing *ctx) {
     ctx->spline(spline, {100, 10, 1, 1000}, {10, 10, 10, 100}, lineWidth);
   }
   lines.clear();
+
 }
 
 bool Streamline::isvalid(vec2 pt, Node* prev )
 {
     if(pt.x < -1 || pt.y < -1){
+      cout<<"less thanN "<<pt.x << "," <<pt.y<<endl;
       return false;
     }
-    if(pt.x > width || pt.y > height){
+    if(pt.x > 1 || pt.y > 1){
+      cout<<"greater than" <<pt.x << "," <<pt.y<<endl;
       return false;
     }
 
@@ -104,6 +108,7 @@ Streamline::Node *Streamline::stream_point(vec2 startPos) {
       cur = nextNode;
     }
   // keep track of average length based on cur;
+
     lines.push_back(cur);
    return cur;
   }
@@ -116,9 +121,9 @@ vec2 Streamline::next(Streamline::Node *pos, bool backwards) {
   vec2 dir{x,y};
 
   if (backwards) {
-    return pos->pos + normalize(dir) * stepDist;
+    return pos->pos + dir * stepDist;
   } else {
-    return pos->pos - normalize(dir) * stepDist;
+    return pos->pos - dir * stepDist;
   };
 }
 
@@ -136,6 +141,7 @@ bool Streamline::imSettings() {
       vec2 pt = nextOpenPoint();
       stream_point(pt);
   }
+
   if(redraw){
     destroy();
   }
