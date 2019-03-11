@@ -5,7 +5,9 @@
 #include "SlimeMold.hpp"
 #include <iostream>
 #include <Material.hpp>
+#include <chrono>
 #include "Random.hpp"
+using namespace std;
 
 #define numFeedbacks 2
 
@@ -17,7 +19,7 @@ void SlimeMold::setup() {
   basic = new Material{"shaders/basic.vert", "shaders/basic.frag", true};
 
 // Vertex shader
-const GLchar* vertexShaderSrc = R"glsl(
+  const GLchar* vertexShaderSrc = R"glsl(
     #version 150 core
 
     in vec2 position;
@@ -27,41 +29,32 @@ const GLchar* vertexShaderSrc = R"glsl(
     out vec2 outPosition;
     out vec2 outVelocity;
     out vec2 outoriginalPos;
+    out vec2 f_color;
 
     uniform float time;
     uniform vec2 mousePos;
 
     void main()
     {
-        // Points move towards their original position...
-        vec2 newVelocity = originalPos - position;
-
-        // ... unless the mouse is nearby. In that case, they move towards the mouse.
-        if (length(mousePos - originalPos) < 0.75f) {
-            vec2 acceleration = 1.5f * normalize(mousePos - position);
-            newVelocity = velocity + acceleration * time;
-        }
-        
-        if (length(newVelocity) > 1.0f)
-            newVelocity = normalize(newVelocity);
-
-        vec2 newPosition = position + newVelocity * time;
+        vec2 newPosition = position + velocity;
         outPosition = newPosition;
-        outVelocity = newVelocity;
+        outVelocity = velocity - originalPos * 0.001;
         outoriginalPos =originalPos;
-        gl_Position = vec4(newPosition, 0.0, 1.0);
+        f_color = outVelocity;
+        gl_Position = vec4(outPosition.xy, 0, 1);
     }
 )glsl";
 
 // Fragment shader
-const GLchar* fragmentShaderSrc = R"glsl(
+  const GLchar* fragmentShaderSrc = R"glsl(
     #version 150 core
 
+    in vec2 f_color;
     out vec4 outColor;
 
     void main()
     {
-        outColor = vec4(1.0, 0.0, 0.0, 1.0);
+        outColor = vec4(1.0,  f_color, 1.0);
     }
 )glsl";
 
@@ -103,15 +96,14 @@ Material::checkCompileErrors(fragmentShader, "frag", "frag.vert");
     float di = 1.0f / SLIME_ROWS;
     for (int y = 0; y < SLIME_ROWS; y++) {
         for (int x = 0; x < SLIME_ROWS; x++) {
-            float dx = Random::f() - .5f;
-            float dy = Random::f() - .5f;
-
-            data[60 * y + 6 * x]     = dx;
-            data[60 * y + 6 * x + 1] = dy;
-            data[60 * y + 6 * x + 2] = 0;
-            data[60 * y + 6 * x + 3] = 0;
-            data[60 * y + 6 * x + 4] = dx;
-            data[60 * y + 6 * x + 5] = dy;
+            float dx = x * di;
+            float dy = y * di;
+            data[(6 * SLIME_ROWS * y) + (6 * x) + 0] = dx;
+            data[(6 * SLIME_ROWS * y) + (6 * x) + 1] = dy;
+            data[(6 * SLIME_ROWS * y) + (6 * x) + 2] = 0;
+            data[(6 * SLIME_ROWS * y) + (6 * x) + 3] = 0.01f;
+            data[(6 * SLIME_ROWS * y) + (6 * x) + 4] = dx;
+            data[(6 * SLIME_ROWS * y) + (6 * x) + 5] = dy;
         }
     }
 
@@ -135,7 +127,7 @@ Material::checkCompileErrors(fragmentShader, "frag", "frag.vert");
 
     glGenBuffers(1, &tbo);
     glBindBuffer(GL_ARRAY_BUFFER, tbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(data), nullptr, GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STREAM_DRAW);
 
     glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, 0, tbo);
 
@@ -153,22 +145,24 @@ void SlimeMold::feedbackStep() {
         auto t_now = std::chrono::high_resolution_clock::now();
         float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_prev).count();
         t_prev = t_now;
-        glUniform1f(uniTime, time);
+        //glUniform1f(uniTime, time);
 
         // Update mouse position
         static float t = 0;
         t += time;
-        glUniform2f(uniMousePos, 0.0f, 0.0f);
-
+        //glUniform2f(uniMousePos, .025f * sin(t), .02f);
         // Perform feedback transform and draw vertices
         glBeginTransformFeedback(GL_POINTS);
-            glDrawArrays(GL_POINTS, 0, SLIME_NODES);
+            glDrawArrays(GL_POINTS, 0, SLIME_NODES );
         glEndTransformFeedback();
-        
 
-    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tbo);
+  glEnable(GL_BLEND);
+  glBlendEquation(GL_FUNC_ADD);
+
+
+  glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER, tbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glCopyBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, GL_ARRAY_BUFFER, 0,0, SLIME_TOTAL_SIZE);
+    glCopyBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, GL_ARRAY_BUFFER, 0,0, SLIME_TOTAL_SIZE * sizeof(float));
 
 }
 

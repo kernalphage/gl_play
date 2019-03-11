@@ -15,7 +15,7 @@ struct SlimeNode{
   float angle;
 };
 
-#define SLIME_ROWS 300
+#define SLIME_ROWS 4
 #define SLIME_NODES  SLIME_ROWS * SLIME_ROWS
 #define SLIME_TOTAL_SIZE SLIME_NODES * 6
 
@@ -35,7 +35,7 @@ private:
   GLuint vbo, tbo;
 GLint uniMousePos;
 
-  GLfloat data[SLIME_TOTAL_SIZE] = {};
+  GLfloat data[SLIME_TOTAL_SIZE] = {0};
 
   Material* basic;
 };

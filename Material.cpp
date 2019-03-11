@@ -78,6 +78,8 @@ void Material::use() {
 
     //glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     glBlendEquation(GL_FUNC_ADD);
+  } else {
+    glDisable(GL_BLEND);
   }
 }
 

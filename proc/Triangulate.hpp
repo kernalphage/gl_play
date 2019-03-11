@@ -7,6 +7,7 @@
 #include "Definitions.hpp"
 #include "Processing.hpp"
 #include <vector>
+#include "Texture.hpp"
 
 struct Tri {
   vec3 a, b, c;
@@ -21,6 +22,12 @@ struct Tri {
       return b;
     return c;
   };
+  float area(){
+    auto dab = glm::length2(a-b);
+    auto dbc = glm::length2(b-c);
+    auto dca = glm::length2(c-a);
+    return (dab + dbc + dca) / 3;
+  }
   vec3 center() const{
     return (a + b + c) * (1.0f/3.0f);
   }
@@ -31,19 +38,22 @@ struct TriBuilder {
 
   bool imSettings();
 
-  std::vector<Tri> triangulate(float depthMod, Processing *ctx);
+  std::vector<Tri> triangulate( Processing *ctx,int  curFrame);
 
   std::vector<Tri> _curTriangles = {Tri{{0, .8, 0}, {-.8, -.8, 0}, {.8, -.8, 0}, 0}};;
   int _seed;
-  float _radius = .68f;
+  float _radius = .38f;
   float _frequency = 20;
-  float _decayMin = .6f;
-  float _decayMax = 1;
+  float _decayMin = .4f;
+  float _decayMax = 1.5;
   float _maxDepth = 6;
-  float _zoom = 0;
   float _skew = .18f;
+  float _linethickness = .001f;
   vec4 _minColor{0.0f, 1.0f, 0.0f, .8f};
   vec4 _maxColor{1.0f};
+  // sue me again
+  const int numbers[14] = {48,49,50,51,52,53,54,55,56,57,65,75,81, 74};
+  Texture distField[14] ;
 };
 
 bool testTriangle();

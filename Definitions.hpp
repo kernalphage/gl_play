@@ -190,6 +190,9 @@ static	std::string timestamp(int seed){
 	  return std::string(mbstr);
 	}
 
+	static float median(float r, float g, float b) {
+		return glm::max(glm::min(r, g), glm::min(glm::max(r, g), b));
+	}
 
 	template<typename T>
 	static bool load_json(T& obj, const char* filename, bool doSave, bool doLoad){

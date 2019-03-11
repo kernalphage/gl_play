@@ -46,63 +46,7 @@ float min_dist(const vec2 &pt, vector<Blob> &v, rect bounds) {
 }
 
 
-/*
-void
-Partition::gen_poisson(vec2 tl, vec2 br, DistanceFN distFN, int maxSamples, vector<Blob> &out, float overlap) {
-  vector<Blob> open;
-  rect bounds{tl, br};
-  vec2 seed = Random::random_point(tl, br);
-
-  Blob s = Blob{seed, distFN(seed).y};
-  out.push_back(s);
-  open.push_back(s);
-  add(s);
-
-  //while there's space
-  while (!open.empty() && maxSamples > 0) {
-    Blob cur = open.back(); open.pop_back();
-
-    vector<vec2> samples;
-    vec2  radii = distFN(cur.pos);
-    float rmin = radii.x;
-    float rmax = radii.y;
-
-
- // TODO: I fucked up something here and the circles don't look random anymore
-    //find a couple spots
-    int generated = 0;
-    for (int i = 0; i < 60; i++) {
-      vec2 samp =  Random::random_point(vec2{rmin + cur.r, 0}, vec2{rmax + cur.r, 6.28});
-     //	 samp.x = rmax + cur.r;
-      samp = cur.pos + (vec2{sin(samp.y), cos(samp.y)}) * samp.x;
-
-      vector<Blob> cur_neighbors;
-      neighbors(samp, std::back_inserter(cur_neighbors));
-      float r = min_dist(samp, cur_neighbors, bounds);
-
-    	radii = distFN(samp);
-    	rmin = radii.x;
-   
-      if (r > rmin) {
-        generated++;
-        maxSamples--;
-        Blob n = Blob{samp, std::min(r + overlap, rmax)};
-
-        open.push_back(n);
-        out.push_back(n);
-        add(n);
-      }
-      if (maxSamples <= 0)
-        break;
-    }
-    // re-add it
-    if (generated != 0) {
-      open.push_back(cur);
-    }
-  }
-}
- */
-
+// renders thick o's so you can control the line width
 void Blob::render(Processing *ctx, vec4 color, float thickness) {
 
 	thickness = std::min(thickness, r);
@@ -118,10 +62,62 @@ void Blob::render(Processing *ctx, vec4 color, float thickness) {
   }
 }
 
-/*
-
-void Partition::gen_random(vec2 tl, vec2 br, DistanceFN sampleSize, int maxSamples, std::vector<Blob> &out){
 
 
+
+void BlobPlacer::gen_poisson(vec2 tl, vec2 br, BlobPlacer::DistanceFN distFN, int maxSamples, vector<Blob> &out,
+                             float overlap){
+  Partition p;
+  p.resize({-1,-1}, {2,2}, _maxRadius);
+  vector<Blob> open;
+  rect bounds{tl, br};
+  vec2 seed = Random::random_point(tl, br);
+
+  Blob s = Blob{seed, distFN(seed).y};
+  out.push_back(s);
+  open.push_back(s);
+  p.add(s);
+
+  //while there's space
+  while (!open.empty() && maxSamples > 0) {
+    Blob cur = open.back(); open.pop_back();
+
+    vector<vec2> samples;
+    vec2  radii = distFN(cur.pos);
+    float rmin = radii.x;
+    float rmax = radii.y;
+
+
+    // TODO: I fucked up something here and the circles don't look random anymore
+    //find a couple spots
+    int generated = 0;
+    for (int i = 0; i < 60; i++) {
+      vec2 samp =  Random::random_point(vec2{rmin + cur.r, 0}, vec2{rmax + cur.r, 6.28});
+      //	 samp.x = rmax + cur.r;
+      samp = cur.pos + (vec2{sin(samp.y), cos(samp.y)}) * samp.x;
+
+      vector<Blob> cur_neighbors;
+      p.neighbors(samp, std::back_inserter(cur_neighbors));
+      float r = min_dist(samp, cur_neighbors, bounds);
+
+      radii = distFN(samp);
+      rmin = radii.x;
+
+      if (r > rmin) {
+        generated++;
+        maxSamples--;
+        Blob n = Blob{samp, std::min(r + overlap, rmax)};
+
+        open.push_back(n);
+        out.push_back(n);
+        p.add(n);
+      }
+      if (maxSamples <= 0)
+        break;
+    }
+    // re-add it
+    if (generated != 0) {
+      open.push_back(cur);
+    }
+  }
 }
- */
