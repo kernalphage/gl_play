@@ -49,8 +49,7 @@ std::vector<Tri> TriBuilder::triangulate(Processing *ctx, int framenum) {
         auto ppos = t.center() ;
         ppos.y *=-1;
         ppos = (ppos * .5f + vec3(.5f, .5f, 0) );
-        auto dist = Util::median(distField[idx].sample(ppos.x, ppos.y, 0) , distField[idx].sample(ppos.x, ppos.y, 1) ,distField[idx].sample(ppos.x, ppos.y, 2) );
-
+        auto dist = Util::median(Util::sampleDistField({ppos.x, ppos.y}, idx));
         return  dist/255.0f > _radius; };
 
   std::copy_if(ret.begin(), ret.end(), std::back_inserter(to_draw), shouldDraw);
@@ -58,7 +57,7 @@ std::vector<Tri> TriBuilder::triangulate(Processing *ctx, int framenum) {
 
   auto sampColor = [&](vec3 pos) {
     auto ppos = (pos * .5 + vec3(.5f, .5f, 0) ) * _radius;
-    auto dist = Util::median(distField[idx].sample(ppos.x, ppos.y, 0) ,distField[idx].sample(ppos.x, ppos.y, 1) ,distField[idx].sample(ppos.x, ppos.y, 2) );
+    auto dist = Util::median(Util::sampleDistField({ppos.x, ppos.y}, idx));
   auto m = mix(_minColor, _maxColor, .75f);
     m *= 50;
     return m;
@@ -75,16 +74,6 @@ std::vector<Tri> TriBuilder::triangulate(Processing *ctx, int framenum) {
 bool TriBuilder::imSettings() {
 
   bool redraw = false;
-  static bool doonce = false;
-  if(doonce == false){
-    doonce = true;
-    redraw = true;
-    for(int i=0; i < 14; i++){
-      auto filename = fmt::format("sdf_text/{0}_fixed.png", numbers[i]);
-      distField[i].uploadToGPU = false;
-      distField[i].load(filename.c_str());
-    }
-  }
 
   ImGui::Text("Num Triangles = %d", (int)_curTriangles.size());
   redraw |= ImGui::InputInt("Seed", &_seed);

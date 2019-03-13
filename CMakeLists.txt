@@ -3,7 +3,7 @@ project(gl_play)
 
 
 set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "-Wall -g" )
+set(CMAKE_CXX_FLAGS "-Wall -g -O3" )
 
 set(PROC_SOURCE_FILES
     proc/Blob.cpp
@@ -43,7 +43,7 @@ set(ENGINE_SOURCE_FILES
     Texture.hpp
     Window.cpp
     Window.hpp
-    )
+        Definitions.cpp)
 set(REF_SOURCE_FILES
     imgui_impl/glfw_gl3.cpp
     imgui_impl/glfw_gl3.h
@@ -120,6 +120,7 @@ set(SHADERS
         shaders/two_tri.frag
         shaders/flame.geom
         tonemap.png
+        four_sdf.png
 	)
 foreach(shader ${SHADERS})
 	configure_file( "${shader}" ${shader} COPYONLY)

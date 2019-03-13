@@ -18,6 +18,7 @@
 #include <sstream>
 #include <iostream>
 #include <optional>
+#include "Texture.hpp"
 
 using glm::vec2;
 using glm::vec3;
@@ -107,7 +108,7 @@ struct Geo{
 	static float TriSign(T a, T b, T c) {
 		return (a.x - c.x) * (b.y - c.y) - (a.y - c.y) * (b.x - c.x);
 	};
-  // TODO: make bool
+  // TODO: make std::optional
 	template<typename T>
 	static float line_intersect(T a, T b, T c, T d){
 		float a1 = TriSign(a,b,d);
@@ -172,27 +173,17 @@ struct Geo{
 };
 
 struct Util{
-  static float rangeMap (float t,float inStart,float inEnd,float outStart, float outEnd, bool doClamp = false){
-    float out = t - inStart;
-    out /= (inEnd - inStart); // [0,1]
-		// TODO: clamp/warp/reflect enum?
-		if(doClamp){
-			out = glm::clamp(out, 0.0f,1.0f);
-		}
-    out *= (outEnd - outStart);
-    return out + outStart;
-  }
-static	std::string timestamp(int seed){
-	  char mbstr[150];
-	   std::time_t t = std::time(nullptr);
-	  std::strftime(mbstr, sizeof(mbstr), "%m_%d_%s_%%d.txt", std::localtime(&t));
-	  sprintf(mbstr, mbstr, seed);
-	  return std::string(mbstr);
-	}
 
-	static float median(float r, float g, float b) {
-		return glm::max(glm::min(r, g), glm::min(glm::max(r, g), b));
-	}
+	// slightly less suitworthy
+	static const int numbers[14];
+	static Texture distField[14];
+	static bool initUtilities();
+	static vec4 sampleDistField(vec2 pos, int idx);
+  static float rangeMap (float t,float inStart,float inEnd,float outStart, float outEnd, bool doClamp = false);
+	static std::string timestamp(int seed);
+	inline static float median(float r, float g, float b) { return glm::max(glm::min(r, g), glm::min(glm::max(r, g), b)); }
+	inline static float median(vec3 p){return median(p.x,p.y,p.z);};
+	inline static float median(vec4 p){return median(p.x,p.y,p.z);};
 
 	template<typename T>
 	static bool load_json(T& obj, const char* filename, bool doSave, bool doLoad){
@@ -222,6 +213,7 @@ static	std::string timestamp(int seed){
 		}
 		return doSave || doLoad;
 	}
+
 };
 
 #include "Processing.hpp"

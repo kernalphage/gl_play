@@ -51,9 +51,6 @@ struct TriBuilder {
   float _linethickness = .001f;
   vec4 _minColor{0.0f, 1.0f, 0.0f, .8f};
   vec4 _maxColor{1.0f};
-  // sue me again
-  const int numbers[14] = {48,49,50,51,52,53,54,55,56,57,65,75,81, 74};
-  Texture distField[14] ;
 };
 
 bool testTriangle();

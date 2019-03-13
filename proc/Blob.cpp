@@ -6,6 +6,8 @@
 #include "Random.hpp"
 #include "Processing.hpp"
 #include <glm/ext.hpp>
+#include <imgui_impl/imgui.h>
+#include <fmt/format.h>
 
 // rect
 // generate_random_point
@@ -67,13 +69,17 @@ void Blob::render(Processing *ctx, vec4 color, float thickness) {
 
 void BlobPlacer::gen_poisson(vec2 tl, vec2 br, BlobPlacer::DistanceFN distFN, int maxSamples, vector<Blob> &out,
                              float overlap){
-  Partition p;
+  Partition<Blob> p;
   p.resize({-1,-1}, {2,2}, _maxRadius);
   vector<Blob> open;
   rect bounds{tl, br};
-  vec2 seed = Random::random_point(tl, br);
-
-  Blob s = Blob{seed, distFN(seed).y};
+  vec2 seed;
+  Blob s(seed, distFN(seed).y);
+  int bailout = 1000;
+  while(s.r <= 0 && bailout-->0){
+    seed = Random::random_point(tl, br);
+    s = Blob(seed, distFN(seed).y);
+  }
   out.push_back(s);
   open.push_back(s);
   p.add(s);
@@ -86,7 +92,6 @@ void BlobPlacer::gen_poisson(vec2 tl, vec2 br, BlobPlacer::DistanceFN distFN, in
     vec2  radii = distFN(cur.pos);
     float rmin = radii.x;
     float rmax = radii.y;
-
 
     // TODO: I fucked up something here and the circles don't look random anymore
     //find a couple spots
@@ -101,9 +106,10 @@ void BlobPlacer::gen_poisson(vec2 tl, vec2 br, BlobPlacer::DistanceFN distFN, in
       float r = min_dist(samp, cur_neighbors, bounds);
 
       radii = distFN(samp);
-      rmin = radii.x;
 
-      if (r > rmin) {
+      float tmpMin = radii.x;
+
+      if (r > tmpMin && tmpMin != 0) {
         generated++;
         maxSamples--;
         Blob n = Blob{samp, std::min(r + overlap, rmax)};
@@ -120,4 +126,62 @@ void BlobPlacer::gen_poisson(vec2 tl, vec2 br, BlobPlacer::DistanceFN distFN, in
       open.push_back(cur);
     }
   }
+}
+
+void BlobPlacer::render(Processing *ctx) {
+  vector<Blob> blobs;
+  auto distFN = [=](vec2 pos){
+    auto idx = _seed %14;
+    auto ppos = pos ;
+    ppos.y *=-1;
+    ppos = (ppos * .5f + vec2(.5f, .5f) );
+    auto dist = Util::median(distField[idx].sample(ppos.x, ppos.y, 0) , distField[idx].sample(ppos.x, ppos.y, 1) ,distField[idx].sample(ppos.x, ppos.y, 2) );
+    if(dist < _maxTextDist) {
+      return vec2{0,0};
+    }
+    dist = Util::rangeMap(dist, _maxTextDist, 255, _maxRadius, _minRadius, true);
+    return vec2(glm::max(_minRadius, dist * _radiusSkew), dist);
+  };
+  Random::seed(_seed);
+  gen_poisson(vec2{-1,-1}, vec2{1,1}, distFN, _maxSamples, blobs, _overlap);
+
+  for(auto b : blobs){
+    ctx->ngon(b.pos, b.r, 12, {10,10,0,10}, {10,0,0,10});
+  }
+}
+
+
+
+void BlobPlacer::imSettings(bool &redraw, bool &clear) {
+
+  static bool doonce = false;
+  if(doonce == false){
+    doonce = true;
+    redraw = true;
+    for(int i=0; i < 14; i++){
+      auto filename = fmt::format("sdf_text/{0}_fixed.png", numbers[i]);
+      distField[i].uploadToGPU = false;
+      distField[i].load(filename.c_str());
+    }
+  }
+  redraw |= ImGui::InputInt("seed", &_seed);
+  if(ImGui::Button("prevJump")) {
+    redraw = true;
+    _seed -= 14;
+  }
+  ImGui::SameLine();
+  if(ImGui::Button("nextJump")) {
+    redraw = true;
+    _seed += 14;
+  }
+
+  redraw |= ImGui::SliderInt("minTextDist", &_maxTextDist, 0, 255);
+  redraw |= ImGui::SliderFloat("Max Radius", &_maxRadius, _minRadius, .1);
+  redraw |= ImGui::SliderFloat("min Radius", &_minRadius, 0, _maxRadius);
+  redraw |= ImGui::SliderFloat("radiusSkew", &_radiusSkew, 0, 1);
+  redraw |= ImGui::InputFloat("inset", &_overlap, -.1f, .1f);
+  redraw |= ImGui::InputInt("MaxSamples", &_maxSamples, 1, 10240);
+
+
+  clear = redraw;
 }

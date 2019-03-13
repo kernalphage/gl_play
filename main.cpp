@@ -43,7 +43,7 @@ struct procFunction{
 };
 
 BlobPlacer blobM;
-void drawBlob(Processing* ctx, bool&redraw, bool&clear, int curFrame, int maxFrames){
+void drawSpades(Processing* ctx, bool&redraw, bool&clear, int curFrame, int maxFrames){
   blobM.imSettings(redraw, clear);
 
   if(redraw){
@@ -164,7 +164,7 @@ int main() {
   auto* part_ctx = new ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>{};
   RenderTarget buff(FRAME_WIDTH,FRAME_HEIGHT);
   buff.init();
-
+  Util::initUtilities();
 
   // Setup ImGui binding
   ImGui::CreateContext();
