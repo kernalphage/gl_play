@@ -4,8 +4,8 @@
 #include <Definitions.hpp>
 #include <fmt/format.h>
 
-const int Util::numbers[14] = {48,49,50,51,52,53,54,55,56,57,65,75,81, 74};
-Texture Util::distField[14];
+const int Util::numbers[] = {48,49,50,51,52,53,54,55,56,57,65,75,81,74,9824,9825,9826,9827,9828,9829,9830};
+Texture Util::distField[DEPTH_MAP_COUNT];
 
 
 float Util::rangeMap(float t, float inStart, float inEnd, float outStart, float outEnd, bool doClamp) {
@@ -34,14 +34,14 @@ bool Util::initUtilities() {
   if(doneOnce) { return true;}
     doneOnce = true;
     // initialize distance fields
-    for(int i=0; i < 14; i++){
+    for(int i=0; i < DEPTH_MAP_COUNT; i++){
       auto filename = fmt::format("sdf_text/{0}_fixed.png", numbers[i]);
       distField[i].uploadToGPU = false;
       distField[i].load(filename.c_str());
     }
 }
 vec4 Util::sampleDistField(vec2 ppos, int idx) {
-  idx %= 14;
+  idx %= DEPTH_MAP_COUNT;
   return vec4( distField[idx].sample(ppos.x, ppos.y, 0) ,
                distField[idx].sample(ppos.x, ppos.y, 1) ,
                distField[idx].sample(ppos.x, ppos.y, 2) ,

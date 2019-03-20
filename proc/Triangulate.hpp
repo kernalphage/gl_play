@@ -12,7 +12,6 @@
 struct Tri {
   vec3 a, b, c;
   float depth;
-  vec4 ca, cb, cc;
 
   vec3 &operator[](size_t i) {
     i = i % 3;
@@ -49,8 +48,14 @@ struct TriBuilder {
   float _maxDepth = 6;
   float _skew = .18f;
   float _linethickness = .001f;
+  float _fillChance = 0.5f;
+  bool _drawLeftParent = false;
+  bool _drawRightParent = false;
+
+  vec2 _resizeRange = {1.0f, 1.0f};
   vec4 _minColor{0.0f, 1.0f, 0.0f, .8f};
   vec4 _maxColor{1.0f};
+  float _colorGain = 1.0f;
 };
 
 bool testTriangle();

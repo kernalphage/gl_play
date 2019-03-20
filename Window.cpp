@@ -25,7 +25,7 @@ int Window::init(int width, int height) {
       GL_TRUE); // uncomment this statement to fix compilation on OS X
 #endif
 
-  window = glfwCreateWindow(_width,_height, "LearnOpenGL", NULL, NULL);
+  window = glfwCreateWindow(_width + 200,_height, "LearnOpenGL", NULL, NULL);
   if (window == NULL) {
     std::cout << "Failed to create GLFW window" << std::endl;
     glfwTerminate();

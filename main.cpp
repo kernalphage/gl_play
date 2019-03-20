@@ -145,7 +145,7 @@ static void error_callback(int error, const char* description)
 
 int main() {
   Window mainWin;
-  mainWin.init(FRAME_WIDTH,FRAME_HEIGHT);
+  mainWin.init(FRAME_WIDTH ,FRAME_HEIGHT);
 
   glEnable(GL_DEBUG_OUTPUT);
   glfwSetErrorCallback(error_callback);
@@ -193,7 +193,7 @@ int main() {
 
     procFunction functions[]= {
         {"dots", drawSpades, GL_TRIANGLES, &basic, PostMode::Buffer},
-      {"triangles", drawTriangle, GL_TRIANGLES, &opaque, PostMode::Buffer},
+      {"triangles", drawTriangle, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"stream" , drawStream, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"DiffGrowth", drawDiffGrow, GL_TRIANGLES, &basic, PostMode ::Buffer},
       {"flame", drawFlame, GL_POINTS, &flame, PostMode::Buffer},
@@ -212,7 +212,7 @@ int main() {
     const int numFunctions = 11;
       // setup current view 
       bool redraw = false, clear = false;
-      static int curfn_idx = 0; 
+      static int curfn_idx = 1; 
       auto curfn = functions[curfn_idx];
       ImGui::LabelText("curfn", "%s", curfn.name.c_str());
       ImGui::SliderInt("function", &curfn_idx, 0, numFunctions);

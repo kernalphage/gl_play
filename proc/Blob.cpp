@@ -131,11 +131,12 @@ void BlobPlacer::gen_poisson(vec2 tl, vec2 br, BlobPlacer::DistanceFN distFN, in
 void BlobPlacer::render(Processing *ctx) {
   vector<Blob> blobs;
   auto distFN = [=](vec2 pos){
-    auto idx = _seed %14;
+    auto idx = _seed %DEPTH_MAP_COUNT;
     auto ppos = pos ;
     ppos.y *=-1;
     ppos = (ppos * .5f + vec2(.5f, .5f) );
-    auto dist = Util::median(distField[idx].sample(ppos.x, ppos.y, 0) , distField[idx].sample(ppos.x, ppos.y, 1) ,distField[idx].sample(ppos.x, ppos.y, 2) );
+    auto dist = Util::median(Util::sampleDistField({ppos.x, ppos.y}, idx));
+        
     if(dist < _maxTextDist) {
       return vec2{0,0};
     }
@@ -154,25 +155,16 @@ void BlobPlacer::render(Processing *ctx) {
 
 void BlobPlacer::imSettings(bool &redraw, bool &clear) {
 
-  static bool doonce = false;
-  if(doonce == false){
-    doonce = true;
-    redraw = true;
-    for(int i=0; i < 14; i++){
-      auto filename = fmt::format("sdf_text/{0}_fixed.png", numbers[i]);
-      distField[i].uploadToGPU = false;
-      distField[i].load(filename.c_str());
-    }
-  }
+  STATIC_DO_ONCE(redraw = true;);
   redraw |= ImGui::InputInt("seed", &_seed);
   if(ImGui::Button("prevJump")) {
     redraw = true;
-    _seed -= 14;
+    _seed -= DEPTH_MAP_COUNT;
   }
   ImGui::SameLine();
   if(ImGui::Button("nextJump")) {
     redraw = true;
-    _seed += 14;
+    _seed += DEPTH_MAP_COUNT;
   }
 
   redraw |= ImGui::SliderInt("minTextDist", &_maxTextDist, 0, 255);

@@ -37,6 +37,7 @@ using glm::mat4;
 #define impl_STATIC_DO_ONCE(x, y) {static bool __doonce##y=true; if(__doonce##y == true){__doonce##y = false; x;}};
 #define STATIC_DO_ONCE(x) impl_STATIC_DO_ONCE(x, __LINE__);
 
+#define DEPTH_MAP_COUNT 21
 
 
 namespace DonerSerializer
@@ -175,8 +176,8 @@ struct Geo{
 struct Util{
 
 	// slightly less suitworthy
-	static const int numbers[14];
-	static Texture distField[14];
+	static const int numbers[DEPTH_MAP_COUNT];
+	static Texture distField[DEPTH_MAP_COUNT];
 	static bool initUtilities();
 	static vec4 sampleDistField(vec2 pos, int idx);
   static float rangeMap (float t,float inStart,float inEnd,float outStart, float outEnd, bool doClamp = false);
