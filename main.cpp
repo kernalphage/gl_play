@@ -27,8 +27,8 @@ using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#define FRAME_WIDTH 1024
-#define FRAME_HEIGHT 1024
+#define FRAME_WIDTH 712
+#define FRAME_HEIGHT 512
 
 Material* currentMaterial;
 
@@ -191,10 +191,11 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0,0,mainWin._height, mainWin._height);
 
-    procFunction functions[]= {
-        {"dots", drawSpades, GL_TRIANGLES, &basic, PostMode::Buffer},
+
+// TODO: consider "DesiredGamma"? 
+    procFunction functions[] = {
+      {"dots", drawSpades, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"triangles", drawTriangle, GL_TRIANGLES, &basic, PostMode::Buffer},
-      {"stream" , drawStream, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"DiffGrowth", drawDiffGrow, GL_TRIANGLES, &basic, PostMode ::Buffer},
       {"flame", drawFlame, GL_POINTS, &flame, PostMode::Buffer},
       {"flameplotter", drawParticles, GL_POINTS, &flame, PostMode::NoBuffer},
@@ -205,7 +206,8 @@ int main() {
       {"Pendulum", drawPendulum, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"noise", drawNoise, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"light", drawLight, GL_TRIANGLES, &basic, PostMode::Buffer},
-
+      // No good default values, might need noBuffer or gamma?
+      //{"stream" , drawStream, GL_TRIANGLES, &basic, PostMode::Buffer},
     // {"cells", PROC_FORWARD(cells.render), GL_TRIANGLES, &basic}
     };
 
@@ -215,7 +217,7 @@ int main() {
       static int curfn_idx = 1; 
       auto curfn = functions[curfn_idx];
       ImGui::LabelText("curfn", "%s", curfn.name.c_str());
-      ImGui::SliderInt("function", &curfn_idx, 0, numFunctions);
+      clear |= ImGui::SliderInt("function", &curfn_idx, 0, numFunctions);
       curfn_idx = glm::min(curfn_idx, numFunctions);
       currentMaterial = curfn.mat;    
 

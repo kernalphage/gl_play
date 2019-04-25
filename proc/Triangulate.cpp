@@ -18,7 +18,6 @@ std::vector<Tri> TriBuilder::triangulate(Processing *ctx, int framenum) {
   Random::seed(_seed);
   FastNoise noise;
   noise.SetSeed(_seed);
-  noise.SetFrequency(_frequency);
   while (open.size() > 0 && cur < 40000) {
     Tri curTri = open[0]; open.erase(open.begin());
     int side = curTri.longestSide();
@@ -99,8 +98,8 @@ std::vector<Tri> TriBuilder::triangulate(Processing *ctx, int framenum) {
 }
 
 bool TriBuilder::imSettings() {
-
   bool redraw = false;
+  STATIC_DO_ONCE(redraw = true);
 
   ImGui::Text("Num Triangles = %d", (int)_curTriangles.size());
   redraw |= ImGui::InputInt("Seed", &_seed);

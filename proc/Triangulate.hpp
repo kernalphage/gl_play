@@ -40,22 +40,21 @@ struct TriBuilder {
   std::vector<Tri> triangulate( Processing *ctx,int  curFrame);
 
   std::vector<Tri> _curTriangles = {Tri{{0, .8, 0}, {-.8, -.8, 0}, {.8, -.8, 0}, 0}};;
-  int _seed;
-  float _radius = .38f;
-  float _frequency = 20;
-  float _decayMin = .4f;
-  float _decayMax = 1.5;
-  float _maxDepth = 6;
-  float _skew = .18f;
-  float _linethickness = .001f;
-  float _fillChance = 0.5f;
-  bool _drawLeftParent = false;
-  bool _drawRightParent = false;
-
-  vec2 _resizeRange = {1.0f, 1.0f};
+  int _seed = 10;
+  float _maxDepth = 14.53;
+  float _decayMin = 1.209f;
+  float _decayMax = 1.39;
+  float _skew = .083f;
+  vec2 _resizeRange = {0.988f, 1.02f};
+  float _radius = .452f;
+  float _fillChance = 0.640f;
   vec4 _minColor{0.0f, 1.0f, 0.0f, .8f};
   vec4 _maxColor{1.0f};
-  float _colorGain = 1.0f;
+  float _colorGain = 1.521f;
+  float _linethickness = .001f;
+  bool _drawLeftParent = true;
+  bool _drawRightParent = true;
+
 };
 
 bool testTriangle();

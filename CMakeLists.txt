@@ -120,7 +120,6 @@ set(SHADERS
         shaders/two_tri.frag
         shaders/flame.geom
         tonemap.png
-        four_sdf.png
 	)
 foreach(shader ${SHADERS})
 	configure_file( "${shader}" ${shader} COPYONLY)
