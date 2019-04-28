@@ -83,8 +83,8 @@ void RenderTarget::begin(bool clear) {
   }
 
   ImGui::LabelText("Render Target", "Render Target");
-  ImGui::SliderFloat("Gamma", &gamma, 0,1.0);
-  ImGui::SliderFloat("Energy", &energy, 1, 30);
+  ImGui::SliderFloat("Gamma", &gamma, 0,100.0);
+  ImGui::SliderFloat("Energy", &energy, 0, 30);
   ImGui::SliderFloat("texAmt", &texAmt, 0.0f, 1.0f);
 
   m_twotri->setFloat("gamma", gamma);

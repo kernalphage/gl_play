@@ -28,11 +28,9 @@ void Streamline::render(Processing *ctx) {
 bool Streamline::isvalid(vec2 pt, Node* prev )
 {
     if(pt.x < -1 || pt.y < -1){
-      cout<<"less thanN "<<pt.x << "," <<pt.y<<endl;
       return false;
     }
     if(pt.x > 1 || pt.y > 1){
-      cout<<"greater than" <<pt.x << "," <<pt.y<<endl;
       return false;
     }
 
@@ -129,6 +127,7 @@ vec2 Streamline::next(Streamline::Node *pos, bool backwards) {
 
 bool Streamline::imSettings() {
 
+  static bool addLines;
   bool redraw = false;
   redraw |= ImGui::InputInt("Seed", &seed, 0, 1);
   redraw |= ImGui::SliderFloat("lineWidth", &lineWidth, 0.001, 0.01);
@@ -136,14 +135,22 @@ bool Streamline::imSettings() {
   redraw |= ImGui::InputFloat("distFactor", &distFactor, 0, 1);
   redraw |= ImGui::SliderFloat("windstrength", &windStrength, .01, 110);
   redraw |= ImGui::SliderInt("Max Iterations", &maxIterations, 10, 1000);
-
-  if(ImGui::Button("Add line")){
+  ImGui::Checkbox("Add lines", &addLines);
+  if(addLines){
+    size_t lastSize = lines.size();
       vec2 pt = nextOpenPoint();
       stream_point(pt);
+    if(lastSize == lines.size()){
+      addLines = false;
+    }
   }
 
   if(redraw){
     destroy();
+    while( lines.size() <= 0) {
+      vec2 p = Random::random_point({-1,-1}, {1,1});
+      stream_point(p);
+    }
   }
   return redraw;
 }

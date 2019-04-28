@@ -6,7 +6,7 @@
 
 const int Util::numbers[] = {48,49,50,51,52,53,54,55,56,57,65,75,81,74,9824,9825,9826,9827,9828,9829,9830};
 Texture Util::distField[DEPTH_MAP_COUNT];
-
+//Processing* Util::debug_ctx;
 
 float Util::rangeMap(float t, float inStart, float inEnd, float outStart, float outEnd, bool doClamp) {
   float out = t - inStart;
@@ -39,6 +39,9 @@ bool Util::initUtilities() {
       distField[i].uploadToGPU = false;
       distField[i].load(filename.c_str());
     }
+
+//  debug_ctx = new ProcessingGL_t<UI_Vertex, vec4>{};
+  return true;
 }
 vec4 Util::sampleDistField(vec2 ppos, int idx) {
   idx %= DEPTH_MAP_COUNT;

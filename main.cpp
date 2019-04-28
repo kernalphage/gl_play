@@ -76,13 +76,8 @@ void drawTriangle(Processing* ctx, bool&redraw, bool&clear, int curFrame, int ma
 
 Streamline s(1,1);
 void drawStream(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
-  clear  = s.imSettings();
-  if(clear){
-    vec2 p = Random::random_point({-1,-1}, {1,1});
-    s.stream_point(p);
-  }
-  vec2 pt = s.nextOpenPoint();
-  s.stream_point(pt);
+  clear = s.imSettings();
+
   redraw = true;
   s.render(ctx);
 }
@@ -100,7 +95,12 @@ proc_map procmap;
 void drawProcmap(Processing* ctx, bool& redraw, bool& clear, int curFrame, int maxFrames){
   redraw = true;
   clear = procmap.imSettings();
-  clear |= Util::load_json(procmap, "procgen_map.json", ImGui::Button("SaveMap"), ImGui::Button("LoadMap"));
+  if(ImGui::Button("LoadMap")){
+    clear |= Util::load_json(procmap, "procgen_map.json");
+  }
+  if(ImGui::Button("SaveMap")){
+    Util::save_json(procmap, "procgen_map.json");
+  }
   if(redraw){
     procmap.render((ProcessingGL*) ctx); 
   }
@@ -159,9 +159,8 @@ int main() {
   m_tonemap.load("particle.png");
   particle.setInt("textured.frag", 0);
 
-  // Setup common render components 
+  // Setup common render components
   ctx = new ProcessingGL_t<UI_Vertex, vec4>{};
-  auto* part_ctx = new ProcessingGL_t<Particle_Vertex, Particle_Vertex::particle_data>{};
   RenderTarget buff(FRAME_WIDTH,FRAME_HEIGHT);
   buff.init();
   Util::initUtilities();
@@ -191,9 +190,9 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0,0,mainWin._height, mainWin._height);
 
-
 // TODO: consider "DesiredGamma"? 
     procFunction functions[] = {
+
       {"dots", drawSpades, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"triangles", drawTriangle, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"DiffGrowth", drawDiffGrow, GL_TRIANGLES, &basic, PostMode ::Buffer},
@@ -206,6 +205,7 @@ int main() {
       {"Pendulum", drawPendulum, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"noise", drawNoise, GL_TRIANGLES, &basic, PostMode::Buffer},
       {"light", drawLight, GL_TRIANGLES, &basic, PostMode::Buffer},
+
       // No good default values, might need noBuffer or gamma?
       //{"stream" , drawStream, GL_TRIANGLES, &basic, PostMode::Buffer},
     // {"cells", PROC_FORWARD(cells.render), GL_TRIANGLES, &basic}
@@ -214,13 +214,14 @@ int main() {
     const int numFunctions = 11;
       // setup current view 
       bool redraw = false, clear = false;
-      static int curfn_idx = 1; 
+      static int curfn_idx = 2;
       auto curfn = functions[curfn_idx];
       ImGui::LabelText("curfn", "%s", curfn.name.c_str());
       clear |= ImGui::SliderInt("function", &curfn_idx, 0, numFunctions);
       curfn_idx = glm::min(curfn_idx, numFunctions);
       currentMaterial = curfn.mat;    
 
+      static bool showDebug = false;
       static bool animating = false;
       static string animTimestamp;
       static int curFrame = 0;
@@ -277,6 +278,16 @@ int main() {
           curFrame = (curFrame + 1 ) % maxFrames;
         }
       }
+
+/*
+      // TODO: Figure out forward declaration and move this to Util
+    if(ImGui::Checkbox("Show Debug", &showDebug)){
+      basic.use();
+      Util::debug_ctx->flush();
+      Util::debug_ctx->render();
+      Util::debug_ctx->clear();
+    }
+*/
 
       if (glfwGetKey(mainWin.window, GLFW_KEY_ESCAPE) == GLFW_PRESS){
         glfwSetWindowShouldClose(mainWin.window, true);

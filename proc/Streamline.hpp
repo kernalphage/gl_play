@@ -57,7 +57,7 @@ private:
   Partition<Node*> p;
   float width;
   float height;
-  float distFactor = .5f;
+  float distFactor = .05f;
 
   int seed =0 ;
   float lineWidth=.004;

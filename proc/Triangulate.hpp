@@ -35,6 +35,8 @@ struct Tri {
 
 struct TriBuilder {
 
+  DONER_DECLARE_OBJECT_AS_REFLECTABLE(TriBuilder)
+
   bool imSettings();
 
   std::vector<Tri> triangulate( Processing *ctx,int  curFrame);
@@ -56,6 +58,21 @@ struct TriBuilder {
   bool _drawRightParent = true;
 
 };
+
+DONER_DEFINE_REFLECTION_DATA(TriBuilder,
+      DONER_ADD_NAMED_VAR_INFO(_seed, "_seed"),
+        DONER_ADD_NAMED_VAR_INFO(_frequency, "_frequency"),
+      DONER_ADD_NAMED_VAR_INFO(_decayMin, "_decayMin"),
+      DONER_ADD_NAMED_VAR_INFO(_decayMax, "_decayMax"),
+      DONER_ADD_NAMED_VAR_INFO(_maxDepth, "_maxDepth"),
+      DONER_ADD_NAMED_VAR_INFO(_skew, "_skew"),
+      DONER_ADD_NAMED_VAR_INFO(_linethickness, "_linethickness"),
+      DONER_ADD_NAMED_VAR_INFO(_fillChance, "_fillChance"),
+      DONER_ADD_NAMED_VAR_INFO(_drawLeftParent, "_drawLeftParent"),
+      DONER_ADD_NAMED_VAR_INFO(_drawRightParent, "_drawRightParent")
+
+)
+
 
 bool testTriangle();
 

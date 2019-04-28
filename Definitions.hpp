@@ -102,6 +102,10 @@ struct Particle_Vertex{
 	particle_data m_data;
 };
 
+// yes this is hiding down here. I don't know how to module correctly.
+#include "Processing.hpp"
+
+
 struct Geo{
 
 	// T should be a vec2, but i do a lot with vec3s just in case
@@ -178,6 +182,7 @@ struct Util{
 	// slightly less suitworthy
 	static const int numbers[DEPTH_MAP_COUNT];
 	static Texture distField[DEPTH_MAP_COUNT];
+  //static Processing* debug_ctx;
 	static bool initUtilities();
 	static vec4 sampleDistField(vec2 pos, int idx);
   static float rangeMap (float t,float inStart,float inEnd,float outStart, float outEnd, bool doClamp = false);
@@ -185,19 +190,17 @@ struct Util{
 	inline static float median(float r, float g, float b) { return glm::max(glm::min(r, g), glm::min(glm::max(r, g), b)); }
 	inline static float median(vec3 p){return median(p.x,p.y,p.z);};
 	inline static float median(vec4 p){return median(p.x,p.y,p.z);};
-
-	template<typename T>
-	static bool load_json(T& obj, const char* filename, bool doSave, bool doLoad){
-		if(doSave){
-			std::ofstream settings(filename);
-
-			DonerSerializer::CJsonSerializer serializer;
-			serializer.Serialize(obj);
-			std::string result = serializer.GetJsonString();
-			settings<<result;
-		}
-
-		if(doLoad){
+  template<typename T>
+  static bool save_json(T& obj, const char* filename) {
+    std::ofstream settings(filename);
+    DonerSerializer::CJsonSerializer serializer;
+    serializer.Serialize(obj);
+    std::string result = serializer.GetJsonString();
+    settings << result;
+    return true;
+  }
+  template<typename T>
+  static bool load_json(T& obj, const char* filename){
 			std::ifstream sFile(filename);
 			std::stringstream vShaderStream;
 
@@ -211,12 +214,10 @@ struct Util{
 			std::string jsonContents=vShaderStream.str();
 			std::cout<<jsonContents<<std::endl;
 			DonerSerializer::CJsonDeserializer::Deserialize(obj, jsonContents.c_str());
-		}
-		return doSave || doLoad;
+
 	}
 
 };
 
-#include "Processing.hpp"
 
 #endif // DEFINITIONS_HPP

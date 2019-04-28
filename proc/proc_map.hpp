@@ -50,7 +50,6 @@ public:
 
 };
 
-
 DONER_DEFINE_REFLECTION_DATA(proc_map,
   DONER_ADD_NAMED_VAR_INFO( m_chunksize, "m_chunksize"),
   DONER_ADD_NAMED_VAR_INFO( m_seed, "m_seed" ),
