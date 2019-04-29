@@ -26,6 +26,12 @@ public:
     return a + (b - a) * distribution(generator);
   }
 
+  // Shorthand for range of vector
+  template<typename T> 
+  static float range(T a){
+    return a.x + (a.y - a.x) * distribution(generator);
+  }
+
   static vec2 random_point(vec2 tl, vec2 br) {
     return {Random::range(tl.x, br.x),
             Random::range(tl.y, br.y)};
