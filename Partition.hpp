@@ -54,6 +54,7 @@ class Partition{
 
         _all.push_back(t);
         vector<int> buckets = index(t);
+        // This... might be redundant with non-pointer types. reference types?  
         for(int i : buckets){     
             _grid[i].push_back(t);
         }

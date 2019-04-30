@@ -61,7 +61,6 @@ struct TriBuilder {
 
 DONER_DEFINE_REFLECTION_DATA(TriBuilder,
       DONER_ADD_NAMED_VAR_INFO(_seed, "_seed"),
-        DONER_ADD_NAMED_VAR_INFO(_frequency, "_frequency"),
       DONER_ADD_NAMED_VAR_INFO(_decayMin, "_decayMin"),
       DONER_ADD_NAMED_VAR_INFO(_decayMax, "_decayMax"),
       DONER_ADD_NAMED_VAR_INFO(_maxDepth, "_maxDepth"),

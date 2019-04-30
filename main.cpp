@@ -21,7 +21,7 @@
 #include <rapidjson/rapidjson.h>
 #include "proc/cached_flowmap.hpp"
 #include "proc/Superformula.hpp"
-
+#include "LineHatch.hpp"
 
 using namespace std;
 #define STB_IMAGE_IMPLEMENTATION
@@ -41,6 +41,9 @@ struct procFunction{
   Material* mat;
   PostMode postProcessing = PostMode::NoBuffer;
 };
+//////////////// PRocedural functions
+
+HatchField lines;
 
 BlobPlacer blobM;
 void drawSpades(Processing* ctx, bool&redraw, bool&clear, int curFrame, int maxFrames){

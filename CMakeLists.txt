@@ -24,6 +24,7 @@ set(PROC_SOURCE_FILES
 set(ENGINE_SOURCE_FILES
     Definitions.hpp
     hexlib.hpp
+    LineHatch.hpp
     main.cpp
     Material.cpp
     Material.hpp
