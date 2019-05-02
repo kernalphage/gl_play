@@ -60,8 +60,8 @@ class Partition{
         }
         return buckets; // mayybe i shouldnt return here? 
     }
-    template<typename OutputIterator>
-    void neighbors(vec2  v, OutputIterator n_out){
+    template<typename OutputIterator, typename PosType>
+    void neighbors(PosType  v, OutputIterator n_out){
         vector<int> buckets = index(v);
         for(int i : buckets){            
             int neigh[] = {-(_numgrids+1), -_numgrids, -_numgrids + 1,

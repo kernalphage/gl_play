@@ -15,6 +15,8 @@
 template <>
 vector<int> Partition<Line *>::index(Line *l)
 {
+    // 0<--0--0--0--0-->0
+    // Evenly spaced samples, i _think_ this works 
     // TODO: Have line be in multiple buckets
     float d = distance(l->a, l->b);
     set<int> buckets;
