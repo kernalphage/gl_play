@@ -1,0 +1,106 @@
+class Hatch {
+	
+	// 
+	float cropLine(Line* l, const Partition& p){
+
+	}
+
+	std::vector<Line*> drawPatch(vec2 origin, float rotation, float scale, int numHatches){
+		const vec2 forward = + a2v(rotation) * scale;
+		const vec2 perp{-forward.y, forward.x};  // TODO: jiggle perp per line
+		const float di = 1.0f / numHatches;
+
+		Line north{origin,  origin + forward};
+		Line south{origin,  origin - forward};
+
+		float maxN = 0; // minDist(north, p);
+		float maxS = 0; // minDist(north, p);
+
+		
+		vector<Line*> outLines;
+		for(int i=0; i < numHatches; i++){
+			if(i*di < maxN){
+				vec2 origN = lerp(north.a, north.b, i * di);
+				Line eastN{origN, origN+perp};
+				Line westN{origN, origN-perp};
+				cropLine(eastN);
+				cropLine(westN);
+				outLines.push_back(new Line{eastN.b, westN.b});
+				p.add(outLines.back())
+			}
+			if(i*di < maxS){
+				vec2 origS = lerp(south.a, south.b, i * di);
+				Line* eastS= new Line{origS, origS+perp};
+				Line* westS= new Line{origS, origS-perp};
+				cropLine(eastS);
+				cropLine(westS);
+				outLines.push_back(new Line{eastS.b, westS.b});
+				p.add(outLines.back())
+			}
+		}
+
+		return outLines;
+	}
+
+
+	struct Segment {
+		Line l;
+		int depth;
+	}
+
+	std::vector<Line*> drawSegment(){
+		// lightning bolt subdivisions 
+		vec2 centerTop = vec2(0, Random::f());
+		vec2 centerBottom = vec2(1, Random::f());
+		vector<Segment*> segments;
+		vector<int> depths;
+
+		open.push_back(new Segment({centerBottom, centerTop}, Random.range(subdivisions)));
+		while(!open.empty()){
+			Segment* cur = open.pop();
+			if(open.depth <= 0){
+				segments.push_back(cur); 
+				continue;
+			};
+
+			vec2 center = lerp(cur->l.a, cur->l.b, .5f);
+			vec2 offset{Random::range(jitterScale.x, -jitterScale.x), Random::range(jitterScale.y, -jitterScale.y)};
+			offset = offset.rotate( glm::angle( cur->l.a - cur->l.b) );  // could just be reguar offset
+
+			Segment* left{cur->l.a, center+offset, cur->depth -1};
+			Segment* right{cur->l.b, center+offset, cur->depth -1}; 
+			open.push_back(left);
+			segments.push_back(left);
+			open.push_back(right);
+			segments.push_back(right);
+			delete(cur); // sue me
+		}
+
+	}
+	void render(Processing* ctx){
+		std::vector<Line*> segments = drawSegment;
+
+		for(auto l : segments){
+			ctx->line();
+		}
+
+	}
+}
+
+
+// segment properties
+vec2 topWidth;
+vec2 bottomWidth; 
+ivec2 subdivisions;
+vec2 jitterScale; 
+
+
+[RequireComponent(typeof(Rigidbody))]
+public class Projectile : MonoBehaviour
+{
+    public Rigidbody rigidbody;
+    void Reset()
+    {
+        rigidbody = GetComponent<Rigidbody>();
+    }
+}
